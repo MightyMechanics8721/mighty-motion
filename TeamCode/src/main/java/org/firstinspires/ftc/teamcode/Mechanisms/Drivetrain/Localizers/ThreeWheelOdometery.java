@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 
@@ -32,7 +33,12 @@ public class ThreeWheelOdometery {
 
 
     // you should have a public static double xMult, public static double yMult
-    public ThreeWheelOdometery(HardwareMap hardwareMap, DcMotorEx motor0, DcMotorEx motor1, DcMotorEx motor3) {
+    public ThreeWheelOdometery(
+            HardwareMap hardwareMap,
+            DcMotorEx motor0,
+            DcMotorEx motor1,
+            DcMotorEx motor3
+    ) {
         this.hardwareMap = hardwareMap;
         this.leftEncoder = motor0;
         this.centerEncoder = motor1;
@@ -42,52 +48,63 @@ public class ThreeWheelOdometery {
 
     // Change this to updateEncoderPositions
     // Change the phrase 'Val' everywhere to 'RawPos'
-    public void updateEncoderPositions(){
-        currentLeftRawPos = -leftEncoder.getCurrentPosition()*xMult;
-        currentCenterRawPos = centerEncoder.getCurrentPosition()*yMult;
-        currentRightRawPos = -rightEncoder.getCurrentPosition()*xMult;
+    public void updateEncoderPositions() {
+        currentLeftRawPos = -leftEncoder.getCurrentPosition() * xMult;
+        currentCenterRawPos = centerEncoder.getCurrentPosition() * yMult;
+        currentRightRawPos = -rightEncoder.getCurrentPosition() * xMult;
     }
 
     // Write a updateEncoderVelocities
     // should just be encoderObject.getVelocity()
 
-    public void updateEncoderVelocities(){
+    public void updateEncoderVelocities() {
         currentLeftVelocity = -leftEncoder.getVelocity();
         currentCenterVelocity = centerEncoder.getVelocity();
         currentRightVelocity = -rightEncoder.getVelocity();
     }
 
-    public void pushBackValues(){
-        lastLeftRawPos=currentLeftRawPos;
-        lastCenterRawPos=currentCenterRawPos;
-        lastRightRawPos=currentRightRawPos;
+    public void pushBackValues() {
+        lastLeftRawPos = currentLeftRawPos;
+        lastCenterRawPos = currentCenterRawPos;
+        lastRightRawPos = currentRightRawPos;
     }
 
     // Change this a bit. Make the input a single double rawVal. For example,
     // now you would do convertToDistance(currentLeftVal - lastLeftVal) for the left position
     // and for velocity of the left encoder it would be convertToDistance(leftVelocity)
-    public double convertToDistance(double rawVal){
-        return 2*Math.PI*radius*(rawVal)/ticksPerRotation;
+    public double convertToDistance(double rawVal) {
+        return 2 * Math.PI * radius * (rawVal) / ticksPerRotation;
     }
 
     // Add an argument called lastState (SimpleMatrix)
     // Remove the theta argument and just access it through lastState.get(2, 0)
-    public SimpleMatrix calculate(SimpleMatrix lastState){
+    public SimpleMatrix calculate(SimpleMatrix lastState) {
         //Call BOTH updateEncoderPositions() and updateEncoderVelocities() HERE
         updateEncoderPositions();
         updateEncoderVelocities();
 
-        double relativeChangeX = (convertToDistance(currentLeftRawPos - lastLeftRawPos) + convertToDistance(currentRightRawPos - lastRightRawPos))/2;
-        double changeInHeading = (convertToDistance(currentLeftRawPos - lastLeftRawPos) - convertToDistance(currentRightRawPos - lastRightRawPos))/trackWidth;
-        double relativeChangeY = convertToDistance(currentCenterRawPos - lastCenterRawPos)-forwardOffset*changeInHeading;
+        double relativeChangeX =
+                (convertToDistance(currentLeftRawPos - lastLeftRawPos) + convertToDistance(
+                        currentRightRawPos - lastRightRawPos)) / 2;
+        double changeInHeading =
+                (convertToDistance(currentLeftRawPos - lastLeftRawPos) - convertToDistance(
+                        currentRightRawPos - lastRightRawPos)) / trackWidth;
+        double relativeChangeY = convertToDistance(currentCenterRawPos - lastCenterRawPos)
+                - forwardOffset * changeInHeading;
 
         // Do distance conversions for velocity
         // These will be encoder velocities with units of in/s
-        // Use the same formula for relativeChangeX for vX, vY is simply going to be you horizontal encoder velocity
+        // Use the same formula for relativeChangeX for vX, vY is simply going to be you
+        // horizontal encoder velocity
 
-        double xVelocity = (convertToDistance(currentLeftVelocity) + convertToDistance(currentRightVelocity))/2;
-        double angularVelocity = (convertToDistance(currentLeftVelocity) - convertToDistance(currentRightVelocity))/trackWidth;
-        double yVelocity = convertToDistance(currentCenterVelocity)-forwardOffset*angularVelocity;
+        double xVelocity =
+                (convertToDistance(currentLeftVelocity) + convertToDistance(currentRightVelocity))
+                        / 2;
+        double angularVelocity =
+                (convertToDistance(currentLeftVelocity) - convertToDistance(currentRightVelocity))
+                        / trackWidth;
+        double yVelocity = convertToDistance(currentCenterVelocity)
+                - forwardOffset * angularVelocity;
 
 
         SimpleMatrix deltaPoseBody = new SimpleMatrix(
@@ -99,8 +116,16 @@ public class ThreeWheelOdometery {
         );
         SimpleMatrix poseExponentials = new SimpleMatrix(
                 new double[][]{
-                        new double[]{Math.sin(changeInHeading) / changeInHeading, (Math.cos(changeInHeading) - 1) / changeInHeading, 0},
-                        new double[]{(Math.cos(changeInHeading) - 1) / changeInHeading, Math.sin(changeInHeading) / changeInHeading, 0},
+                        new double[]{
+                                Math.sin(changeInHeading) / changeInHeading,
+                                (Math.cos(changeInHeading) - 1) / changeInHeading,
+                                0
+                        },
+                        new double[]{
+                                (Math.cos(changeInHeading) - 1) / changeInHeading,
+                                Math.sin(changeInHeading) / changeInHeading,
+                                0
+                        },
                         new double[]{0, 0, 1}
                 }
         );
@@ -108,12 +133,13 @@ public class ThreeWheelOdometery {
         if (changeInHeading == 0) {
             poseExponentials = SimpleMatrix.identity(3);
         }
-        SimpleMatrix deltaPose = Utils.rotateBodyToGlobal(poseExponentials, lastState.get(2, 0)).mult(deltaPoseBody);
+        SimpleMatrix deltaPose = Utils.rotateBodyToGlobal(poseExponentials, lastState.get(2, 0))
+                                      .mult(deltaPoseBody);
         SimpleMatrix state = new SimpleMatrix(
                 new double[][]{
-                        new double[]{deltaPose.get(0,0) + lastState.get(0,0)},
-                        new double[]{deltaPose.get(1,0) + lastState.get(1,0)},
-                        new double[]{deltaPose.get(2,0)+lastState.get(2,0)},
+                        new double[]{deltaPose.get(0, 0) + lastState.get(0, 0)},
+                        new double[]{deltaPose.get(1, 0) + lastState.get(1, 0)},
+                        new double[]{deltaPose.get(2, 0) + lastState.get(2, 0)},
                         new double[]{xVelocity},
                         new double[]{yVelocity},
                         new double[]{angularVelocity}

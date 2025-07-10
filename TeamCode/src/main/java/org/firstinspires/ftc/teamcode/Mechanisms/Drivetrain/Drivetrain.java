@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.inverseKinematics;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.l;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
@@ -22,6 +24,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
@@ -56,7 +59,7 @@ public class Drivetrain {
     public SimpleMatrix wheelPowerPrev = new SimpleMatrix(4, 1);
     public PoseController poseControl = new PoseController();
     public static double acceptablePowerDifference = 0.000001; // The acceptable difference between current and previous wheel power to make a hardware call
-    public static double distanceThreshold = 1;
+    public static double distanceThreshold = 0.25;
     public static double angleThreshold = 0.1;
     public static double maxVoltage = 12.5;
     SimpleMatrix initialState = new SimpleMatrix(6,1);
@@ -66,6 +69,11 @@ public class Drivetrain {
         initialState.set(2,0,theta);
     }
     public Battery battery;
+
+
+
+
+
 
     public SimpleMatrix prevWheelSpeeds = new SimpleMatrix( new double[][]{
             new double[]{0},
@@ -200,7 +208,7 @@ public class Drivetrain {
             }
         };
     }
-    public Action goToPoseImprecise(SimpleMatrix desiredPose) {
+    public Action goToPoseImpresice(SimpleMatrix desiredPose) {
         return new Action() {
             //private boolean initialized = false;
 

@@ -27,6 +27,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.Geometri
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Localizers.TwoWheelOdometery;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 
@@ -42,7 +43,6 @@ import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
  */
 @Config
 public class Drivetrain {
-
     /**
      * Acceptable difference between current and previous wheel power to make a hardware call Used
      * to save battery
@@ -50,12 +50,12 @@ public class Drivetrain {
     public static double acceptablePowerDifference = 0.000001;
     /**
      * Acceptable difference between wanted and current positions (Inches) to make a hardware call
-     * Used to save time & reduce unneccesary movements
+     * Used to save time & reduce unnecessary movements
      */
     public static double distanceThreshold = 0.25;
     /**
      * The acceptable difference between wanted and current angles (Radians) Used to save time &
-     * reduce unneccesary movements
+     * reduce unnecessary movements
      */
     public static double angleThreshold = 0.1;
     /**
@@ -78,7 +78,6 @@ public class Drivetrain {
     public DcMotorAdvanced motorRightBack;
     public DcMotorAdvanced motorRightFront;
     public SimpleMatrix wheelPowerPrev = new SimpleMatrix(4, 1);
-    public PoseController poseControl = new PoseController();
     public SimpleMatrix prevWheelSpeeds = new SimpleMatrix(new double[][]{
             new double[]{0},
             new double[]{0},
@@ -91,21 +90,25 @@ public class Drivetrain {
             new double[]{0},
             new double[]{0}
     });
+    MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
+    private MecanumKinematicModel mecanumKinematicModel;
+    public PoseController poseControl = new PoseController(mecanumKinematicModel);
 
     /**
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
-     * @param battery     The Battery level of the Robot
+     * to which name
+     * @param battery The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
         this.motorController = new DrivetrainMotorController(hardwareMap);
         this.twoWheelOdo = new TwoWheelOdometery(hardwareMap);
         this.geometricController = new GeometricController();
+        this.mecanumKinematicModel = new MecanumKinematicModel(MECHANICAL_PARAMETERS);
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -159,8 +162,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x     Initial X position (inches)
-     * @param y     Initial Y position (inches)
+     * @param x Initial X position (inches)
+     * @param y Initial Y position (inches)
      * @param theta Initial heading (radians)
      */
     public void setInitialPosition(double x, double y, double theta) {
@@ -205,7 +208,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -219,6 +222,7 @@ public class Drivetrain {
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
+     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
@@ -271,6 +275,7 @@ public class Drivetrain {
      * movements.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
+     *
      * @return An Action that runs until the robot is within 10x distanceThreshold and
      * angleThreshold of the target.
      */
@@ -283,7 +288,7 @@ public class Drivetrain {
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
                 SimpleMatrix wheelSpeeds = poseControl.calculate(pose, desiredPose);
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-//                deltaT.reset();
+                //                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
                 packet.put("X", state.get(0, 0));
@@ -332,6 +337,7 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
+     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -422,6 +428,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -431,20 +438,32 @@ public class Drivetrain {
                 double y = ly;
                 double x = -lx;
                 double rx = -rX;
-//                SimpleMatrix compensatedTwist = new SimpleMatrix(
-//                        new double[][]{
-//                                new double[]{r * x},
-//                                new double[]{r * y},
-//                                new double[]{(r / (l + w)) * rx},
-//                        }
-//                );
+                SimpleMatrix compensatedTwist = new SimpleMatrix(
+                        new double[][]{
+                                new double[]{MechanicalParameters.wheelRadius * x},
+                                new double[]{MechanicalParameters.wheelRadius * y},
+                                new double[]{
+                                        (MechanicalParameters.wheelRadius / (
+                                                MechanicalParameters.longDistToAxles
+                                                        + MechanicalParameters.latDistToAxles)) * rx
+                                },
+                                }
+                );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-//                setPower(inverseKinematics(compensatedTwist).scale(1 / denominator));
+                setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
+                                              .scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));
                 return false;
             }
         };
+    }
+
+    public static class MechanicalParameters {
+        public static double wheelRadius = 2.16535; // (in)
+        public static double longDistToAxles = 5.7;
+        // (in) Longitudinal distance from center to axles
+        public static double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
     }
 }

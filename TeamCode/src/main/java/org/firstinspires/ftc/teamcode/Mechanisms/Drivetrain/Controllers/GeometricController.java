@@ -18,7 +18,7 @@ public class GeometricController {
     public static double lookAheadTheta = 20;
     public boolean useStaticHeading = false;
     public PoseController poseControl
-            = new PoseController(new MecanumKinematicModel(new Drivetrain.MechanicalParameters()));
+            = new PoseController(Drivetrain.poseConstants);
     int lastIndexXY = 0;
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;

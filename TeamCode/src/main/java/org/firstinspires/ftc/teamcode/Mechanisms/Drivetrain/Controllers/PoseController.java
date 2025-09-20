@@ -3,29 +3,19 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID.functionType;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 
 @Config //  Allows tuning these parameters through FTC Dashboard.
 public class PoseController {
-    // PID Constants for tuning via Dashboard.
-    public static double kPX = 10.5;
-    public static double kPY = 10.5;
-    public static double kPTheta = 5;
-    // Integral and derivative gains for all axes.
-    public static double kIX, kIY, kITheta = 0;
-    public static double kDX = 0;
-    public static double kDY = 0;
-    public static double kDTheta = 0;
     // PID Controllers for X, Y, and Theta (heading).
     public PID xPID;
     public PID yPID;
     public PID tPID;
-    private MecanumKinematicModel mecanumKinematicModel;
     // Last known valid pose to avoid NaN issues.
     private double lastTheta = 0;
     private double lastX;
@@ -38,11 +28,12 @@ public class PoseController {
      * <p>
      * TODO: Refactor to accept a parameter structure from Drivetrain.
      */
-    public PoseController(MecanumKinematicModel mecanumKinematicModel) {
-        this.mecanumKinematicModel = mecanumKinematicModel;
-        this.xPID = new PID(kPX, kIX, kDX, functionType.SQRT);
-        this.yPID = new PID(kPY, kIY, kDY, functionType.SQRT);
-        this.tPID = new PID(kPTheta, kITheta, kDTheta, functionType.SQRT);
+    public PoseController(
+            PoseConstants poseConstants
+    ) {
+        this.xPID = new PID(poseConstants.xPID, functionType.SQRT);
+        this.yPID = new PID(poseConstants.yPID, functionType.SQRT);
+        this.tPID = new PID(poseConstants.thetaPID, functionType.SQRT);
     }
 
     /**
@@ -107,13 +98,7 @@ public class PoseController {
         );
 
         // Convert robot-frame velocity vector to individual wheel powers.
-        return mecanumKinematicModel.inverseKinematics(velocityVectorInRobotFrame);
-    }
-
-    public class PoseConstants {
-        PIDConstants xPID = new PIDConstants();
-        PIDConstants yPID = new PIDConstants();
-        PIDConstants thetaPID = new PIDConstants();
+        return velocityVectorInRobotFrame;
     }
 }
 

@@ -22,6 +22,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
@@ -62,6 +64,23 @@ public class Drivetrain {
      * The maximum Voltage the drivetrain could use at a time Used to save battery
      */
     public static double maxVoltage = 12.5;
+    // PID Constants for tuning via Dashboard.
+    public static double kPX = 10.5;
+    public static double kPY = 10.5;
+    public static double kPTheta = 5;
+    // Integral and derivative gains for all axes.
+    public static double kIX, kIY, kITheta = 0;
+    public static double kDX = 0;
+    public static double kDY = 0;
+    public static double kDTheta = 0;
+    public static PoseConstants poseConstants = new PoseConstants(
+            new PIDConstants(kPX, kIX, kDX),
+            new PIDConstants(kPY, kIY, kDY),
+            new PIDConstants(
+                    kPTheta, kITheta,
+                    kDTheta
+            )
+    );
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -90,11 +109,11 @@ public class Drivetrain {
             new double[]{0},
             new double[]{0}
     });
+    public PoseController poseControl = new PoseController(poseConstants);
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
     private MecanumKinematicModel mecanumKinematicModel;
-    public PoseController poseControl = new PoseController(mecanumKinematicModel);
 
     /**
      * Initializes the Drivetrain (Wheels of the Robot)
@@ -233,7 +252,11 @@ public class Drivetrain {
             public boolean run(@NonNull TelemetryPacket packet) {
                 localize();
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                SimpleMatrix wheelSpeeds = poseControl.calculate(pose, desiredPose);
+                SimpleMatrix wheelSpeeds
+                        = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                        pose,
+                        desiredPose
+                ));
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
                 //                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
@@ -286,7 +309,11 @@ public class Drivetrain {
                 localize();
                 packet.put("Done", "no");
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                SimpleMatrix wheelSpeeds = poseControl.calculate(pose, desiredPose);
+                SimpleMatrix wheelSpeeds
+                        = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                        pose,
+                        desiredPose
+                ));
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
                 //                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
@@ -356,7 +383,11 @@ public class Drivetrain {
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
                 // Rename to desiredPose! It contains a heading too so furthestPoint is misleading!
                 SimpleMatrix desiredPose = geometricController.calculate(state, path);
-                SimpleMatrix wheelSpeeds = poseControl.calculate(pose, desiredPose);
+                SimpleMatrix wheelSpeeds =
+                        mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                                pose,
+                                desiredPose
+                        ));
                 // not sure why you're using distanceThreshold here.
                 // it would be something like path.getMotionProfile.getVelocity(t), where t is an
                 // elapsed timer.

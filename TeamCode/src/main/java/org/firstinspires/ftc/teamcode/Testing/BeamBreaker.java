@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Testing;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -23,14 +24,14 @@ public class BeamBreaker extends LinearOpMode {
     public void runOpMode() {
         beamBreak = hardwareMap.get(DigitalChannel.class, "beam");
         beamBreak.setMode(DigitalChannel.Mode.INPUT);
-
+        TelemetryPacket telemetryPacket = new TelemetryPacket();
         waitForStart();
 
         while (opModeIsActive()) {
             if (beamBreak.getState()) {
-                telemetry.addData("Beam", "Unbroken");
+                telemetryPacket.put("Beam", "Unbroken");
             } else {
-                telemetry.addData("Beam", "Broken!");
+                telemetryPacket.put("Beam", "Broken");
             }
             telemetry.update();
         }

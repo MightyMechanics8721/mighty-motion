@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.inverseKinematics;
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.l;
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
+//import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.inverseKinematics;
+//import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.l;
+//import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
+//import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
 import androidx.annotation.NonNull;
 
@@ -30,7 +30,19 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Localizers.TwoWheelO
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 
-public class TuneValues {
+
+/**
+ * Drivetrain class manages the robot's drive system, including motor control, odometry, and path
+ * following. It provides methods for both autonomous and manual control, as well as telemetry
+ * updates. This class is designed for use in FTC robots with mecanum or omni drive systems.
+ * <p>
+ * Inclues - Motor initialization and configuration - Odometry-based localization - Path following
+ * and pose targeting - Manual control via controller inputs - Telemetry reporting for dashboard and
+ * driver station
+ */
+@Config
+public class Drivetrain {
+
     /**
      * Acceptable difference between current and previous wheel power to make a hardware call Used
      * to save battery
@@ -50,20 +62,6 @@ public class TuneValues {
      * The maximum Voltage the drivetrain could use at a time Used to save battery
      */
     public static double maxVoltage = 12.5;
-}
-
-/**
- * Drivetrain class manages the robot's drive system, including motor control, odometry, and path
- * following. It provides methods for both autonomous and manual control, as well as telemetry
- * updates. This class is designed for use in FTC robots with mecanum or omni drive systems.
- *
- * Inclues - Motor initialization and configuration - Odometry-based localization - Path following
- * and pose targeting - Manual control via controller inputs - Telemetry reporting for dashboard and
- * driver station
- */
-@Config
-public class Drivetrain {
-    HardwareMap hardwareMap;
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -72,7 +70,6 @@ public class Drivetrain {
     public TwoWheelOdometery twoWheelOdo;
     public DrivetrainMotorController motorController;
     public GeometricController geometricController;
-
     /**
      * Drivetrain motors
      */
@@ -80,24 +77,8 @@ public class Drivetrain {
     public DcMotorAdvanced motorLeftBack;
     public DcMotorAdvanced motorRightBack;
     public DcMotorAdvanced motorRightFront;
-
     public SimpleMatrix wheelPowerPrev = new SimpleMatrix(4, 1);
-    SimpleMatrix initialState = new SimpleMatrix(6, 1);
     public PoseController poseControl = new PoseController();
-
-    /**
-     * Sets the Position of the bot in its start position.
-     *
-     * @param x Initial X position (inches)
-     * @param y Initial Y position (inches)
-     * @param theta Initial heading (radians)
-     */
-    public void setInitialPosition(double x, double y, double theta) {
-        initialState.set(0, 0, x);
-        initialState.set(1, 0, y);
-        initialState.set(2, 0, theta);
-    }
-
     public SimpleMatrix prevWheelSpeeds = new SimpleMatrix(new double[][]{
             new double[]{0},
             new double[]{0},
@@ -110,13 +91,15 @@ public class Drivetrain {
             new double[]{0},
             new double[]{0}
     });
+    HardwareMap hardwareMap;
+    SimpleMatrix initialState = new SimpleMatrix(6, 1);
 
     /**
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     * to which name
-     * @param battery The Battery level of the Robot
+     *                    to which name
+     * @param battery     The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -174,6 +157,19 @@ public class Drivetrain {
     }
 
     /**
+     * Sets the Position of the bot in its start position.
+     *
+     * @param x     Initial X position (inches)
+     * @param y     Initial Y position (inches)
+     * @param theta Initial heading (radians)
+     */
+    public void setInitialPosition(double x, double y, double theta) {
+        initialState.set(0, 0, x);
+        initialState.set(1, 0, y);
+        initialState.set(2, 0, theta);
+    }
+
+    /**
      * Localizes the Robot, determines the current location of the Robot using odometry and previous
      * locations. Updates the internal state matrix with the current estimated pose.
      */
@@ -209,7 +205,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds Current Wheel Speed
+     * @param wheelSpeeds        Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -223,7 +219,6 @@ public class Drivetrain {
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
@@ -276,7 +271,6 @@ public class Drivetrain {
      * movements.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
      * @return An Action that runs until the robot is within 10x distanceThreshold and
      * angleThreshold of the target.
      */
@@ -289,7 +283,7 @@ public class Drivetrain {
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
                 SimpleMatrix wheelSpeeds = poseControl.calculate(pose, desiredPose);
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-                deltaT.reset();
+//                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
                 packet.put("X", state.get(0, 0));
@@ -338,7 +332,6 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
-     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -429,7 +422,6 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
-     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -439,15 +431,15 @@ public class Drivetrain {
                 double y = ly;
                 double x = -lx;
                 double rx = -rX;
-                SimpleMatrix compensatedTwist = new SimpleMatrix(
-                        new double[][]{
-                                new double[]{r * x},
-                                new double[]{r * y},
-                                new double[]{(r / (l + w)) * rx},
-                                }
-                );
+//                SimpleMatrix compensatedTwist = new SimpleMatrix(
+//                        new double[][]{
+//                                new double[]{r * x},
+//                                new double[]{r * y},
+//                                new double[]{(r / (l + w)) * rx},
+//                        }
+//                );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-                setPower(inverseKinematics(compensatedTwist).scale(1 / denominator));
+//                setPower(inverseKinematics(compensatedTwist).scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));

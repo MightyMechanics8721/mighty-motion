@@ -5,16 +5,16 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Filters;
  * distance sensors, etc.
  */
 public class LowPassFilter {
-    private double smoothingFactor;         // smoothing factor
-    private double prevFilteredValue; // last output
+    private LowPassFilterParameters params;   // holds smoothing factor
+    private double prevFilteredValue;         // last output
 
     /**
      * Constructor
      *
-     * @param smoothingFactor smoothing factor (0 < alpha < 1)
+     * @param params LowPassFilterParameters object with smoothing factor
      */
-    public LowPassFilter(double smoothingFactor) {
-        this.smoothingFactor = smoothingFactor;
+    public LowPassFilter(LowPassFilterParameters params) {
+        this.params = params;
         this.prevFilteredValue = 0.0;
     }
 
@@ -26,10 +26,10 @@ public class LowPassFilter {
      * @return filtered output
      */
     public double update(double rawValue) {
-        prevFilteredValue = smoothingFactor * rawValue + (1 - smoothingFactor) * prevFilteredValue;
-        return prevFilteredValue;
+        this.prevFilteredValue = params.smoothingFactor * rawValue
+                + (1 - params.smoothingFactor) * prevFilteredValue;
+        return this.prevFilteredValue;
     }
-
 
     /**
      * Reset filter to a specific value.
@@ -39,10 +39,9 @@ public class LowPassFilter {
     }
 
     /**
-     * Change smoothing factor dynamically.
+     * Dynamically change parameters.
      */
-    public void setSmoothingFactor(double smoothingFactor) {
-        this.smoothingFactor = smoothingFactor;
+    public void setParameters(LowPassFilterParameters params) {
+        this.params = params;
     }
 }
-

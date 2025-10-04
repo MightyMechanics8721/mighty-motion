@@ -40,15 +40,15 @@ public class FilteringTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            // Start motor on A button
-            //            if (gamepad1.a) {
-            //                motor.setPower(0.5);
-            //            }
+            //             Start motor on A button
+            if (gamepad1.a) {
+                motor.setPower(0.5);
+            }
 
-            // Stop motor on B button
-            //            if (gamepad1.b) {
-            //                motor.setPower(0.0);
-            //            }
+            //             Stop motor on B button
+            if (gamepad1.b) {
+                motor.setPower(0.0);
+            }
 
             // Raw velocity from encoder
             double rawVelocity = motor.getVelocity();

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Config
 @Autonomous(group = "A", name = "MotorPidTest")
 public class MotorPidTest extends LinearOpMode {
-    public static double desiredVelocity = 90;
+    public static double desiredVelocity = 2700;
 
     @Override
     public void runOpMode() throws InterruptedException {

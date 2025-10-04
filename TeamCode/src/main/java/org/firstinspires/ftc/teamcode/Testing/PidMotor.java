@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 @Config
 public class PidMotor {
     public static double TICKS_PER_REV = 28;
-    public static double Kp = 0.065;
+    public static double Kp = 0.0075;
     public static double Ki = 0;
     public static double Kd = 0;
     public DcMotorEx motorLeft;
@@ -60,7 +60,7 @@ public class PidMotor {
                 double power = setVelocity(desiredVelocity);
                 motorLeft.setPower(-power);
                 motorRight.setPower(-power);
-// NEGATIVE POWER BECAUSE REVERSED
+                // NEGATIVE POWER BECAUSE REVERSED
                 telemetryPacket.put("Velocity", motorLeft.getVelocity() / TICKS_PER_REV);
                 telemetryPacket.put("Ticks", motorLeft.getCurrentPosition());
                 telemetryPacket.put("A Target", desiredVelocity);

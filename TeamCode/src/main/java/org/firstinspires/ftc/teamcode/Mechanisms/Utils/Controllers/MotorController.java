@@ -26,7 +26,7 @@ public class MotorController {
     //CHOICE 3:
     public MotorController(HardwareMap hardwareMap, String[] motorNames) {
         for (String motorName : motorNames) {
-            this.motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName)));
+            this.motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName), battery, maxVoltage));
         }
 
     }
@@ -87,14 +87,15 @@ public class MotorController {
     }
 
 
-//    public void setPower(double[] powers) {
-//        for (DcMotorAdvanced motor : motors.values()) {
-//            int position = 0;
-//            motor.setPower(powers[position]);
-//            position++;
-//
-//        }
-//    }
+    public void setPower(double[] powers) {
+        int position = 0;
+        for (DcMotorAdvanced motor : motors.values()) {
+            if (position < powers.length) {
+                motor.setPower(powers[position]);
+            }
+            position++;
+        }
+    }
 
 
 //    public MotorController(HardwareMap hardwareMap, String[] motorNames, String encoderNames, Battery battery, double maxVoltage) {
@@ -109,5 +110,4 @@ public class MotorController {
 
 
 }
-
 

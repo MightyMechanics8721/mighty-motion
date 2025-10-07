@@ -26,7 +26,7 @@ public class OPMode extends LinearOpMode {
             motorController.setPower(new double[]{0.5, 1.0});
             telemetry.addData("test", 5);
             telemetry.update();
-
+        
         }
     }
 }

@@ -22,6 +22,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
@@ -66,7 +67,7 @@ public class Drivetrain {
     public static double maxVoltage = 12.5;
     // Create new instance.
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
-    public static FFConstants FF_CONSTANTS = new FFConstants();
+    public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -489,13 +490,11 @@ public class Drivetrain {
         public PIDConstants headingPIDConstants = new PIDConstants(5, 0, 0);
     }
 
-    public static class FFConstants {
-        public double kA = 0.01;
-        public double kV = 0.0225;
-        public double kSlf = 0.067;
-        public double kSlb = 0.067;
-        public double kSrb = 0.067;
-        public double kSrf = 0.067;
+    public static class FFConstantsController {
+        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.67);
     }
 
     public static class MechanicalParameters {

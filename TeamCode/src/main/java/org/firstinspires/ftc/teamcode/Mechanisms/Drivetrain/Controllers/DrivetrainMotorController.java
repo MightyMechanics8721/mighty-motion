@@ -29,12 +29,15 @@ public class DrivetrainMotorController {
     public double uRf = 0;
     public Battery battery;
 
-    public DrivetrainMotorController(HardwareMap hardwareMap, Drivetrain.FFConstants ffConstants) {
+    public DrivetrainMotorController(
+            HardwareMap hardwareMap,
+            Drivetrain.FFConstantsController ffConstants
+    ) {
         this.voltageSensor = hardwareMap.voltageSensor.iterator().next();
-        this.ffLfm = new FeedForward(ffConstants.kV, ffConstants.kA, ffConstants.kSlf);
-        this.ffLbm = new FeedForward(ffConstants.kV, ffConstants.kA, ffConstants.kSlb);
-        this.ffRbm = new FeedForward(ffConstants.kV, ffConstants.kA, ffConstants.kSrb);
-        this.ffRfm = new FeedForward(ffConstants.kV, ffConstants.kA, ffConstants.kSrf);
+        this.ffLfm = new FeedForward(ffConstants.lf);
+        this.ffLbm = new FeedForward(ffConstants.lb);
+        this.ffRbm = new FeedForward(ffConstants.rb);
+        this.ffRfm = new FeedForward(ffConstants.rf);
         this.battery = new Battery(hardwareMap);
     }
 

@@ -6,18 +6,18 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Config
-@Autonomous(group = "A", name = "MotorPidTest")
-public class MotorPidTest extends LinearOpMode {
-    public static double desiredVelocity = 2700;
+@Autonomous(group = "Tune", name = "TuneShooter")
+public class ShooterTest extends LinearOpMode {
+    public static double desiredVelocity = 3000;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        PidMotor pidMotor = new PidMotor(hardwareMap);
+        Shooter shooter = new Shooter(hardwareMap);
 
         waitForStart();
 
         while (opModeIsActive()) {
-            Actions.runBlocking(pidMotor.motorSpin(desiredVelocity));
+            Actions.runBlocking(shooter.motorSpin(desiredVelocity));
         }
     }
 }

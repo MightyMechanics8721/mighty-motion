@@ -18,7 +18,11 @@ public class GeometricController {
     public static double lookAheadTheta = 20;
     public boolean useStaticHeading = false;
     public PoseController poseControl
-            = new PoseController(Drivetrain.poseConstants);
+            = new PoseController(
+            Drivetrain.POSE_CONSTANTS.xPIDConstants,
+            Drivetrain.POSE_CONSTANTS.yPIDConstants,
+            Drivetrain.POSE_CONSTANTS.headingPIDConstants
+    );
     int lastIndexXY = 0;
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;

@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PIDConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PoseConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 
 public class PID {
     public double kP;

@@ -3,9 +3,8 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PoseConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID.functionType;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
@@ -34,6 +33,16 @@ public class PoseController {
         this.xPID = new PID(poseConstants.xPID, functionType.SQRT);
         this.yPID = new PID(poseConstants.yPID, functionType.SQRT);
         this.tPID = new PID(poseConstants.thetaPID, functionType.SQRT);
+    }
+
+    public PoseController(
+            PIDConstants xPIDConstants,
+            PIDConstants yPIDConstants,
+            PIDConstants headingPIDConstants
+    ) {
+        this.xPID = new PID(xPIDConstants, functionType.SQRT);
+        this.yPID = new PID(yPIDConstants, functionType.SQRT);
+        this.tPID = new PID(headingPIDConstants, functionType.SQRT);
     }
 
     /**

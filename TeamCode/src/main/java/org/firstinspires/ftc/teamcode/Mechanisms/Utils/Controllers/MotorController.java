@@ -22,6 +22,13 @@ public class MotorController {
     private double maxVoltage;
     private Encoder encoder;
 
+    private PID velocityPidController;
+
+    private FeedForward velocityFeedForwardController;
+
+    private PIDConstants velocityPIDConstants;
+
+    private FeedForwardConstants velocityFeedForwardConstants;
 
     //CHOICE 3:
     public MotorController(HardwareMap hardwareMap, String[] motorNames) {
@@ -97,17 +104,41 @@ public class MotorController {
         }
     }
 
+    public void setVelocity(double targetVelocity) {
 
-//    public MotorController(HardwareMap hardwareMap, String[] motorNames, String encoderNames, Battery battery, double maxVoltage) {
-//        for (String motorName : motorNames) {
-//            this.motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName), battery, maxVoltage));
-//        }
-//    }
-//
+        double power = FeedForward.calculate(targetVelocity, 0);
+        if (encoder != null) {
+
+            double currentVelocity = encoder.getVelocity();
+            power += PID.calculate(currentVelocity, targetVelocity);
+            setPower(power);
+
+        } else if (encoder == null) {
+
+            setPower(power);
+
+        }
 
 
-//    public MotorController(HardwareMap hardwareMap, Battery battery, double maxVoltage, String motorName) {
+    }
 
+    public void setVelocity(double[] targetVelocities) {
+        for (DcMotorAdvanced motor : motors.values()) {
+            if (encoder != null) {
+
+                double currentVelocity = encoder.getVelocity();
+                power += PID.calculate(currentVelocity, targetVelocities);
+                setPower(power);
+
+            } else if (encoder == null) {
+
+                setPower(power);
+
+            }
+
+        }
+
+    }
 
 }
 

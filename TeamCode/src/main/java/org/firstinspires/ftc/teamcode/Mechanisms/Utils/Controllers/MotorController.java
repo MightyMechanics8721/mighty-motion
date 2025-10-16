@@ -12,6 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class MotorController {
 
     private PIDConstants velocityPIDConstants;
 
-    private FeedForwardConstants velocityFeedForwardConstants;
+    private FFConstants velocityFeedForwardConstants;
 
     //CHOICE 3:
     public MotorController(HardwareMap hardwareMap, String[] motorNames) {

@@ -21,7 +21,7 @@ public class LowPassFilter {
     /**
      * Update filter with a new input value.
      *
-     * @param rawValue the latest measurement
+     * @param rawValue (double) the latest measurement
      *
      * @return filtered output
      */
@@ -32,7 +32,7 @@ public class LowPassFilter {
     }
 
     /**
-     * Reset filter to a specific value.
+     * Reset filter (double value) to a specific value.
      */
     public void reset(double value) {
         this.prevFilteredValue = value;

@@ -16,40 +16,60 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
 @Config
 public class DcMotorAdvanced {
+    public static double acceptablePowerDifference = 0.000001;
+    public double previousPower = 0;
     private DcMotorEx motor;
     private double batteryVoltage;
     private double maxVoltage;
-    public double previousPower=0;
-    public static double acceptablePowerDifference = 0.000001;
     private Battery battery;
-    public DcMotorAdvanced(DcMotorEx motor, Battery battery, double maxVoltage){
+
+    public DcMotorAdvanced(DcMotorEx motor, Battery battery, double maxVoltage) {
         this.motor = motor;
         this.battery = battery;
         this.batteryVoltage = battery.getVoltage();
         this.maxVoltage = maxVoltage;
     }
-    public void setPower(double power){
-//        setVoltage();
-        batteryVoltage = battery.getVoltage();
-        if (Math.abs(power - previousPower) > acceptablePowerDifference) {
-            motor.setPower(maxVoltage/batteryVoltage*power);
-            previousPower = power;
-        }
+
+    public DcMotorAdvanced(DcMotorEx motor) {
+        this.motor = motor;
+
     }
 
-    public void setVoltage(){
+    public void setVoltage() {
         batteryVoltage = battery.getVoltage();
     }
+
     public double getPower() {
         return motor.getPower();
     }
 
-    public void setDirection(DcMotorSimple.Direction direction) {
-        motor.setDirection(direction);
+    public void setPower(double power) {
+//        setVoltage();
+
+        if (Math.abs(power - previousPower) > acceptablePowerDifference) {
+
+            if (this.battery != null) {
+
+                batteryVoltage = battery.getVoltage();
+                motor.setPower(maxVoltage / batteryVoltage * power);
+
+            } else if (this.battery == null) {
+
+                motor.setPower(power);
+
+
+            }
+            previousPower = power;
+
+        }
     }
 
     public DcMotorSimple.Direction getDirection() {
         return motor.getDirection();
+    }
+
+    public void setDirection(DcMotorSimple.Direction direction) {
+        motor.setDirection(direction);
     }
 
     public void setMotorEnable() {
@@ -64,15 +84,17 @@ public class DcMotorAdvanced {
         return motor.isMotorEnabled();
     }
 
-    public void setVelocity(double angularRate) {
-        motor.setVelocity(angularRate);
-    }
-
     public void setVelocity(double angularRate, AngleUnit unit) {
         motor.setVelocity(angularRate, unit);
     }
 
-    public double getVelocity() { return motor.getVelocity(); }
+    public double getVelocity() {
+        return motor.getVelocity();
+    }
+
+    public void setVelocity(double angularRate) {
+        motor.setVelocity(angularRate);
+    }
 
     public double getVelocity(AngleUnit unit) {
         return motor.getVelocity(unit);
@@ -99,12 +121,12 @@ public class DcMotorAdvanced {
         return motor.getPIDFCoefficients(mode);
     }
 
-    public void setTargetPositionTolerance(int tolerance) {
-        motor.setTargetPositionTolerance(tolerance);
-    }
-
     public int getTargetPositionTolerance() {
         return motor.getTargetPositionTolerance();
+    }
+
+    public void setTargetPositionTolerance(int tolerance) {
+        motor.setTargetPositionTolerance(tolerance);
     }
 
     public double getCurrent(CurrentUnit unit) {
@@ -139,12 +161,12 @@ public class DcMotorAdvanced {
         return motor.getPortNumber();
     }
 
-    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
-        motor.setZeroPowerBehavior(zeroPowerBehavior);
-    }
-
     public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() {
         return motor.getZeroPowerBehavior();
+    }
+
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        motor.setZeroPowerBehavior(zeroPowerBehavior);
     }
 
     public void setPowerFloat() {
@@ -155,24 +177,24 @@ public class DcMotorAdvanced {
         return motor.getPowerFloat();
     }
 
-    public void setTargetPosition(int position) {
-        motor.setTargetPosition(position);
-    }
-
     public int getTargetPosition() {
         return motor.getTargetPosition();
+    }
+
+    public void setTargetPosition(int position) {
+        motor.setTargetPosition(position);
     }
 
     public boolean isBusy() {
         return motor.isBusy();
     }
 
-    public void setMode(DcMotor.RunMode mode) {
-        motor.setMode(mode);
-    }
-
     public DcMotor.RunMode getMode() {
         return motor.getMode();
+    }
+
+    public void setMode(DcMotor.RunMode mode) {
+        motor.setMode(mode);
     }
 
     public HardwareDevice.Manufacturer getManufacturer() {

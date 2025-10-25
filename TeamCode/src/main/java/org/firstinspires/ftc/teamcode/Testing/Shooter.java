@@ -12,17 +12,17 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Shooter extends PidMotor {
     // Variables
     public static double TICKS_PER_REV = 28;
-    public static double Kp = 0.0075;
+    public static double Kp = 0.00005;
     public static double Ki = 0;
     public static double Kd = 0;
     // Hardware
-    private DcMotorEx shooterLeft;
-    private DcMotorEx shooterRight;
+    protected DcMotorEx shooterLeft;
+    protected DcMotorEx shooterRight;
 
     public Shooter(HardwareMap hardwareMap) {
-        super(hardwareMap, Kp, Ki, Kd, TICKS_PER_REV);
+        super(hardwareMap, "shooterLeft", Kp, Ki, Kd, TICKS_PER_REV);
         this.hardwareMap = hardwareMap;
-        shooterLeft = hardwareMap.get(DcMotorEx.class, "ShooterLeft");
+        shooterLeft = hardwareMap.get(DcMotorEx.class, "shooterLeft");
         motorPid = shooterLeft;
 
         shooterRight = hardwareMap.get(DcMotorEx.class, "shooterRight");
@@ -42,14 +42,14 @@ public class Shooter extends PidMotor {
                 shooterLeft.setPower(power);
                 shooterRight.setPower(power);
                 // NEGATIVE POWER BECAUSE REVERSED
-                telemetryPacket.put("Velocity", motorPid.getVelocity() / TICKS_PER_REV);
-                telemetryPacket.put("Ticks", motorPid.getCurrentPosition());
-                telemetryPacket.put("A Target", desiredVelocity);
-                telemetryPacket.put("B Current", calculateVelocity());
-                telemetryPacket.put("C Power", power);
+                telemetryPacket.put("E Velocity (RPS)", motorPid.getVelocity() / TICKS_PER_REV);
+                telemetryPacket.put("D Ticks", motorPid.getCurrentPosition());
+                telemetryPacket.put("A Target Velocity (RPM)", desiredVelocity);
+                telemetryPacket.put("B Current Velocity (RPM)", calculateVelocity());
+                telemetryPacket.put("C Motor Power", power);
 
                 // finish once close to target
-                return Math.abs(desiredVelocity - calculateVelocity()) < 1;
+                return false;
             }
         };
     }

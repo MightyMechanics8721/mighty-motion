@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class PidMotor {
     // Variables
     public static double TICKS_PER_REV = 28;
-    public static double Kp = 0.0075;
+    public static double Kp = 1;
     public static double Ki = 0;
     public static double Kd = 0;
     //Hardware
@@ -20,14 +20,14 @@ public class PidMotor {
     protected PID pid;
     HardwareMap hardwareMap;
 
-    public PidMotor(HardwareMap hardwareMap, double Kp, double Ki, double Kd, double TICKS_PER_REV) {
+    public PidMotor(HardwareMap hardwareMap, String motorName, double Kp, double Ki, double Kd, double TICKS_PER_REV) {
         this.hardwareMap = hardwareMap;
         pid = new PID(Kp, Ki, Kd, PID.functionType.LINEAR);
-        motorPid = hardwareMap.get(DcMotorEx.class, "motorLeft");
-        this.TICKS_PER_REV = TICKS_PER_REV;
-        this.Kp = Kp;
-        this.Ki = Ki;
-        this.Kd = Kd;
+        motorPid = hardwareMap.get(DcMotorEx.class, motorName);
+        PidMotor.TICKS_PER_REV = TICKS_PER_REV;
+        PidMotor.Kp = Kp;
+        PidMotor.Ki = Ki;
+        PidMotor.Kd = Kd;
 //        shooterRight = hardwareMap.get(DcMotorEx.class, "motorRight");
 
         motorPid.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -52,8 +52,8 @@ public class PidMotor {
      */
     public double setVelocity(double desiredVelocity) {
         double currentVelocity = calculateVelocity();
-        double output = pid.calculate(desiredVelocity, currentVelocity);
-        return Range.clip(output, -1.0, 1.0);
+        return pid.calculate(desiredVelocity, currentVelocity);
+        //kV * desiredVelocity + output
     }
 
     /**

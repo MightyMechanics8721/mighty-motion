@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorControll
 @Autonomous(name = "Ethan Test", group = "Autonomous")
 public class OPMode extends LinearOpMode {
     public static double targetVelocity = 1000.0; // (RPM)
+    public static double targetVelocity2 = 5000.0;
 
     public static FFConstants feedforwardConstants = new FFConstants(0, 5000, 0);
     public static PIDConstants pidConstants = new PIDConstants(0, 0, 0);
@@ -37,7 +38,10 @@ public class OPMode extends LinearOpMode {
 //            motorController.setPower(new String[]{"f1"}, 0.10);
 //            motorController.setPower(new String[]{"f2"}, -0.10);
             //motorController.setPower(new double[]{0.5, 1.0});
-            motorController.setVelocity(targetVelocity * 0.10472);
+            motorController.setVelocity(new double[]{
+                    targetVelocity * 0.10472,   // first motor (f1)
+                    targetVelocity2 * 0.10472   // second motor (f2)
+            });
 
 
             // Create a telemetry packet for FTC Dashboard

@@ -177,12 +177,12 @@ public class MotorController {
      * @param powers
      */
     public void setPower(double[] powers) {
-        int position = 0;
+        int index = 0;
         for (DcMotorAdvanced motor : motors.values()) {
-            if (position < powers.length) {
-                motor.setPower(powers[position]);
+            if (index < powers.length) {
+                motor.setPower(powers[index]);
             }
-            position++;
+            index++;
         }
     }
 
@@ -222,11 +222,11 @@ public class MotorController {
      */
     public void setVelocity(double[] targetVelocities) {
 
-        int initialPosition = 0;
+        int index = 0;
         for (DcMotorAdvanced motor : motors.values()) {
-            double power = velocityFeedForwardController.calculate(targetVelocities[initialPosition], 0);
+            double power = velocityFeedForwardController.calculate(targetVelocities[index], 5);
             setPower(power);
-            initialPosition++;
+            index++;
         }
 
     }

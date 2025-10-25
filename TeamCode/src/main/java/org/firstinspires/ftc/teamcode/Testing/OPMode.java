@@ -27,17 +27,12 @@ public class OPMode extends LinearOpMode {
     public void runOpMode() {
         //setup variables
         MotorController motorController = new MotorController(hardwareMap, new String[]{"f1", "f2"}, "f1", 145.1);
-
         motorController.setVelocityFeedForwardConstants(feedforwardConstants);
         motorController.setVelocityPIDConstants(pidConstants);
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
         waitForStart();
         while (opModeIsActive()) {
-            //motorController.setPower(0.5);
-//            motorController.setPower(new String[]{"f1"}, 0.10);
-//            motorController.setPower(new String[]{"f2"}, -0.10);
-            //motorController.setPower(new double[]{0.5, 1.0});
             motorController.setVelocity(new double[]{
                     targetVelocity * 0.10472,   // first motor (f1)
                     targetVelocity2 * 0.10472   // second motor (f2)

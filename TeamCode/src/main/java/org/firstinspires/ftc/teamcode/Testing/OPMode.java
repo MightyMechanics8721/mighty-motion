@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorControll
 public class OPMode extends LinearOpMode {
     public static double targetVelocity = 1000.0; // (RPM)
 
-    public static FFConstants feedforwardConstants = new FFConstants(0, 0, 0);
+    public static FFConstants feedforwardConstants = new FFConstants(0, 5000, 0);
     public static PIDConstants pidConstants = new PIDConstants(0, 0, 0);
     protected double encoderResolution = 145.1;
     FtcDashboard dashboard;

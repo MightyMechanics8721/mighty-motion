@@ -19,8 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * MotorController manages one or multiple DC motors,
- * providing control for power, velocity, and PID/Feedforward tuning.
+ * Manages one or more DC motors with optional encoder feedback, PID control, and voltage compensation.
  */
 public class MotorController {
 
@@ -50,43 +49,59 @@ public class MotorController {
 
 
     /**
-     * Constructor: adds multiple motors from the hardware map
+     * Adds multiple motors from the hardware map.
      *
      * @param hardwareMap FTC hardware map
-     * @param motorNames  array of motor names
+     * @param motorNames  array of motor names to initialize
      */
     public MotorController(HardwareMap hardwareMap, String[] motorNames) {
-        // Loop through every name and create a new motor
         for (String motorName : motorNames) {
             this.motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName)));
         }
     }
 
     /**
-     * Constructor: adds a single motor from hardware map
+     * Adds one motor from the hardware map.
+     *
+     * @param hardwareMap FTC hardware map
+     * @param motorName   name of the motor
      */
     public MotorController(HardwareMap hardwareMap, String motorName) {
         this(hardwareMap, new String[]{motorName});
     }
 
     /**
-     * Constructor: multiple motors + encoder (for velocity control)
+     * Adds multiple motors and an encoder (used for velocity feedback).
+     *
+     * @param hardwareMap        FTC hardware map
+     * @param motorNames         array of motor names
+     * @param encoderName        name of encoder motor
+     * @param ticksPerRevolution encoder ticks per revolution
      */
     public MotorController(HardwareMap hardwareMap, String[] motorNames, String encoderName, double ticksPerRevolution) {
         this(hardwareMap, motorNames);
-        // Create encoder for measuring rotational velocity
         this.encoder = new Encoder(hardwareMap.get(DcMotorEx.class, encoderName), ticksPerRevolution);
     }
 
     /**
-     * Constructor: single motor + encoder
+     * Adds one motor and an encoder (used for velocity feedback).
+     *
+     * @param hardwareMap        FTC hardware map
+     * @param motorName          name of motor
+     * @param encoderName        name of encoder motor
+     * @param ticksPerRevolution encoder ticks per revolution
      */
     public MotorController(HardwareMap hardwareMap, String motorName, String encoderName, double ticksPerRevolution) {
         this(hardwareMap, new String[]{motorName}, encoderName, ticksPerRevolution);
     }
 
     /**
-     * Constructor: multiple motors + battery (for voltage compensation)
+     * Adds multiple motors with voltage compensation.
+     *
+     * @param hardwareMap FTC hardware map
+     * @param motorNames  array of motor names
+     * @param battery     battery reference for voltage compensation
+     * @param maxVoltage  max expected voltage for scaling power
      */
     public MotorController(HardwareMap hardwareMap, String[] motorNames, Battery battery, double maxVoltage) {
         for (String motorName : motorNames) {
@@ -95,14 +110,26 @@ public class MotorController {
     }
 
     /**
-     * Constructor: single motor + battery + voltage cap
+     * Adds one motor with voltage compensation.
+     *
+     * @param hardwareMap FTC hardware map
+     * @param motorName   name of motor
+     * @param battery     battery reference
+     * @param maxVoltage  max expected voltage
      */
     public MotorController(HardwareMap hardwareMap, String motorName, Battery battery, double maxVoltage) {
         this(hardwareMap, new String[]{motorName}, battery, maxVoltage);
     }
 
     /**
-     * Constructor: multiple motors + encoder + battery
+     * Adds multiple motors, encoder, and battery compensation.
+     *
+     * @param hardwareMap        FTC hardware map
+     * @param motorNames         array of motor names
+     * @param battery            battery reference
+     * @param maxVoltage         max expected voltage
+     * @param encoderName        name of encoder motor
+     * @param ticksPerRevolution encoder ticks per revolution
      */
     public MotorController(HardwareMap hardwareMap, String[] motorNames, Battery battery, double maxVoltage, String encoderName, double ticksPerRevolution) {
         this(hardwareMap, motorNames, battery, maxVoltage);
@@ -110,7 +137,14 @@ public class MotorController {
     }
 
     /**
-     * Constructor: single motor + encoder + battery
+     * Adds one motor, encoder, and battery compensation.
+     *
+     * @param hardwareMap        FTC hardware map
+     * @param motorName          name of motor
+     * @param battery            battery reference
+     * @param maxVoltage         max expected voltage
+     * @param encoderName        name of encoder motor
+     * @param ticksPerRevolution encoder ticks per revolution
      */
     public MotorController(HardwareMap hardwareMap, String motorName, Battery battery, double maxVoltage, String encoderName, double ticksPerRevolution) {
         this(hardwareMap, motorName, battery, maxVoltage);
@@ -118,17 +152,21 @@ public class MotorController {
     }
 
     /**
-     * Sets one power value to all motors
+     * Sets the same power to all motors.
+     *
+     * @param power power value (-1.0 to +1.0)
      */
     public void setPower(double power) {
-        // Loops through each motor and applies the same power
         for (DcMotorAdvanced motor : motors.values()) {
             motor.setPower(power);
         }
     }
 
     /**
-     * Sets the same power to specific motors only
+     * Sets the same power to specific motors.
+     *
+     * @param motorNames array of motor names
+     * @param power      power value (-1.0 to +1.0)
      */
     public void setPower(String[] motorNames, double power) {
         for (String motorName : motorNames) {
@@ -138,8 +176,10 @@ public class MotorController {
     }
 
     /**
-     * Sets individual power levels to each motor
-     * Index order in array must match motor order in HashMap
+     * Sets individual power values to each motor.
+     * Order in array matches insertion order in motor map.
+     *
+     * @param powers array of power values
      */
     public void setPower(double[] powers) {
         int index = 0;
@@ -152,44 +192,46 @@ public class MotorController {
     }
 
     /**
-     * Returns velocity measured by encoder (radians/sec or ticks/sec)
+     * Gets measured velocity from encoder.
+     *
+     * @return velocity in ticks/sec or rad/sec
      */
     public double getVelocity() {
         return this.encoder.getVelocity();
     }
 
     /**
-     * Sets one target velocity for all motors using PID + FeedForward
+     * Sets one target velocity for all motors using PID + FeedForward.
+     *
+     * @param targetVelocity desired velocity
      */
     public void setVelocity(double targetVelocity) {
-        // Base feedforward estimate (predictive power)
         double power = this.velocityFeedForwardController.calculate(targetVelocity, 0);
-
-        // If encoder exists, adjust power with PID correction
         if (this.encoder != null) {
             double currentVelocity = this.getVelocity();
             power += this.velocityPidController.calculate(currentVelocity, targetVelocity);
         }
-
-        // Apply power to all motors
         setPower(power);
     }
 
     /**
-     * Sets multiple target velocities to corresponding motors
+     * Sets individual target velocities to motors.
+     *
+     * @param targetVelocities array of velocities
      */
     public void setVelocity(double[] targetVelocities) {
         int index = 0;
         for (DcMotorAdvanced motor : motors.values()) {
-            // Predict power for each target velocity
             double power = velocityFeedForwardController.calculate(targetVelocities[index], 5);
-            setPower(power); // Apply computed power
+            setPower(power);
             index++;
         }
     }
 
     /**
-     * Configures feedforward controller using FF constants
+     * Applies feedforward control constants for velocity control.
+     *
+     * @param feedforwardConstants feedforward constants
      */
     public void setVelocityFeedForwardConstants(FFConstants feedforwardConstants) {
         this.velocityFeedForwardConstants = feedforwardConstants;
@@ -197,7 +239,9 @@ public class MotorController {
     }
 
     /**
-     * Configures PID controller for velocity control using constants
+     * Applies PID constants for velocity control.
+     *
+     * @param pidConstants PID constants
      */
     public void setVelocityPIDConstants(PIDConstants pidConstants) {
         this.velocityPIDConstants = pidConstants;

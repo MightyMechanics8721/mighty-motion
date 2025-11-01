@@ -5,16 +5,14 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
 
 @Config
-@Autonomous(name = "Ethan Test", group = "Autonomous")
-public class OPMode extends LinearOpMode {
+@Autonomous(name = "Motor Controller Test ", group = "Autonomous")
+public class TestMotorController extends LinearOpMode {
     public static double targetVelocity = 1000.0; // (RPM)
     public static double targetVelocity2 = 5000.0;
 

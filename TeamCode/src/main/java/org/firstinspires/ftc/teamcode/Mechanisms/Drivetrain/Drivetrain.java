@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.util.Util;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -112,8 +113,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
-     * @param battery     The Battery level of the Robot
+     * to which name
+     * @param battery The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -176,8 +177,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x     Initial X position (inches)
-     * @param y     Initial Y position (inches)
+     * @param x Initial X position (inches)
+     * @param y Initial Y position (inches)
      * @param theta Initial heading (radians)
      */
     public void setInitialPosition(double x, double y, double theta) {
@@ -222,7 +223,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -244,6 +245,7 @@ public class Drivetrain {
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
+     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
@@ -259,20 +261,34 @@ public class Drivetrain {
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
 
 
-
                 // 1) Get the x velocity and the y velocity
-                // 2) Plug in each velocity to each function to get the stopping distance of x and of y
-                // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop dist, 0]
+                // 2) Plug in each velocity to each function to get the stopping distance of x
+                // and of y
+                // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop
+                // dist, 0]
+
                 SimpleMatrix stopDistance = new SimpleMatrix(
                         new double[][]{
-                                new double[]{drivetrain.stoppingDistanceX(())},
-                                new double[]{1},
+                                new double[]{
+                                        Math.signum(state.get(3, 0)) * drivetrain.stoppingDistanceX(
+                                                Math.abs(state.get(3, 0)))
+                                },
+                                new double[]{
+                                        Math.signum(state.get(4, 0)) * drivetrain.stoppingDistanceY(
+                                                Math.abs(state.get(4, 0)))
+                                },
                                 new double[]{0}
                         }
                 );
                 // 4) Rotate this matrix to the global frame
+                SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
+                        stopDistance, state.get(
+                                2,
+                                0
+                        )
+                );
                 // 5) Add the result to the pose
-
+                pose = pose.plus(stopDistanceGlobal);
                 SimpleMatrix wheelSpeeds
                         = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                         pose,
@@ -319,6 +335,7 @@ public class Drivetrain {
      * movements.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
+     *
      * @return An Action that runs until the robot is within 10x distanceThreshold and
      * angleThreshold of the target.
      */
@@ -384,6 +401,7 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
+     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -478,6 +496,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -496,11 +515,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));
@@ -510,11 +529,11 @@ public class Drivetrain {
     }
 
     public static class PoseConstants {
-        public PIDConstants xPIDConstants = new PIDConstants(10.5, 0, 0);
+        public PIDConstants xPIDConstants = new PIDConstants(0, 0, 0);
 
-        public PIDConstants yPIDConstants = new PIDConstants(10.5, 0, 0);
+        public PIDConstants yPIDConstants = new PIDConstants(0, 0, 0);
 
-        public PIDConstants headingPIDConstants = new PIDConstants(5, 0, 0);
+        public PIDConstants headingPIDConstants = new PIDConstants(0.05, 0, 0);
     }
 
     public static class FFConstantsController {

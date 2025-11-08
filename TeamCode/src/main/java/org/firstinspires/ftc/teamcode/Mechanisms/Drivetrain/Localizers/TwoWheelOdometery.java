@@ -63,7 +63,10 @@ public class TwoWheelOdometery {
                 }
         );
 
-        SimpleMatrix robotRelativeVelocities = Utils.rotateGlobalToBody(globalRelativeTVelocities, odo.getHeading(AngleUnit.RADIANS));
+        SimpleMatrix robotRelativeVelocities = Utils.rotateGlobalToBody(
+                globalRelativeTVelocities,
+                odo.getHeading(AngleUnit.RADIANS)
+        );
 
         return new SimpleMatrix(
                 new double[][]{
@@ -74,7 +77,7 @@ public class TwoWheelOdometery {
                         new double[]{robotRelativeVelocities.get(1, 0)},
                         new double[]{robotRelativeVelocities.get(2, 0)},
 
-                }
+                        }
         );
     }
 

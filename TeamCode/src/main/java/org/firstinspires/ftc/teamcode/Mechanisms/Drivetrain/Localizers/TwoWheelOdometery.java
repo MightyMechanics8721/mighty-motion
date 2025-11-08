@@ -26,41 +26,51 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Sensors.GoBildaPinpointDriver;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
 @Config
 public class TwoWheelOdometery {
 
-    GoBildaPinpointDriver odo;
     public static double xOffset = -139.7; //MM
     public static double yOffset = -50.8; //MM
+    GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
-    public TwoWheelOdometery(HardwareMap hardwareMap){
+
+    public TwoWheelOdometery(HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
-        this.odo = hardwareMap.get(GoBildaPinpointDriver.class,"odo");
-        this.odo.setOffsets(xOffset, yOffset);
+        this.odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+        this.odo.setOffsets(xOffset, yOffset, DistanceUnit.INCH);
         this.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-            this.odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        this.odo.setEncoderDirections(
+                GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD
+        );
         this.odo.resetPosAndIMU();
     }
-        public SimpleMatrix calculate(){
-            odo.update();
-            return new SimpleMatrix(
-                    new double[][]{
-                            new double[]{odo.getPosition().getX(DistanceUnit.INCH)},
-                            new double[]{odo.getPosition().getY(DistanceUnit.INCH)},
-                            new double[]{odo.getHeading()},
-                            new double[]{odo.getVelocity().getX(DistanceUnit.INCH)},
-                            new double[]{odo.getVelocity().getY(DistanceUnit.INCH)},
-                            new double[]{odo.getHeadingVelocity()}
-                    }
-            );
-        }
-        public void resetPosAndRecalibrateIMU(){
-            odo.resetPosAndIMU();
-        }
-        public void reCalibrateIMU(){
-            odo.recalibrateIMU();
-        }
+
+    public SimpleMatrix calculate() {
+        odo.update();
+        return new SimpleMatrix(
+                new double[][]{
+                        new double[]{odo.getPosition().getX(DistanceUnit.INCH)},
+                        new double[]{odo.getPosition().getY(DistanceUnit.INCH)},
+                        new double[]{odo.getHeading(AngleUnit.RADIANS)},
+                        new double[]{odo.getVelX(DistanceUnit.INCH)},
+                        new double[]{odo.getVelY(DistanceUnit.INCH)},
+                        new double[]{odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)}
+                }
+        );
     }
+
+    public void resetPosAndRecalibrateIMU() {
+        odo.resetPosAndIMU();
+    }
+
+    public void reCalibrateIMU() {
+        odo.recalibrateIMU();
+    }
+}

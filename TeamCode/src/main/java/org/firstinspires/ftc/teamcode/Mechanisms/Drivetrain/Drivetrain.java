@@ -22,8 +22,9 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PIDConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Constants.PoseConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
@@ -64,23 +65,9 @@ public class Drivetrain {
      * The maximum Voltage the drivetrain could use at a time Used to save battery
      */
     public static double maxVoltage = 12.5;
-    // PID Constants for tuning via Dashboard.
-    public static double kPX = 10.5;
-    public static double kPY = 10.5;
-    public static double kPTheta = 5;
-    // Integral and derivative gains for all axes.
-    public static double kIX, kIY, kITheta = 0;
-    public static double kDX = 0;
-    public static double kDY = 0;
-    public static double kDTheta = 0;
-    public static PoseConstants poseConstants = new PoseConstants(
-            new PIDConstants(kPX, kIX, kDX),
-            new PIDConstants(kPY, kIY, kDY),
-            new PIDConstants(
-                    kPTheta, kITheta,
-                    kDTheta
-            )
-    );
+    // Create new instance.
+    public static PoseConstants POSE_CONSTANTS = new PoseConstants();
+    public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -109,7 +96,11 @@ public class Drivetrain {
             new double[]{0},
             new double[]{0}
     });
-    public PoseController poseControl = new PoseController(poseConstants);
+    public PoseController poseControl = new PoseController(
+            POSE_CONSTANTS.xPIDConstants,
+            POSE_CONSTANTS.yPIDConstants,
+            POSE_CONSTANTS.headingPIDConstants
+    );
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
@@ -124,7 +115,7 @@ public class Drivetrain {
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
-        this.motorController = new DrivetrainMotorController(hardwareMap);
+        this.motorController = new DrivetrainMotorController(hardwareMap, FF_CONSTANTS);
         this.twoWheelOdo = new TwoWheelOdometery(hardwareMap);
         this.geometricController = new GeometricController();
         this.mecanumKinematicModel = new MecanumKinematicModel(MECHANICAL_PARAMETERS);
@@ -154,7 +145,7 @@ public class Drivetrain {
         );
 
         this.motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        this.motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         this.motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         this.motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
         /**
@@ -489,6 +480,21 @@ public class Drivetrain {
                 return false;
             }
         };
+    }
+
+    public static class PoseConstants {
+        public PIDConstants xPIDConstants = new PIDConstants(10.5, 0, 0);
+
+        public PIDConstants yPIDConstants = new PIDConstants(10.5, 0, 0);
+
+        public PIDConstants headingPIDConstants = new PIDConstants(5, 0, 0);
+    }
+
+    public static class FFConstantsController {
+        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.67);
     }
 
     public static class MechanicalParameters {

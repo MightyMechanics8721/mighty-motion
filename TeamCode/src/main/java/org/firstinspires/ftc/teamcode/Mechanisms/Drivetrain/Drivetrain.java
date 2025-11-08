@@ -21,6 +21,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
@@ -110,8 +112,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     * to which name
-     * @param battery The Battery level of the Robot
+     *                    to which name
+     * @param battery     The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -167,13 +169,15 @@ public class Drivetrain {
         this.motorLeftBack.setPower(0);
         this.motorRightFront.setPower(0);
         this.motorRightBack.setPower(0);
+
+        this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
 
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x Initial X position (inches)
-     * @param y Initial Y position (inches)
+     * @param x     Initial X position (inches)
+     * @param y     Initial Y position (inches)
      * @param theta Initial heading (radians)
      */
     public void setInitialPosition(double x, double y, double theta) {
@@ -218,7 +222,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds Current Wheel Speed
+     * @param wheelSpeeds        Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -228,21 +232,47 @@ public class Drivetrain {
         setPower(motorController.calculate(wheelSpeeds, wheelAccelerations));
     }
 
+    private double stoppingDistanceX(double xVelocity) {
+        return 0.0932 * xVelocity + 0.00124 * xVelocity * xVelocity;
+    }
+
+    private double stoppingDistanceY(double yVelocity) {
+        return 0.0832 * yVelocity + 0.00149 * yVelocity * yVelocity;
+    }
+
     /**
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
     public Action goToPose(SimpleMatrix desiredPose) {
+        Drivetrain drivetrain = this;
+
         //Rename goToPosition
         return new Action() {
+
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 localize();
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+
+
+
+                // 1) Get the x velocity and the y velocity
+                // 2) Plug in each velocity to each function to get the stopping distance of x and of y
+                // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop dist, 0]
+                SimpleMatrix stopDistance = new SimpleMatrix(
+                        new double[][]{
+                                new double[]{drivetrain.stoppingDistanceX(())},
+                                new double[]{1},
+                                new double[]{0}
+                        }
+                );
+                // 4) Rotate this matrix to the global frame
+                // 5) Add the result to the pose
+
                 SimpleMatrix wheelSpeeds
                         = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                         pose,
@@ -289,7 +319,6 @@ public class Drivetrain {
      * movements.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
      * @return An Action that runs until the robot is within 10x distanceThreshold and
      * angleThreshold of the target.
      */
@@ -355,7 +384,6 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
-     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -450,7 +478,6 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
-     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -469,11 +496,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                                }
+                        }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                                              .scale(1 / denominator));
+                        .scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));

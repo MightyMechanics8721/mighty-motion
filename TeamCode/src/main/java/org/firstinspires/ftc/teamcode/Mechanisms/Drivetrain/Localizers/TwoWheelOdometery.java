@@ -29,6 +29,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
@@ -43,7 +44,7 @@ public class TwoWheelOdometery {
     public TwoWheelOdometery(HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
         this.odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
-        this.odo.setOffsets(xOffset, yOffset, DistanceUnit.INCH);
+        this.odo.setOffsets(xOffset, yOffset, DistanceUnit.MM);
         this.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         this.odo.setEncoderDirections(
                 GoBildaPinpointDriver.EncoderDirection.REVERSED,
@@ -54,14 +55,25 @@ public class TwoWheelOdometery {
 
     public SimpleMatrix calculate() {
         odo.update();
+        SimpleMatrix globalRelativeTVelocities = new SimpleMatrix(
+                new double[][]{
+                        new double[]{odo.getVelX(DistanceUnit.INCH)},
+                        new double[]{odo.getVelY(DistanceUnit.INCH)},
+                        new double[]{odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)}
+                }
+        );
+
+        SimpleMatrix robotRelativeVelocities = Utils.rotateGlobalToBody(globalRelativeTVelocities, odo.getHeading(AngleUnit.RADIANS));
+
         return new SimpleMatrix(
                 new double[][]{
                         new double[]{odo.getPosition().getX(DistanceUnit.INCH)},
                         new double[]{odo.getPosition().getY(DistanceUnit.INCH)},
                         new double[]{odo.getHeading(AngleUnit.RADIANS)},
-                        new double[]{odo.getVelX(DistanceUnit.INCH)},
-                        new double[]{odo.getVelY(DistanceUnit.INCH)},
-                        new double[]{odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)}
+                        new double[]{robotRelativeVelocities.get(0, 0)},
+                        new double[]{robotRelativeVelocities.get(1, 0)},
+                        new double[]{robotRelativeVelocities.get(2, 0)},
+
                 }
         );
     }

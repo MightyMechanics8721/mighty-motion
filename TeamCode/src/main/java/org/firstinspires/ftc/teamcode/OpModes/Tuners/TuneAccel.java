@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Tuners;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -22,6 +23,7 @@ public class TuneAccel extends LinearOpMode {
     double presentPos = 0;
     double lastPos;
     boolean isStopped = false;
+    double turn = 0;
 
     @Override
     public void runOpMode() {
@@ -32,6 +34,9 @@ public class TuneAccel extends LinearOpMode {
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
 
+        telemetry.addData("Current velocity (in/s)", drivetrain.state.get(4, 0));
+        telemetry.addData("Max Velocity", maxVelocity);
+
         waitForStart();
 
         while (opModeIsActive()) {
@@ -40,7 +45,7 @@ public class TuneAccel extends LinearOpMode {
             // Allow toggling reset mode
             if (gamepad1.circle) {
                 isReset = !isReset;
-                sleep(100); // prevent rapid toggling
+                sleep(1000); // prevent rapid toggling
             }
 
             if (isReset) {
@@ -49,17 +54,31 @@ public class TuneAccel extends LinearOpMode {
                 lastPos = 0;
                 isStopped = false;
                 maxVelocity = 0;
+                if (gamepad1.cross) {
+                    turn = gamepad1.left_stick_x;
+                    drivetrain.motorLeftFront.setPower(turn);
+                    drivetrain.motorLeftBack.setPower(turn);
+                    drivetrain.motorRightFront.setPower(-turn);
+                    drivetrain.motorRightBack.setPower(-turn);
+                    telemetry.addData("Turn", turn);
+                } else {
+                    turn = gamepad1.left_stick_y;
+                    drivetrain.motorLeftFront.setPower(turn);
+                    drivetrain.motorLeftBack.setPower(turn);
+                    drivetrain.motorRightFront.setPower(turn);
+                    drivetrain.motorRightBack.setPower(turn);
+                    telemetry.addData("Turn", turn);
+                }
             } else {
-                // Measure max velocity
-                if (maxVelocity < drivetrain.state.get(4, 0))
-                    maxVelocity = drivetrain.state.get(4, 0);
 
                 // Drive controls
                 if (gamepad1.triangle && !isStopped) {
-                    drivetrain.motorLeftFront.setPower(power);
+                    drivetrain.motorLeftFront.setPower(-power);
                     drivetrain.motorRightFront.setPower(power);
-                    drivetrain.motorRightBack.setPower(power);
+                    drivetrain.motorRightBack.setPower(-power);
                     drivetrain.motorLeftBack.setPower(power);
+
+
                 } else if (gamepad1.square && !isStopped) {
                     drivetrain.motorLeftFront.setPower(0);
                     drivetrain.motorRightFront.setPower(0);
@@ -67,13 +86,17 @@ public class TuneAccel extends LinearOpMode {
                     drivetrain.motorLeftBack.setPower(0);
                     isStopped = true;
                     timer.reset();
-                    stopPos = drivetrain.state.get(0, 0);
+                    stopPos = drivetrain.state.get(1, 0);
                 } else if (isStopped) {
-                    presentPos = drivetrain.state.get(0, 0);
+                    presentPos = drivetrain.state.get(1, 0);
 
                     telemetry.addData("Stopping distance", presentPos - stopPos);
                     telemetry.addData("Stopping time (s)", timer.seconds());
                 }
+            }
+
+            if (maxVelocity < drivetrain.state.get(4, 0)) {
+                maxVelocity = drivetrain.state.get(4, 0);
             }
 
             telemetry.addData("Current velocity (in/s)", drivetrain.state.get(4, 0));

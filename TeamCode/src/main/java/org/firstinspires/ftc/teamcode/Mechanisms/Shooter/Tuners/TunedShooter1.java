@@ -34,14 +34,12 @@ public class TunedShooter1 extends LinearOpMode {
 
 
         while (opModeIsActive()) {
-            s1.setVelocity(targetVelocity * 2 * Math.PI / 60.0);
-            // Create a telemetry packet for FTC Dashboard
 
+            s1.setVelocity(targetVelocity * 2 * Math.PI / 60.0);
             double velocity = s1.getVelocity();
             packet.put("Velocity (RPM)", velocity * 60.0 / (2 * Math.PI));
             dashboard.sendTelemetryPacket(packet);
 
-//            sleep(20); // small delay for smooth graphing
         }
 
 

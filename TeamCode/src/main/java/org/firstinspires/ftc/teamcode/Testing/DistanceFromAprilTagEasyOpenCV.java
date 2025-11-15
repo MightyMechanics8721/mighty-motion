@@ -34,6 +34,7 @@ public class DistanceFromAprilTagEasyOpenCV extends LinearOpMode {
                 .setDrawTagID(true)
                 .build();
 
+
         // Open the webcam through VisionPortal
         visionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))

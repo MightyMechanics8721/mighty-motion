@@ -5,6 +5,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+
 /**
  * Utility class to easily get the horizontal angle (tx)
  * from the Limelight to the detected AprilTag.
@@ -13,6 +14,7 @@ public class AprilTagUtils {
 
     private final Limelight3A limelight;
 
+
     /**
      * Initializes the utility with the Limelight instance.
      *
@@ -20,9 +22,10 @@ public class AprilTagUtils {
      * @param limelightName the configured name of your Limelight in the RC config
      */
     public AprilTagUtils(HardwareMap hardwareMap, String limelightName) {
-        limelight = hardwareMap.get(Limelight3A.class, limelightName);
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0); // switch to AprilTag pipeline
         limelight.start();
+
     }
 
     /**
@@ -38,6 +41,20 @@ public class AprilTagUtils {
         }
         return Double.NaN; // indicates no valid target
     }
+
+    public double getPos() {
+        LLResult result = limelight.getLatestResult();
+        if (result != null && result.isValid() && !result.getFiducialResults().isEmpty()) {
+            FiducialResult fiducial = result.getFiducialResults().get(0);
+            return fiducial.getTargetXDegrees();
+        }
+        return Double.NaN; // indicates no valid target
+    }
+
+
+
+
+
 
     /**
      * Checks whether a valid AprilTag is currently detected.

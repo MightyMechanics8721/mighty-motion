@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 
 public class MecanumKinematicModel {
-    public static double wheelRadius = 2.16535; // (in)
-    public static double longDistToAxles = 5.7; // (in) Longitudinal distance from center to axles
-    public static double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
 
     /**
      * <p>4×3 inverse-kinematics Jacobian matrix for a mecanum-drive robot.</p>
@@ -36,12 +34,37 @@ public class MecanumKinematicModel {
      */
     static SimpleMatrix inverseJacobian = new SimpleMatrix(
             new double[][]{
-                    new double[]{1d, -1d, -(longDistToAxles + latDistToAxles)},
-                    new double[]{1d, 1d, -(longDistToAxles + latDistToAxles)},
-                    new double[]{1d, -1d, (longDistToAxles + latDistToAxles)},
-                    new double[]{1d, 1d, (longDistToAxles + latDistToAxles)}
+                    new double[]{
+                            1d,
+                            -1d,
+                            -(Drivetrain.MechanicalParameters.longDistToAxles
+                                    + Drivetrain.MechanicalParameters.latDistToAxles)
+                    },
+                    new double[]{
+                            1d,
+                            1d,
+                            -(Drivetrain.MechanicalParameters.longDistToAxles
+                                    + Drivetrain.MechanicalParameters.latDistToAxles)
+                    },
+                    new double[]{
+                            1d,
+                            -1d,
+                            (Drivetrain.MechanicalParameters.longDistToAxles
+                                    + Drivetrain.MechanicalParameters.latDistToAxles)
+                    },
+                    new double[]{
+                            1d,
+                            1d,
+                            (Drivetrain.MechanicalParameters.longDistToAxles
+                                    + Drivetrain.MechanicalParameters.latDistToAxles)
+                    }
             }
     );
+    Drivetrain.MechanicalParameters mechanicalParameters;
+
+    public MecanumKinematicModel(Drivetrain.MechanicalParameters mechanicalParameters) {
+        this.mechanicalParameters = mechanicalParameters;
+    }
 
     /**
      * Computes the individual wheel angular velocities required to achieve a desired chassis
@@ -79,8 +102,9 @@ public class MecanumKinematicModel {
      * @throws IllegalStateException if {@code inverseJacobian} or {@code wheelRadius} has not been
      * initialized
      */
-    public static SimpleMatrix inverseKinematics(SimpleMatrix twist) {
-        SimpleMatrix wheelSpeeds = inverseJacobian.scale(1 / wheelRadius).mult(twist);
+    public SimpleMatrix inverseKinematics(SimpleMatrix twist) {
+        SimpleMatrix wheelSpeeds =
+                inverseJacobian.scale(1 / mechanicalParameters.wheelRadius).mult(twist);
         return wheelSpeeds;
     }
 }

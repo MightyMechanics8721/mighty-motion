@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
@@ -27,7 +29,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
@@ -56,6 +57,7 @@ public class Drivetrain {
     // Create new instance.
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
+
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -92,6 +94,8 @@ public class Drivetrain {
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
+    FtcDashboard ftcDashboard;
+    DebuggingParameters DEBUG = new DebuggingParameters();
     private MecanumKinematicModel mecanumKinematicModel;
 
     /**
@@ -156,6 +160,8 @@ public class Drivetrain {
         this.motorRightFront.setPower(0);
         this.motorRightBack.setPower(0);
 
+        this.ftcDashboard = FtcDashboard.getInstance();
+
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
 
@@ -177,8 +183,10 @@ public class Drivetrain {
      * locations. Updates the internal state matrix with the current estimated pose.
      */
     public void localize() {
-        state = initialState.plus(twoWheelOdo.calculate());
+        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        this.updateTelemetry();
     }
+
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change
@@ -451,28 +459,21 @@ public class Drivetrain {
         };
     }
 
-    /**
-     * Updates telemetry packet with current pose and motor power values. Useful for dashboard or
-     * driver station monitoring.
-     *
-     * @return An Action that always returns false (for continuous telemetry updates).
-     */
-    public Action updateTelemetry() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
-                packet.put("x", state.get(0, 0));
-                packet.put("y", state.get(1, 0));
-                packet.put("theta", state.get(2, 0));
-                packet.put("uLf", motorController.uLf);
-                packet.put("uLb", motorController.uLb);
-                packet.put("uRb", motorController.uRb);
-                packet.put("uRf", motorController.uRf);
+    public void updateTelemetry() {
+        if (!DebuggingParameters.debug) return;
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x position", state.get(0, 0));
+        packet.put("y position", state.get(1, 0));
+        packet.put("heading", state.get(2, 0));
+        packet.put("longitudinal Velocity", state.get(3, 0));
+        packet.put("lateral Velocity", state.get(4, 0));
+        packet.put("heading Velocity", state.get(5, 0));
 
-                return false;
-            }
-        };
+        // Draw robot
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawRobot(canvas, state);
+
+        ftcDashboard.sendTelemetryPacket(packet);
     }
 
     /**
@@ -534,6 +535,17 @@ public class Drivetrain {
         // (in) Longitudinal distance from center to axles
         public static double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
     }
+
+    /**
+     * Debugging parameters for the Drivetrain. Can turn telemetry printouts on/off globally.
+     */
+    public static class DebuggingParameters {
+        /**
+         * Set to true to enable telemetry printouts, false to disable
+         */
+        public static boolean debug = true;
+    }
+
 
     public static class ThresholdParameters {
         /**

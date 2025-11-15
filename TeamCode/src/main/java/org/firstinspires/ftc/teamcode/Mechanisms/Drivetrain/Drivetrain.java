@@ -5,6 +5,8 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
+
 import androidx.annotation.NonNull;
 
 import java.util.List;
@@ -94,6 +96,8 @@ public class Drivetrain {
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
 
     ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
+
+    MotionParameters MOTION_PARAMETERS = new MotionParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
     FtcDashboard ftcDashboard;
@@ -347,62 +351,52 @@ public class Drivetrain {
      * distanceThreshold.
      */
     public Action followPath(Path path) {
+        //        FtcDashboard ftcDashboard = FtcDashboard.getInstance();
+
         return new Action() {
-            ElapsedTime elapsedTimer = new ElapsedTime();
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 localize();
-                // Check if the distance between the current robot position (so maybe grab the
-                // pose from the state FIRST!)
-                // and the path's final waypoint is less than the geometricController's xy
-                // lookahead. If that is the case,
-                // you'd want to do what?
+                if ((Math.abs(Utils.calculateDistance(
+                        state.get(0, 0),
+                        state.get(1, 0),
+                        path.getFinalPoint()[0],
+                        path.getFinalPoint()[1]
+                )) < 12)) {
+                    packet.addLine("USING POSE CONTROLLER");
+                    return goToPose(makePoseVector(
+                            path.getFinalPoint()[0], path.getFinalPoint()[1],
+                            path.finalHeading
+                    )).run(packet);
+                }
+                packet.addLine("USING GEO CONTROLLER");
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                // Rename to desiredPose! It contains a heading too so furthestPoint is misleading!
+
                 SimpleMatrix desiredPose = geometricController.calculate(state, path);
                 SimpleMatrix wheelSpeeds =
                         mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                                 pose,
                                 desiredPose
                         ));
-                // not sure why you're using distanceThreshold here.
-                // it would be something like path.getMotionProfile.getVelocity(t), where t is an
-                // elapsed timer.
-                // ****This timer should started when you start following this path. Maybe you
-                // can put it above?
-                // It shouldn't have to be reset as it should be specific to the action where
-                // you're following the path.
-                double maxScale = path.getMotionProfile().getVelocity(elapsedTimer.seconds())
-                        / wheelSpeeds.elementMaxAbs(); // You also need to grab the maximum of
-                // the ABSOLUTE VALUE of all the wheel speeeds..
-                wheelSpeeds.scale(maxScale);
+
+                double maxScale = (MOTION_PARAMETERS.maxSpeed / MECHANICAL_PARAMETERS.wheelRadius)
+                        / wheelSpeeds.elementMaxAbs();
+
+                wheelSpeeds = wheelSpeeds.scale(maxScale);
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
 
-                // Please please please, write a function in drivetrain called isClose or
-                // something, which does this checking for you!!!
-                // replace it with that in both the goToPose and the followPath
-                if (!(Math.abs(Utils.calculateDistance(
+                return !(Math.abs(Utils.calculateDistance(
                         state.get(0, 0),
                         state.get(1, 0),
-                        wheelSpeeds.get(0, 0),
-                        wheelSpeeds.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold)) {
-                    if (Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                            < ThresholdParameters.angleThreshold) {
-                        setPower(stopMatrix);
-                    }
-                }
-                return Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        wheelSpeeds.get(0, 0),
-                        wheelSpeeds.get(1, 0)
-                )) > ThresholdParameters.distanceThreshold
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                        > ThresholdParameters.angleThreshold;
+                        desiredPose.get(0, 0),
+                        desiredPose.get(1, 0)
+                )) < ThresholdParameters.distanceThreshold
+                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
+                        < ThresholdParameters.angleThreshold);
             }
         };
     }
@@ -412,7 +406,7 @@ public class Drivetrain {
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("x position", state.get(0, 0));
         packet.put("y position", state.get(1, 0));
-        packet.put("heading", state.get(2, 0));
+        packet.put("heading", Math.toDegrees(state.get(2, 0)));
         packet.put("longitudinal Velocity", state.get(3, 0));
         packet.put("lateral Velocity", state.get(4, 0));
         packet.put("heading Velocity", state.get(5, 0));
@@ -460,6 +454,10 @@ public class Drivetrain {
                 return false;
             }
         };
+    }
+
+    public static class MotionParameters {
+        public double maxSpeed = 80.0; // (in/s)
     }
 
     public static class PoseConstants {

@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinema
 
 @Config
 public class GeometricController {
-    public static double lookAheadXY = 10;
-    public static double lookAheadTheta = 20;
+    public static double lookAheadXY = 5;
+    public static double lookAheadTheta = 10;
     public boolean useStaticHeading = false;
     public PoseController poseControl
             = new PoseController(
@@ -76,13 +76,13 @@ public class GeometricController {
         double x = pose.get(0, 0);
         double y = pose.get(1, 0);
         // Assuming you read my Path class feedback, might want to change to path.getWaypoints() :-)
-        double[][] wayPoints = path.getWaypoints();
+        double[][] xyPoints = path.getWaypoints();
 
         // rename to xyPoints to be consistent with thetaPoints!
         LinkedHashSet<double[]> furthestIntersectionPointXY = new LinkedHashSet<>();
         LinkedHashSet<double[]> furthestIntersectionPointTheta = new LinkedHashSet<>();
-        for (int i = lastIndexXY; i < wayPoints.length - 1; i++) {
-            double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadXY, wayPoints);
+        for (int i = lastIndexXY; i < xyPoints.length - 1; i++) {
+            double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadXY, xyPoints);
             if (!Arrays.equals(intersection, new double[]{-99999, -99999})) {
                 furthestIntersectionPointXY.add(intersection);
                 lastLookaheadXY = i;
@@ -92,11 +92,11 @@ public class GeometricController {
         // You may want to have a 'lastLookaheadXY' AND a 'lastLookaheadTheta' as they may not be
         // the same
         // Make sure to reset them both in the reset function
-        for (int i = lastIndexTheta; i < wayPoints.length - 1; i++) {
-            double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadTheta, wayPoints);
+        for (int i = lastIndexTheta; i < xyPoints.length - 1; i++) {
+            double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadTheta, xyPoints);
             if (!Arrays.equals(intersection, new double[]{-99999, -99999})) {
                 furthestIntersectionPointTheta.add(intersection);
-                lastIndexXY = i;
+                lastLookaheadTheta = i;
             }
         }
         lastIndexTheta = lastLookaheadTheta;
@@ -104,7 +104,7 @@ public class GeometricController {
             SimpleMatrix desiredPose = new SimpleMatrix(
                     new double[]{
                             path.getFinalPoint()[0],
-                            path.getFinalPoint()[0],
+                            path.getFinalPoint()[1],
                             path.finalHeading
                     }
             );
@@ -127,8 +127,8 @@ public class GeometricController {
             // You get furthestIntersectionPointTheta above for a reason. Use it to make this
             // more readable!
             desiredTheta = Math.atan2(
-                    (thetaArray.get(thetaArray.size() - 1)[1] - y),
-                    (thetaArray.get(thetaArray.size() - 1)[0] - x)
+                    (furthestPointTheta[1] - y),
+                    (furthestPointTheta[0] - x)
             );
             if (path.reverse) {
                 if (Math.signum(desiredTheta) == -1) {

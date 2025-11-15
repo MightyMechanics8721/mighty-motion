@@ -19,26 +19,40 @@ public class Path {
     // to make it more readaable just do things like:
     // this.waypoints = waypoints.
 
-    // Side note: I think the CLEARNER way would be to keep these private and make getters and setters for them.
-    // In fact, this should be done with most things but I've been lenient with you on it. However I think
+    // Side note: I think the CLEARNER way would be to keep these private and make getters and
+    // setters for them.
+    // In fact, this should be done with most things but I've been lenient with you on it.
+    // However I think
     // Path would be a great example of a class where getters and setters would amek things clean.
-    // so for example, you'd have private double[][] waypoints, and a getWaypoints() function. Instead of
+    // so for example, you'd have private double[][] waypoints, and a getWaypoints() function.
+    // Instead of
     // path.waypoints, you'd call path.getWaypoints()!
-    public Path(double[][] waypoints, MotionProfile motionProfile, double finalHeading, boolean reverse, boolean useStaticHeading){
+    public Path(
+            double[][] waypoints,
+            //MotionProfile motionProfile,
+            double finalHeading,
+            boolean reverse,
+            boolean useStaticHeading
+    ) {
         this.waypoints = waypoints;
-        this.motionProfile = motionProfile;
+        //this.motionProfile = motionProfile;
         this.finalHeading = finalHeading;
         this.reverse = reverse;
         this.useStaticHeading = useStaticHeading;
-        this.finalPoint = (double[]) Arrays.stream(waypoints).toArray()[waypoints.length];
+        this.finalPoint = (double[]) Arrays.stream(waypoints).toArray()[waypoints.length - 1];
         // Also, maybe to make it easy to reach, grab the final waypoint and actually set it here.
         // just grab the last element of waypoints and set it here!
     }
-    public MotionProfile getMotionProfile(){
-        return motionProfile;
-    }
-    public double[][] getWaypoints(){
+
+    //    public MotionProfile getMotionProfile() {
+    //        return motionProfile;
+    //    }
+
+    public double[][] getWaypoints() {
         return waypoints;
     }
-    public double[] getFinalPoint() {return finalPoint;}
+
+    public double[] getFinalPoint() {
+        return finalPoint;
+    }
 }

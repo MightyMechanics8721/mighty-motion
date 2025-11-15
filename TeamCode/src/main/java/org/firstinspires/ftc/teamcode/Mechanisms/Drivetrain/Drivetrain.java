@@ -50,21 +50,6 @@ import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 @Config
 public class Drivetrain {
     /**
-     * Acceptable difference between current and previous wheel power to make a hardware call Used
-     * to save battery
-     */
-    public static double acceptablePowerDifference = 0.000001;
-    /**
-     * Acceptable difference between wanted and current positions (Inches) to make a hardware call
-     * Used to save time & reduce unnecessary movements
-     */
-    public static double distanceThreshold = 0.25;
-    /**
-     * The acceptable difference between wanted and current angles (Radians) Used to save time &
-     * reduce unnecessary movements
-     */
-    public static double angleThreshold = 0.1;
-    /**
      * The maximum Voltage the drivetrain could use at a time Used to save battery
      */
     public static double maxVoltage = 12.5;
@@ -288,7 +273,7 @@ public class Drivetrain {
                         )
                 );
                 // 5) Add the result to the pose
-                pose = pose.plus(stopDistanceGlobal);
+                if (ThresholdParameters.stopPlanning) pose = pose.plus(stopDistanceGlobal);
                 SimpleMatrix wheelSpeeds
                         = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                         pose,
@@ -312,9 +297,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < distanceThreshold
+                )) < ThresholdParameters.distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold) {
+                        < ThresholdParameters.angleThreshold) {
                     setPower(stopMatrix);
                     packet.put("Done", "done");
                 }
@@ -323,9 +308,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < distanceThreshold
+                )) < ThresholdParameters.distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold);
+                        < ThresholdParameters.angleThreshold);
             }
         };
     }
@@ -369,9 +354,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < distanceThreshold * 10
+                )) < ThresholdParameters.distanceThreshold * 10
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold) {
+                        < ThresholdParameters.angleThreshold) {
                     setPower(stopMatrix);
                     packet.put("Done", "done");
                 }
@@ -380,9 +365,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < distanceThreshold * 10
+                )) < ThresholdParameters.distanceThreshold * 10
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold);
+                        < ThresholdParameters.angleThreshold);
             }
         };
     }
@@ -448,9 +433,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         wheelSpeeds.get(0, 0),
                         wheelSpeeds.get(1, 0)
-                )) < distanceThreshold)) {
+                )) < ThresholdParameters.distanceThreshold)) {
                     if (Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                            < angleThreshold) {
+                            < ThresholdParameters.angleThreshold) {
                         setPower(stopMatrix);
                     }
                 }
@@ -459,9 +444,9 @@ public class Drivetrain {
                         state.get(1, 0),
                         wheelSpeeds.get(0, 0),
                         wheelSpeeds.get(1, 0)
-                )) > distanceThreshold
+                )) > ThresholdParameters.distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                        > angleThreshold;
+                        > ThresholdParameters.angleThreshold;
             }
         };
     }
@@ -529,18 +514,18 @@ public class Drivetrain {
     }
 
     public static class PoseConstants {
-        public PIDConstants xPIDConstants = new PIDConstants(0, 0, 0);
+        public PIDConstants xPIDConstants = new PIDConstants(30, 0, 0);
 
-        public PIDConstants yPIDConstants = new PIDConstants(0, 0, 0);
+        public PIDConstants yPIDConstants = new PIDConstants(35, 0, 0);
 
-        public PIDConstants headingPIDConstants = new PIDConstants(0.05, 0, 0);
+        public PIDConstants headingPIDConstants = new PIDConstants(6, 0, 0);
     }
 
     public static class FFConstantsController {
-        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.067);
     }
 
     public static class MechanicalParameters {
@@ -548,5 +533,24 @@ public class Drivetrain {
         public static double longDistToAxles = 5.7;
         // (in) Longitudinal distance from center to axles
         public static double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
+    }
+
+    public static class ThresholdParameters {
+        /**
+         * Acceptable difference between current and previous wheel power to make a hardware call
+         * Used to save battery
+         */
+        public static double acceptablePowerDifference = 0.000001;
+        /**
+         * Acceptable difference between wanted and current positions (Inches) to make a hardware
+         * call Used to save time & reduce unnecessary movements
+         */
+        public static double distanceThreshold = 0.25;
+        /**
+         * The acceptable difference between wanted and current angles (Radians) Used to save time &
+         * reduce unnecessary movements
+         */
+        public static double angleThreshold = 0.1;
+        public static boolean stopPlanning = true;
     }
 }

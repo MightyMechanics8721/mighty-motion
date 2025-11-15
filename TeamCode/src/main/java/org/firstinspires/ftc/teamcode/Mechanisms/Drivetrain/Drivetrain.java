@@ -92,6 +92,8 @@ public class Drivetrain {
             POSE_CONSTANTS.headingPIDConstants
     );
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
+
+    ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
     FtcDashboard ftcDashboard;
@@ -242,7 +244,10 @@ public class Drivetrain {
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
-    public Action goToPose(SimpleMatrix desiredPose) {
+    public Action goToPose(
+            SimpleMatrix desiredPose, double distanceThreshold,
+            double angleThreshold
+    ) {
         Drivetrain drivetrain = this;
 
         //Rename goToPosition
@@ -291,23 +296,14 @@ public class Drivetrain {
                 //                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
-                packet.put("X", state.get(0, 0));
-                packet.put("Y", state.get(1, 0));
-                packet.put("Theta", Math.toDegrees(state.get(2, 0)));
-                packet.put("X Velocity", state.get(3, 0));
-                packet.put("Y Velocity", state.get(4, 0));
-                packet.put("Theta Velocity", state.get(5, 0));
-                packet.put("PID X", wheelSpeeds.get(0, 0));
-                packet.put("PID Y", wheelSpeeds.get(1, 0));
-                packet.put("PID Theta", wheelSpeeds.get(2, 0));
                 if (Math.abs(Utils.calculateDistance(
                         state.get(0, 0),
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold
+                )) < distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < ThresholdParameters.angleThreshold) {
+                        < angleThreshold) {
                     setPower(stopMatrix);
                     packet.put("Done", "done");
                 }
@@ -318,66 +314,18 @@ public class Drivetrain {
                         desiredPose.get(1, 0)
                 )) < ThresholdParameters.distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < ThresholdParameters.angleThreshold);
+                        < angleThreshold);
             }
         };
     }
 
-    /**
-     * Variation of goToPose with higher tolerance for error. Used for faster, less precise
-     * movements.
-     *
-     * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
-     * @return An Action that runs until the robot is within 10x distanceThreshold and
-     * angleThreshold of the target.
-     */
-    public Action goToPoseImpresice(SimpleMatrix desiredPose) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
-                packet.put("Done", "no");
-                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                SimpleMatrix wheelSpeeds
-                        = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
-                        pose,
-                        desiredPose
-                ));
-                SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-                //                deltaT.reset();
-                setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
-                prevWheelSpeeds = wheelSpeeds;
-                packet.put("X", state.get(0, 0));
-                packet.put("Y", state.get(1, 0));
-                packet.put("Theta", Math.toDegrees(state.get(2, 0)));
-                packet.put("X Velocity", state.get(3, 0));
-                packet.put("Y Velocity", state.get(4, 0));
-                packet.put("Theta Velocity", state.get(5, 0));
-                packet.put("PID X", wheelSpeeds.get(0, 0));
-                packet.put("PID Y", wheelSpeeds.get(1, 0));
-                packet.put("PID Theta", wheelSpeeds.get(2, 0));
-                if (Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold * 10
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < ThresholdParameters.angleThreshold) {
-                    setPower(stopMatrix);
-                    packet.put("Done", "done");
-                }
-                return !(Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold * 10
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < ThresholdParameters.angleThreshold);
-            }
-        };
+    public Action goToPose(
+            SimpleMatrix desiredPose
+    ) {
+        return this.goToPose(
+                desiredPose, this.THRESHOLD_PARAMETERS.distanceThreshold,
+                this.THRESHOLD_PARAMETERS.angleThreshold
+        );
     }
 
     /**

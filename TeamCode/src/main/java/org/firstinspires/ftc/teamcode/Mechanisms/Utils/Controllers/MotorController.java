@@ -210,7 +210,7 @@ public class MotorController {
         double power = this.velocityFeedForwardController.calculate(targetVelocity, 0);
         if (this.encoder != null) {
             double currentVelocity = this.getVelocity();
-            power += this.velocityPidController.calculate(currentVelocity, targetVelocity);
+            power += this.velocityPidController.calculate(targetVelocity, currentVelocity);
         }
         setPower(power);
     }
@@ -249,11 +249,11 @@ public class MotorController {
         this.velocityPidController = new PID(pidConstants, PID.functionType.LINEAR);
     }
 
-//    public void setMotorDirection(String motorName, DcMotorSimple.Direction direction) {
-//
-//        // use the hash map of motors and then make the call below correctly
-//
-//        this.motors.get(motorName).setDirection(direction);
-//
-//    }
+    public void setMotorDirection(String motorName, DcMotorSimple.Direction direction) {
+
+        // use the hash map of motors and then make the call below correctly
+
+        this.motors.get(motorName).setDirection(direction);
+
+    }
 }

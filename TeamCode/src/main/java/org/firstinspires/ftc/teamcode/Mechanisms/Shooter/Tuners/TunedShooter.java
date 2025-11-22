@@ -36,8 +36,8 @@ public class TunedShooter extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            s1.setVelocity(targetVelocity * 2 * Math.PI / 60.0);
-            double velocity = s1.getVelocity();
+            shooter.setVelocity(targetVelocity * 2 * Math.PI / 60.0);
+            double velocity = shooter.getVelocity();
             packet.put("Velocity (RPM)", velocity * 60.0 / (2 * Math.PI));
             packet.put("Target Velocity (RPM)", targetVelocity);
             dashboard.sendTelemetryPacket(packet);

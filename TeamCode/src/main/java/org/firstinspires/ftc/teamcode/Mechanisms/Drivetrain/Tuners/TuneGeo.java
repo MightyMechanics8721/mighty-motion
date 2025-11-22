@@ -51,30 +51,8 @@ public class TuneGeo extends LinearOpMode {
         telemetry.update();
         waitForStart();
         looptime.reset();
-        double[][] coords = {{0, 0}, {48, 0}, {0, -24}};
-        Path path = new Path(coords, 0, false, false);
-
-
-        //while (opModeIsActive()) {
+        double[][] coords = {{0, 0}, {24, 0}, {24, -24}, {72, -24}, {72, 0}};
+        Path path = new Path(coords, 90, false, false);
         Actions.runBlocking(drivetrain.followPath(path));
-        //            SimpleMatrix desiredPose = new SimpleMatrix(
-        //                    new double [][]{
-        //                            new double[]{desiredX},
-        //                            new double[]{desiredY},
-        //                            new double[]{Math.toRadians(desiredTheta)}
-        //                    }
-        //            );
-        //            drivetrain.localize();
-        //drivetrain.goToPose(desiredPose);
-        //        dashboard.sendTelemetryPacket(tracking.updatePos(drivetrain.state.get(0, 0),
-        //        drivetrain.state.get(1, 0), drivetrain.state.get(2, 0)));
-        //            TelemetryPacket packet = new TelemetryPacket();
-        //            packet.fieldOverlay();
-        //            packet.put("x", drivetrain.state.get(0,0));
-        //            packet.put("y", drivetrain.state.get(1,0));
-        //            packet.put("heading", drivetrain.state.get(2,0));
-        //            telemetry.update();
-        //            looptime.reset();
-        //}
     }
 }

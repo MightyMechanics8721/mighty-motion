@@ -5,7 +5,7 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.Arrays;
 
 
-class ProfiledPathGenerator {
+public class ProfiledPathGenerator {
     public static double[][] generatePath(SimpleMatrix rawWaypoints) {
         // Get little n
         int n = rawWaypoints.getNumRows() - 1;
@@ -43,8 +43,10 @@ class ProfiledPathGenerator {
 
     /**
      * Generates the constraints to connect the different polynomials.
+     *
      * @param n (int) Number of polynomials to create
      * @param rawWaypoints (SimpleMatrix) Waypoints entered by the user
+     *
      * @return (SimpleMatrix[]) The A and b matrices associated with these constraints
      */
     private static SimpleMatrix[] constructContinuityConstraints(int n, SimpleMatrix rawWaypoints) {
@@ -135,16 +137,32 @@ class ProfiledPathGenerator {
 
         for (int i = 0; i < equations.length; i++) {
             for (int j = 0; j <= N; j++) {
-                double sumX = equations[i][0] * Math.pow(T[j], 3) + equations[i][1] * Math.pow(T[j], 2) + equations[i][2] * T[j] + equations[i][3];
+                double sumX = equations[i][0] * Math.pow(T[j], 3) + equations[i][1] * Math.pow(
+                        T[j],
+                        2
+                ) + equations[i][2] * T[j] + equations[i][3];
                 points.set(0, N * i + j, sumX);
 
-                double sumY = equations[i][4] * Math.pow(T[j], 3) + equations[i][5] * Math.pow(T[j], 2) + equations[i][6] * T[j] + equations[i][7];
+                double sumY = equations[i][4] * Math.pow(T[j], 3) + equations[i][5] * Math.pow(
+                        T[j],
+                        2
+                ) + equations[i][6] * T[j] + equations[i][7];
                 points.set(1, N * i + j, sumY);
             }
         }
 
-        points.set(0, N * n, equations[n - 1][0] + equations[n - 1][1] + equations[n - 1][2] + equations[n - 1][3]);
-        points.set(1, N * n, equations[n - 1][4] + equations[n - 1][5] + equations[n - 1][6] + equations[n - 1][7]);
+        points.set(
+                0,
+                N * n,
+                equations[n - 1][0] + equations[n - 1][1] + equations[n - 1][2] + equations[n
+                        - 1][3]
+        );
+        points.set(
+                1,
+                N * n,
+                equations[n - 1][4] + equations[n - 1][5] + equations[n - 1][6] + equations[n
+                        - 1][7]
+        );
 
         return points.toArray2();
     }

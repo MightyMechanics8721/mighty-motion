@@ -32,42 +32,60 @@ public class GeometricController {
     }
 
 
-    double[] calcCircleLineIntersection(
+    static double[] calcCircleLineIntersection(
             double xPos,
             double yPos,
             int i,
             double radius,
             double[][] wayPoints
     ) {
-        double a = Math.pow((wayPoints[i + 1][0] - wayPoints[i][0]), 2) + Math.pow(
-                (wayPoints[i + 1][1] - wayPoints[i][1]), 2);
-        double b = 2 * ((wayPoints[i][0] - xPos) * (wayPoints[i + 1][0] - wayPoints[i][0])
-                + (wayPoints[i][1] - yPos) * (wayPoints[i + 1][1] - wayPoints[i][1]));
-        double c = Math.pow(wayPoints[i][0], 2) - 2 * xPos * wayPoints[i][0] + Math.pow(xPos, 2)
-                + Math.pow(wayPoints[i][1], 2) - 2 * xPos * wayPoints[i][1] + Math.pow(yPos, 2)
-                + Math.pow(radius, 2);
-        double discriminant = Math.pow(b, 2) - 4 * a * c;
-        double root = 0;
-        if (discriminant >= 0) {
-            double rootOne = (-b + Math.sqrt(discriminant)) / (2 * a);
-            double rootTwo = (-b - Math.sqrt(discriminant)) / (2 * a);
-            if (rootOne >= 0 && rootOne <= 1 && rootTwo >= 0 && rootTwo <= 1) {
-                root = Math.max(rootOne, rootTwo);
-            } else if (rootOne >= 0 && rootOne <= 1) {
-                root = rootOne;
-            } else if (rootTwo >= 0 && rootTwo <= 1) {
-                root = rootTwo;
-            } else {
-                return new double[]{-99999, -99999};
-            }
-            // Pretty sure you need to handle the case where neither root is between 0 and 1
-            // Ensure you use the -99999 return statement in that case
+        double x0 = wayPoints[i][0];
+        double y0 = wayPoints[i][1];
+        double x1 = wayPoints[i + 1][0];
+        double y1 = wayPoints[i + 1][1];
 
-            double pX = wayPoints[i][0] + (wayPoints[i + 1][0] - wayPoints[i][0]) * root;
-            double pY = wayPoints[i][1] + (wayPoints[i + 1][1] - wayPoints[i][1]) * root;
-            return new double[]{pX, pY};
+        double dx = x1 - x0;
+        double dy = y1 - y0;
+
+        double fx = x0 - xPos;
+        double fy = y0 - yPos;
+
+        double a = dx * dx + dy * dy;
+        double b = 2 * (fx * dx + fy * dy);
+        double c = fx * fx + fy * fy - radius * radius;
+
+        double discriminant = b * b - 4 * a * c;
+
+        if (discriminant < 0) {
+            // no intersection
+            return new double[]{-99999, -99999};
         }
-        return new double[]{-99999, -99999};
+
+        double sqrtDisc = Math.sqrt(discriminant);
+        double t1 = (-b + sqrtDisc) / (2 * a);
+        double t2 = (-b - sqrtDisc) / (2 * a);
+
+        double t;
+
+        // pick any valid t in [0,1]
+        boolean t1Valid = t1 >= 0 && t1 <= 1;
+        boolean t2Valid = t2 >= 0 && t2 <= 1;
+
+        if (t1Valid && t2Valid) {
+            t = Math.max(t1, t2);
+        } else if (t1Valid) {
+            t = t1;
+        } else if (t2Valid) {
+            t = t2;
+        } else {
+            // both intersections are outside the segment
+            return new double[]{-99999, -99999};
+        }
+
+        double pX = x0 + dx * t;
+        double pY = y0 + dy * t;
+
+        return new double[]{pX, pY};
     }
 
     // To be more consistent with PoseController, pass in SimpleMatrix Pose here,

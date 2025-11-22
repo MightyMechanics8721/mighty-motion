@@ -5,10 +5,12 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Planners.ProfiledPathGenerator.generatePath;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
 
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -193,6 +195,11 @@ public class Drivetrain {
         this.updateTelemetry();
     }
 
+    public void localizePath(double[][] points) {
+        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        this.updateTelemetryGraph(points);
+    }
+
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change
@@ -357,13 +364,13 @@ public class Drivetrain {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
+                localizePath(path.waypoints);
                 if ((Math.abs(Utils.calculateDistance(
                         state.get(0, 0),
                         state.get(1, 0),
                         path.getFinalPoint()[0],
                         path.getFinalPoint()[1]
-                )) < 12)) {
+                )) < 2)) {
                     packet.addLine("USING POSE CONTROLLER");
                     return goToPose(makePoseVector(
                             path.getFinalPoint()[0], path.getFinalPoint()[1],
@@ -373,7 +380,7 @@ public class Drivetrain {
                 packet.addLine("USING GEO CONTROLLER");
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
 
-                SimpleMatrix desiredPose = geometricController.calculate(state, path);
+                SimpleMatrix desiredPose = geometricController.calculate(pose, path);
                 SimpleMatrix wheelSpeeds =
                         mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                                 pose,
@@ -414,6 +421,23 @@ public class Drivetrain {
         // Draw robot
         Canvas canvas = packet.fieldOverlay();
         Drawing.drawRobot(canvas, state);
+
+        ftcDashboard.sendTelemetryPacket(packet);
+    }
+
+    public void updateTelemetryGraph(double[][] points) {
+        if (!DebuggingParameters.debug) return;
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x position", state.get(0, 0));
+        packet.put("y position", state.get(1, 0));
+        packet.put("heading", Math.toDegrees(state.get(2, 0)));
+        packet.put("longitudinal Velocity", state.get(3, 0));
+        packet.put("lateral Velocity", state.get(4, 0));
+        packet.put("heading Velocity", state.get(5, 0));
+
+        // Draw robot
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawPoint(canvas, state, points);
 
         ftcDashboard.sendTelemetryPacket(packet);
     }

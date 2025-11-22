@@ -5,30 +5,25 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 
 public class PID {
-    public double kP;
-    public double kI;
-    public double kD;
     public double eIntegralSum;
     public double eDerivative;
     public double ePrev;
     public functionType type;
-
     public ElapsedTime timer = new ElapsedTime();
+    private PIDConstants pidConstants;
 
-    public PID(double kP, double kI, double kD, functionType type) {
-        this.kP = kP;
-        this.kI = kI;
-        this.kD = kD;
-        this.type = type;
-        eIntegralSum = 0;
-        eDerivative = 0;
-        ePrev = 0;
-    }
+//    public PID(double kP, double kI, double kD, functionType type) {
+//        this.kP = kP;
+//        this.kI = kI;
+//        this.kD = kD;
+//        this.type = type;
+//        eIntegralSum = 0;
+//        eDerivative = 0;
+//        ePrev = 0;
+//    }
 
     public PID(PIDConstants pidConstants, functionType type) {
-        this.kP = pidConstants.kP;
-        this.kI = pidConstants.kI;
-        this.kD = pidConstants.kD;
+        this.pidConstants = pidConstants;
         this.type = type;
         eIntegralSum = 0;
         eDerivative = 0;
@@ -43,10 +38,10 @@ public class PID {
         ePrev = error;
         timer.reset();
         if (type == functionType.LINEAR) {
-            return (kP * error) + (kI * eIntegralSum) + (kD * eDerivative);
+            return (this.pidConstants.kP * error) + (this.pidConstants.kI * eIntegralSum) + (this.pidConstants.kD * eDerivative);
         } else {
-            return (kP * Math.pow(Math.abs(error), 0.5) * Math.signum(error)) + (kI * eIntegralSum)
-                    + (kD * eDerivative);
+            return (this.pidConstants.kP * Math.pow(Math.abs(error), 0.5) * Math.signum(error)) + (this.pidConstants.kI * eIntegralSum)
+                    + (this.pidConstants.kD * eDerivative);
         }
     }
 

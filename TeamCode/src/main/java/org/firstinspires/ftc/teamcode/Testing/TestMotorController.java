@@ -43,8 +43,8 @@ public class TestMotorController extends LinearOpMode {
             double velocity = motorController.getVelocity();
 
             packet.put("Velocity in Radians/sec", velocity);
-            dashboard.sendTelemetryPacket(packet);
 
+            dashboard.sendTelemetryPacket(packet);
             telemetry.update();
 
 

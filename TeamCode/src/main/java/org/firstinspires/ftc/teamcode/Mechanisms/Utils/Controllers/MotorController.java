@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers;
 
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -209,7 +210,7 @@ public class MotorController {
         double power = this.velocityFeedForwardController.calculate(targetVelocity, 0);
         if (this.encoder != null) {
             double currentVelocity = this.getVelocity();
-            power += this.velocityPidController.calculate(currentVelocity, targetVelocity);
+            power += this.velocityPidController.calculate(targetVelocity, currentVelocity);
         }
         setPower(power);
     }
@@ -246,5 +247,13 @@ public class MotorController {
     public void setVelocityPIDConstants(PIDConstants pidConstants) {
         this.velocityPIDConstants = pidConstants;
         this.velocityPidController = new PID(pidConstants, PID.functionType.LINEAR);
+    }
+
+    public void setMotorDirection(String motorName, DcMotorSimple.Direction direction) {
+
+        // use the hash map of motors and then make the call below correctly
+
+        this.motors.get(motorName).setDirection(direction);
+
     }
 }

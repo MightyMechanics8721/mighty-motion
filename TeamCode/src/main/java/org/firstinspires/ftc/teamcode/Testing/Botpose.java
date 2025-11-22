@@ -4,14 +4,11 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
-
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
-@TeleOp(name = "Test April Tag", group = "Testing")
+@TeleOp(name = "Test April Tag2", group = "Testing")
 public class Botpose extends LinearOpMode {
 
     private Limelight3A limelight;
@@ -21,7 +18,7 @@ public class Botpose extends LinearOpMode {
     public void runOpMode() {
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        dashboard = FtcDashboard.getInstance();   // <-- FIX
+        dashboard = FtcDashboard.getInstance();
 
         telemetry.setMsTransmissionInterval(11);
 
@@ -32,17 +29,29 @@ public class Botpose extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            TelemetryPacket packet = new TelemetryPacket();  // <-- FIX
+            TelemetryPacket packet = new TelemetryPacket();
 
             LLResult result = limelight.getLatestResult();
 
             if (result != null && result.isValid()) {
 
+                // Get the FTC-style Pose3D
                 Pose3D botpose = result.getBotpose_MT2();
 
-                packet.put("tx", result.getTx());
-                packet.put("ty", result.getTy());
-                packet.put("Botpose", botpose.getPosition().x);
+                // Extract position EXACTLY like your AprilTag example
+                double myX = botpose.getPosition().x;
+                double myY = botpose.getPosition().y;
+                double myZ = botpose.getPosition().z;
+
+                // Send to dashboard
+                packet.put("myX", myX);
+                packet.put("myY", myY);
+                packet.put("myZ", myZ);
+
+                // For debugging:
+                telemetry.addData("myX", myX);
+                telemetry.addData("myY", myY);
+                telemetry.addData("myZ", myZ);
             }
 
             dashboard.sendTelemetryPacket(packet);

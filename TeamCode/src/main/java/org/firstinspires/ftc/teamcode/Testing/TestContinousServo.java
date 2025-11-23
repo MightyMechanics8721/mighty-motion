@@ -8,7 +8,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Config
 @Autonomous(name = "Test", group = "1")
-public class servospin extends LinearOpMode {
+public class TestContinousServo extends LinearOpMode {
+
+    /**
+     * Reads the encoder and makes both continuous servos spin in the same direction the encoder
+     * turns, stopping them when the encoder stops.
+     */
+
 
     @Override
     public void runOpMode() throws InterruptedException {

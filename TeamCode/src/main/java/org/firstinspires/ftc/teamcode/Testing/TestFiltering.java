@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Filters.LowPassFilterPara
 
 @Config
 @TeleOp(name = "MotorControlExample")
-public class FilteringTest extends LinearOpMode {
+public class TestFiltering extends LinearOpMode {
 
     // Tunable from FTC Dashboard
     //    public static double smoothingFactor = 0.5;

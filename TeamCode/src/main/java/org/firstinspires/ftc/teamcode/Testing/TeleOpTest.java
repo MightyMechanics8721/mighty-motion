@@ -1,16 +1,12 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Indexer;
-import org.firstinspires.ftc.teamcode.Mechanisms.Intake;
+import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
+import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 
 @TeleOp(name = "Full Robot Test")
@@ -20,8 +16,10 @@ public class TeleOpTest extends LinearOpMode {
     public static double SHOOTER_VELOCITY = 2500;
     Battery battery;
     FtcDashboard dashboard;
-    private Intake intake;
     private FtcDashboard dash = FtcDashboard.getInstance();
+
+    // Hardware Initialize
+    private Intake intake;
     private Indexer indexer;
     private Shooter shooter;
 
@@ -40,18 +38,18 @@ public class TeleOpTest extends LinearOpMode {
         while (opModeIsActive()) {
 
             if (gamepad1.right_trigger > 0.2)  //forward intake
-                intake.setPower(1.0);
+                intake.setIntakePower(1.0);
 
             else if (gamepad1.left_trigger > 0.2)  //reverse intake
-                intake.setPower(-1.0);
+                intake.setIntakePower(-1.0);
             else  //stop intake
-                intake.setPower(0.0);
+                intake.setIntakePower(0.0);
 
 
             if (gamepad1.b) {
-                indexer.setPower(1.0);       //starts indexer
+                indexer.setIndexerPower(1.0);       //starts indexer
             } else {
-                indexer.setPower(0.0);       //stop indexer
+                indexer.setIndexerPower(0.0);       //stop indexer
             }
 
             if (gamepad1.right_bumper) {

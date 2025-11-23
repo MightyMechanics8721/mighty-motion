@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.Mechanisms.Turret;
 
 import androidx.annotation.NonNull;
 
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PID
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
-public class TurretServo {
+public class Turret {
     private static final double TICKS_PER_REV = 4000.0;
     // tuning
     public static double Kp = 1.0 / 180;
@@ -25,7 +25,7 @@ public class TurretServo {
     private DcMotorEx turretEncoder;
     private PID pid;
 
-    public TurretServo(HardwareMap hardwareMap) {
+    public Turret(HardwareMap hardwareMap) {
         turretLeft = hardwareMap.get(CRServo.class, "servodot");
         turretRight = hardwareMap.get(CRServo.class, "servodotty");
         turretEncoder = hardwareMap.get(DcMotorEx.class, "encoding");

@@ -1,16 +1,14 @@
-package org.firstinspires.ftc.teamcode.Mechanisms;
+package org.firstinspires.ftc.teamcode.Mechanisms.Intake;
+
+import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
 
 @Config
@@ -26,13 +24,22 @@ public class Intake {
     public Intake(HardwareMap hardwareMap, Battery battery) {
 
         this.motorController = new MotorController(hardwareMap,
-                new String[]{this.CONFIGURATION_NAMES.intakeMotorName},
-                battery, this.BATTERY_PARAMETERS.maxVoltage);
+                new String[]{CONFIGURATION_NAMES.intakeMotorName},
+                battery, BATTERY_PARAMETERS.maxVoltage);
 
     }
 
-    public void setPower(double power) {
-        this.motorController.setPower(power);
+    //        public void setIntakePower(double power) {
+//        this.motorController.setPower(power);
+//    }
+    public Action setIntakePower(double power) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                motorController.setPower(power);
+                return false;
+            }
+        };
     }
 
     public static class ConfigurationNames {

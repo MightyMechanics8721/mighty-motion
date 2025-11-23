@@ -55,7 +55,7 @@ public class TeleOpTest extends LinearOpMode {
             }
 
             if (gamepad1.right_bumper) {
-                shooter.setVelocity(SHOOTER_VELOCITY);  //spin up shooter to target velocity
+                shooter.setVelocity(SHOOTER_VELOCITY * 2 * Math.PI / 60.0);  //spin up shooter to target velocity
             } else
                 shooter.setVelocity(0);
 

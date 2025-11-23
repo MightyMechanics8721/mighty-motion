@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
@@ -16,6 +18,10 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 public class TestAutoIndexAndShoot extends LinearOpMode {
     HardwareMap hardwareMap;
     Battery battery;
+    DigitalChannel beamBreak;
+    DigitalChannel beamBreak3;
+    DigitalChannel beamBreak2;
+    DigitalChannel beamBreak4;
 
     @Override
     public void runOpMode() {
@@ -25,10 +31,36 @@ public class TestAutoIndexAndShoot extends LinearOpMode {
         Intake intake = new Intake(hardwareMap, battery);
         Turret turret = new Turret(hardwareMap);
 
+        beamBreak = hardwareMap.get(DigitalChannel.class, "beam1");
+        beamBreak.setMode(DigitalChannel.Mode.INPUT);
+        beamBreak.setState(true);
+        beamBreak3 = hardwareMap.get(DigitalChannel.class, "beam3");
+        beamBreak3.setMode(DigitalChannel.Mode.OUTPUT);
+
+        beamBreak2 = hardwareMap.get(DigitalChannel.class, "beam2");
+        beamBreak2.setMode(DigitalChannel.Mode.INPUT);
+        beamBreak2.setState(true);
+        beamBreak4 = hardwareMap.get(DigitalChannel.class, "beam4");
+        beamBreak4.setMode(DigitalChannel.Mode.OUTPUT);
+
+
         //init beambreaks
 
         waitForStart();
         while (opModeIsActive()) {
+            turret.turretSpin()
+
+            intake.setIntakePower(0.1);
+            if(!beamBreak2.getState()){
+                new SleepAction(0.5);
+                indexer.setIndexerPower(0);
+            } else if(!beamBreak.getState()){
+                indexer.setIndexerPower(0.3);
+            }
+            if(!(beamBreak.getState() && beamBreak2.getState())){
+                indexer.setIndexerPower(0.3);
+                shooter.setVelocity(1);
+            }
 
         }
     }

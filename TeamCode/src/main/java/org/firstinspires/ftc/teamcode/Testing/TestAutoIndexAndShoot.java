@@ -48,20 +48,23 @@ public class TestAutoIndexAndShoot extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()) {
-            turret.turretSpin()
 
             intake.setIntakePower(0.1);
-            if(!beamBreak2.getState()){
-                new SleepAction(0.5);
+
+            boolean b1 = beamBreak.getState();
+            boolean b2 = beamBreak2.getState();
+
+            if (!b2) {
                 indexer.setIndexerPower(0);
-            } else if(!beamBreak.getState()){
+            } else if (!b1) {
                 indexer.setIndexerPower(0.3);
-            }
-            if(!(beamBreak.getState() && beamBreak2.getState())){
-                indexer.setIndexerPower(0.3);
-                shooter.setVelocity(1);
             }
 
+            if (!b1 && !b2) {
+                indexer.setIndexerPower(0.3);
+                shooter.setVelocity(2500);
+            }
         }
+
     }
 }

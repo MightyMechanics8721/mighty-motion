@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 
+import androidx.annotation.NonNull;
+
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
@@ -38,14 +42,16 @@ public class Shooter {
      */
     public Shooter(HardwareMap hardwareMap, Battery battery) {
 
-        this.motorController = new MotorController(hardwareMap,
-                new String[]{this.CONFIGURATION_NAMES.shooterMotor1Name,
-                        this.CONFIGURATION_NAMES.shooterMotor2Name},
-                battery, this.BATTERY_PARAMETERS.maxVoltage,
-                this.CONFIGURATION_NAMES.encoderName, 28.0);
+        this.motorController = new MotorController(
+                hardwareMap,
+                new String[]{CONFIGURATION_NAMES.shooterMotor1Name, CONFIGURATION_NAMES.shooterMotor2Name},
+                battery,
+                BATTERY_PARAMETERS.maxVoltage,
+                CONFIGURATION_NAMES.encoderName,
+                28.0);
 
-        this.motorController.setVelocityPIDConstants(this.MOTOR_CONTROLLER_CONSTANTS.pidConstants);
-        this.motorController.setVelocityFeedForwardConstants(this.MOTOR_CONTROLLER_CONSTANTS.ffConstants);
+        this.motorController.setVelocityPIDConstants(MOTOR_CONTROLLER_CONSTANTS.pidConstants);
+        this.motorController.setVelocityFeedForwardConstants(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
     }
 
     /**
@@ -62,8 +68,17 @@ public class Shooter {
      *
      * @param velocity the target velocity to set for the shooter motors
      */
-    public void setVelocity(double velocity) {
-        this.motorController.setVelocity(velocity);
+//    public void setVelocity(double velocity) {
+//        this.motorController.setVelocity(velocity);
+//    }
+    public Action setVelocity(double velocity) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                Shooter.this.motorController.setVelocity(velocity);
+                return false;
+            }
+        };
     }
 
     /**

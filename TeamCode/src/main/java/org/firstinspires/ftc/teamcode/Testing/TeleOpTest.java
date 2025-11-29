@@ -47,25 +47,26 @@ public class TeleOpTest extends LinearOpMode {
 
             // ----- INTAKE -----
             if (gamepad1.right_trigger > 0.2) {
-                intake.setIntakePower(1.0);
+                runningActions.put("intake", intake.setIntakePower(gamepad1.right_trigger));
             } else if (gamepad1.left_trigger > 0.2) {
-                intake.setIntakePower(-1.0);
+                runningActions.put("intake", intake.setIntakePower(-gamepad1.left_trigger));
             } else {
-                intake.setIntakePower(0.0);
+                runningActions.put("intake", intake.setIntakePower(0.0));
             }
 
             // ----- INDEXER -----
-            if (gamepad1.b) {
-                indexer.setIndexerPower(1.0);
+
+            if (gamepad1.cross) {
+                runningActions.put("indexer", indexer.setIndexerPower(1.0));
             } else {
-                indexer.setIndexerPower(0.0);
+                runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
 
             // ----- SHOOTER -----
-            if (gamepad1.right_bumper) {
-                shooter.setShooterVelocity(SHOOTER_VELOCITY * 2 * Math.PI / 60.0);
+            if (gamepad1.square) {
+                runningActions.put("shooter", shooter.setShooterVelocity(SHOOTER_VELOCITY));
             } else {
-                shooter.setShooterVelocity(0);
+                runningActions.put("shooter", shooter.setShooterVelocity(0));
             }
 
             // ----- RUN ACTIONS -----

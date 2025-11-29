@@ -18,7 +18,7 @@ import java.util.Map;
 @Config
 @Autonomous(name = "TestDrivetrain")
 public class TeleopWithActions extends OpMode {
-    Drivetrain drivetrain = null;
+    Drivetrain drivetrain;
     FtcDashboard dashboard;
     Battery battery;
     private FtcDashboard dash = FtcDashboard.getInstance();

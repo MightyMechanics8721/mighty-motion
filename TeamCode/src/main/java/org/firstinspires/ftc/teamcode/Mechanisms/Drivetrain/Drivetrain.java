@@ -370,7 +370,7 @@ public class Drivetrain {
                         state.get(1, 0),
                         path.getFinalPoint()[0],
                         path.getFinalPoint()[1]
-                )) < 2)) {
+                )) < 6)) {
                     packet.addLine("USING POSE CONTROLLER");
                     return goToPose(makePoseVector(
                             path.getFinalPoint()[0], path.getFinalPoint()[1],

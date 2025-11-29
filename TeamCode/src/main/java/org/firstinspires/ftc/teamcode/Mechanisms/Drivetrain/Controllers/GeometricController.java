@@ -32,6 +32,57 @@ public class GeometricController {
     }
 
 
+    private static double[] closestPointOnSegment(
+            double px, double py,
+            double x0, double y0,
+            double x1, double y1
+    ) {
+        double dx = x1 - x0;
+        double dy = y1 - y0;
+        double segLenSq = dx * dx + dy * dy;
+
+        double t;
+        if (segLenSq == 0) {
+            t = 0.0; // segment is a point
+        } else {
+            t = ((px - x0) * dx + (py - y0) * dy) / segLenSq;
+            t = Math.max(0.0, Math.min(1.0, t)); // clamp to [0, 1]
+        }
+
+        double projX = x0 + t * dx;
+        double projY = y0 + t * dy;
+        return new double[]{projX, projY};
+    }
+
+    private static double[] findClosestPointOnPath(
+            double px, double py,
+            double[][] wayPoints
+    ) {
+        double bestX = wayPoints[0][0];
+        double bestY = wayPoints[0][1];
+        double bestDistSq = Double.POSITIVE_INFINITY;
+
+        for (int i = 0; i < wayPoints.length - 1; i++) {
+            double[] cand = closestPointOnSegment(
+                    px, py,
+                    wayPoints[i][0], wayPoints[i][1],
+                    wayPoints[i + 1][0], wayPoints[i + 1][1]
+            );
+
+            double dx = cand[0] - px;
+            double dy = cand[1] - py;
+            double distSq = dx * dx + dy * dy;
+
+            if (distSq < bestDistSq) {
+                bestDistSq = distSq;
+                bestX = cand[0];
+                bestY = cand[1];
+            }
+        }
+
+        return new double[]{bestX, bestY};
+    }
+
     static double[] calcCircleLineIntersection(
             double xPos,
             double yPos,
@@ -88,15 +139,11 @@ public class GeometricController {
         return new double[]{pX, pY};
     }
 
-    // To be more consistent with PoseController, pass in SimpleMatrix Pose here,
-    // then first two lines grab the x and y position from the pose.
     public SimpleMatrix calculate(SimpleMatrix pose, Path path) {
         double x = pose.get(0, 0);
         double y = pose.get(1, 0);
-        // Assuming you read my Path class feedback, might want to change to path.getWaypoints() :-)
         double[][] xyPoints = path.getWaypoints();
 
-        // rename to xyPoints to be consistent with thetaPoints!
         LinkedHashSet<double[]> furthestIntersectionPointXY = new LinkedHashSet<>();
         LinkedHashSet<double[]> furthestIntersectionPointTheta = new LinkedHashSet<>();
         for (int i = lastIndexXY; i < xyPoints.length - 1; i++) {
@@ -107,9 +154,7 @@ public class GeometricController {
             }
         }
         lastIndexXY = lastLookaheadXY;
-        // You may want to have a 'lastLookaheadXY' AND a 'lastLookaheadTheta' as they may not be
-        // the same
-        // Make sure to reset them both in the reset function
+
         for (int i = lastIndexTheta; i < xyPoints.length - 1; i++) {
             double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadTheta, xyPoints);
             if (!Arrays.equals(intersection, new double[]{-99999, -99999})) {
@@ -118,35 +163,45 @@ public class GeometricController {
             }
         }
         lastIndexTheta = lastLookaheadTheta;
+        // If we didn't find any lookahead intersections, fall back to nearest point
+        double[] fallbackPoint = null;
         if (furthestIntersectionPointXY.isEmpty() || furthestIntersectionPointTheta.isEmpty()) {
-            SimpleMatrix desiredPose = new SimpleMatrix(
-                    new double[]{
-                            path.getFinalPoint()[0],
-                            path.getFinalPoint()[1],
-                            path.finalHeading
-                    }
-            );
-            return desiredPose;
+            fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
         }
-
 
         ArrayList<double[]> thetaArray = new ArrayList<>(furthestIntersectionPointTheta);
         ArrayList<double[]> posArray = new ArrayList<>(furthestIntersectionPointXY);
 
-        // Rename this to furthestIntersectionPointTheta or something more descriptive.
-        // Also do the same for furthestIntersectionPointXY!!!
-        double[] furthestPointTheta = thetaArray.get(thetaArray.size() - 1);
+        double[] positionPoint;
+        double[] thetaPoint;
+
+        // position (XY)
+        if (posArray.isEmpty()) {
+            if (fallbackPoint == null) {
+                fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
+            }
+            positionPoint = fallbackPoint;
+        } else {
+            positionPoint = posArray.get(posArray.size() - 1);
+        }
+
+        // heading point (for theta lookahead)
+        if (thetaArray.isEmpty()) {
+            if (fallbackPoint == null) {
+                fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
+            }
+            thetaPoint = fallbackPoint;
+        } else {
+            thetaPoint = thetaArray.get(thetaArray.size() - 1);
+        }
 
         double desiredTheta;
-
         if (path.useStaticHeading) {
             desiredTheta = path.finalHeading;
         } else {
-            // You get furthestIntersectionPointTheta above for a reason. Use it to make this
-            // more readable!
             desiredTheta = Math.atan2(
-                    (furthestPointTheta[1] - y),
-                    (furthestPointTheta[0] - x)
+                    (thetaPoint[1] - y),
+                    (thetaPoint[0] - x)
             );
             if (path.reverse) {
                 if (Math.signum(desiredTheta) == -1) {
@@ -155,16 +210,12 @@ public class GeometricController {
                     desiredTheta -= Math.PI;
                 }
             }
-
         }
 
-        // You are calling to thetaArray in the position spots!
-        // See above: get the xy furthest point (furthestIntersectionPointXY)
-        // and use that!
         SimpleMatrix desiredPose = new SimpleMatrix(
                 new double[]{
-                        posArray.get(posArray.size() - 1)[0],
-                        posArray.get(posArray.size() - 1)[1],
+                        positionPoint[0],
+                        positionPoint[1],
                         desiredTheta
                 }
         );

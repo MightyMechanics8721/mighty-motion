@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Planners.ProfiledPathGenerator.generatePath;
-
 import com.acmerobotics.dashboard.canvas.Canvas;
-//import com.acmerobotics.roadrunner.Vector2d;
 
 import org.ejml.simple.SimpleMatrix;
 
@@ -44,9 +41,8 @@ public final class Drawing {
         );
         final double POINT_RADIUS = 1;
         canvas.setStrokeWidth(1);
-        double[][] splinePoints = generatePath(new SimpleMatrix(points));
-        for (int i = 0; i < splinePoints[0].length; i++) {
-            canvas.strokeCircle(splinePoints[0][i], splinePoints[1][i], POINT_RADIUS);
+        for (int i = 0; i < points.length - 1; i++) {
+            canvas.strokeLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]);
         }
     }
 }

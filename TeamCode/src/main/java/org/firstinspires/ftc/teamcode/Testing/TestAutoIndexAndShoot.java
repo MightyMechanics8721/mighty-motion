@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -62,7 +61,7 @@ public class TestAutoIndexAndShoot extends LinearOpMode {
 
             if (!b1 && !b2) {
                 indexer.setIndexerPower(0.3);
-                shooter.setVelocity(2500);
+                shooter.setShooterVelocity(2500);
             }
         }
 

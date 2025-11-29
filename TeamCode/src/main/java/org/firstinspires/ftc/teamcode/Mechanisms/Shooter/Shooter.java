@@ -71,7 +71,7 @@ public class Shooter {
 //    public void setVelocity(double velocity) {
 //        this.motorController.setVelocity(velocity);
 //    }
-    public Action setVelocity(double velocity) {
+    public Action setShooterVelocity(double velocity) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {

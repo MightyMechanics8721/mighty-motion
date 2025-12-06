@@ -80,16 +80,16 @@ public class TuneAccel extends LinearOpMode {
                 maxVelocity = 0;
                 if (gamepad1.cross) {
                     turn = gamepad1.left_stick_x;
-                    drivetrain.motorLeftFront.setPower(turn);
+                    drivetrain.motorLeftFront.setPower(-turn);
                     drivetrain.motorLeftBack.setPower(turn);
-                    drivetrain.motorRightFront.setPower(turn);
+                    drivetrain.motorRightFront.setPower(-turn);
                     drivetrain.motorRightBack.setPower(turn);
                     telemetry.addData("Turn", turn);
                 } else {
                     turn = gamepad1.left_stick_y;
-                    drivetrain.motorLeftFront.setPower(turn);
+                    drivetrain.motorLeftFront.setPower(-turn);
                     drivetrain.motorLeftBack.setPower(turn);
-                    drivetrain.motorRightFront.setPower(turn);
+                    drivetrain.motorRightFront.setPower(-turn);
                     drivetrain.motorRightBack.setPower(turn);
                     telemetry.addData("Turn", turn);
                 }
@@ -97,20 +97,21 @@ public class TuneAccel extends LinearOpMode {
 
                 // Drive controls
                 if (gamepad1.triangle && !isStopped) {
-                    drivetrain.motorLeftFront.setPower(power);
+                    drivetrain.motorLeftFront.setPower(-power);
                     drivetrain.motorRightFront.setPower(power);
-                    drivetrain.motorRightBack.setPower(power);
+                    drivetrain.motorRightBack.setPower(-power);
                     drivetrain.motorLeftBack.setPower(power);
 
 
                 } else if (gamepad1.square && !isStopped) {
+                    stopPos = relXMovement;
                     drivetrain.motorLeftFront.setPower(0);
                     drivetrain.motorRightFront.setPower(0);
                     drivetrain.motorRightBack.setPower(0);
                     drivetrain.motorLeftBack.setPower(0);
                     isStopped = true;
                     timer.reset();
-                    stopPos = relXMovement;
+
                 } else if (isStopped) {
                     presentPos = relXMovement;
 
@@ -119,11 +120,11 @@ public class TuneAccel extends LinearOpMode {
                 }
             }
 
-            if (maxVelocity < drivetrain.state.get(3, 0)) {
-                maxVelocity = drivetrain.state.get(3, 0);
+            if (maxVelocity < drivetrain.state.get(4, 0)) {
+                maxVelocity = drivetrain.state.get(4, 0);
             }
 
-            telemetry.addData("Current velocity (in/s)", drivetrain.state.get(3, 0));
+            telemetry.addData("Current velocity (in/s)", drivetrain.state.get(4, 0));
             telemetry.addData("Max Velocity", maxVelocity);
             telemetry.addData("isReset", isReset);
             telemetry.update();

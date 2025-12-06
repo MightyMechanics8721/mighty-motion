@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -255,5 +256,11 @@ public class MotorController {
 
         this.motors.get(motorName).setDirection(direction);
 
+    }
+
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+        for (DcMotorAdvanced motor : motors.values()) {
+            motor.setZeroPowerBehavior(zeroPowerBehavior);
+        }
     }
 }

@@ -5,10 +5,16 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Planners.ProfiledPathGenerator.generatePath;
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
+
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.List;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
@@ -19,12 +25,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.util.Util;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.DrivetrainMotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.GeometricController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers.PoseController;
@@ -47,27 +55,13 @@ import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 @Config
 public class Drivetrain {
     /**
-     * Acceptable difference between current and previous wheel power to make a hardware call Used
-     * to save battery
-     */
-    public static double acceptablePowerDifference = 0.000001;
-    /**
-     * Acceptable difference between wanted and current positions (Inches) to make a hardware call
-     * Used to save time & reduce unnecessary movements
-     */
-    public static double distanceThreshold = 0.25;
-    /**
-     * The acceptable difference between wanted and current angles (Radians) Used to save time &
-     * reduce unnecessary movements
-     */
-    public static double angleThreshold = 0.1;
-    /**
      * The maximum Voltage the drivetrain could use at a time Used to save battery
      */
     public static double maxVoltage = 12.5;
     // Create new instance.
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
+
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
@@ -102,8 +96,14 @@ public class Drivetrain {
             POSE_CONSTANTS.headingPIDConstants
     );
     MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
+
+    ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
+
+    MotionParameters MOTION_PARAMETERS = new MotionParameters();
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
+    FtcDashboard ftcDashboard;
+    DebuggingParameters DEBUG = new DebuggingParameters();
     private MecanumKinematicModel mecanumKinematicModel;
 
     /**
@@ -145,7 +145,7 @@ public class Drivetrain {
         );
 
         this.motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        this.motorLeftBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.motorLeftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         this.motorRightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         this.motorRightBack.setDirection(DcMotorSimple.Direction.FORWARD);
         /**
@@ -167,6 +167,10 @@ public class Drivetrain {
         this.motorLeftBack.setPower(0);
         this.motorRightFront.setPower(0);
         this.motorRightBack.setPower(0);
+
+        this.ftcDashboard = FtcDashboard.getInstance();
+
+        this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
 
     /**
@@ -187,8 +191,15 @@ public class Drivetrain {
      * locations. Updates the internal state matrix with the current estimated pose.
      */
     public void localize() {
-        state = initialState.plus(twoWheelOdo.calculate());
+        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        this.updateTelemetry();
     }
+
+    public void localizePath(double[][] points) {
+        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        this.updateTelemetryGraph(points);
+    }
+
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change
@@ -228,6 +239,14 @@ public class Drivetrain {
         setPower(motorController.calculate(wheelSpeeds, wheelAccelerations));
     }
 
+    private double stoppingDistanceX(double xVelocity) {
+        return 0.0932 * xVelocity + 0.00124 * xVelocity * xVelocity;
+    }
+
+    private double stoppingDistanceY(double yVelocity) {
+        return 0.0832 * yVelocity + 0.00149 * yVelocity * yVelocity;
+    }
+
     /**
      * Moves the robot to a desired pose using PID control.
      *
@@ -236,13 +255,49 @@ public class Drivetrain {
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
-    public Action goToPose(SimpleMatrix desiredPose) {
+    public Action goToPose(
+            SimpleMatrix desiredPose, double distanceThreshold,
+            double angleThreshold
+    ) {
+        Drivetrain drivetrain = this;
+
         //Rename goToPosition
         return new Action() {
+
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 localize();
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+
+
+                // 1) Get the x velocity and the y velocity
+                // 2) Plug in each velocity to each function to get the stopping distance of x
+                // and of y
+                // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop
+                // dist, 0]
+
+                SimpleMatrix stopDistance = new SimpleMatrix(
+                        new double[][]{
+                                new double[]{
+                                        Math.signum(state.get(3, 0)) * drivetrain.stoppingDistanceX(
+                                                Math.abs(state.get(3, 0)))
+                                },
+                                new double[]{
+                                        Math.signum(state.get(4, 0)) * drivetrain.stoppingDistanceY(
+                                                Math.abs(state.get(4, 0)))
+                                },
+                                new double[]{0}
+                        }
+                );
+                // 4) Rotate this matrix to the global frame
+                SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
+                        stopDistance, state.get(
+                                2,
+                                0
+                        )
+                );
+                // 5) Add the result to the pose
+                if (ThresholdParameters.stopPlanning) pose = pose.plus(stopDistanceGlobal);
                 SimpleMatrix wheelSpeeds
                         = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                         pose,
@@ -252,15 +307,6 @@ public class Drivetrain {
                 //                deltaT.reset();
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
-                packet.put("X", state.get(0, 0));
-                packet.put("Y", state.get(1, 0));
-                packet.put("Theta", Math.toDegrees(state.get(2, 0)));
-                packet.put("X Velocity", state.get(3, 0));
-                packet.put("Y Velocity", state.get(4, 0));
-                packet.put("Theta Velocity", state.get(5, 0));
-                packet.put("PID X", wheelSpeeds.get(0, 0));
-                packet.put("PID Y", wheelSpeeds.get(1, 0));
-                packet.put("PID Theta", wheelSpeeds.get(2, 0));
                 if (Math.abs(Utils.calculateDistance(
                         state.get(0, 0),
                         state.get(1, 0),
@@ -277,68 +323,20 @@ public class Drivetrain {
                         state.get(1, 0),
                         desiredPose.get(0, 0),
                         desiredPose.get(1, 0)
-                )) < distanceThreshold
+                )) < ThresholdParameters.distanceThreshold
                         && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
                         < angleThreshold);
             }
         };
     }
 
-    /**
-     * Variation of goToPose with higher tolerance for error. Used for faster, less precise
-     * movements.
-     *
-     * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
-     * @return An Action that runs until the robot is within 10x distanceThreshold and
-     * angleThreshold of the target.
-     */
-    public Action goToPoseImpresice(SimpleMatrix desiredPose) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
-                packet.put("Done", "no");
-                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                SimpleMatrix wheelSpeeds
-                        = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
-                        pose,
-                        desiredPose
-                ));
-                SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-                //                deltaT.reset();
-                setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
-                prevWheelSpeeds = wheelSpeeds;
-                packet.put("X", state.get(0, 0));
-                packet.put("Y", state.get(1, 0));
-                packet.put("Theta", Math.toDegrees(state.get(2, 0)));
-                packet.put("X Velocity", state.get(3, 0));
-                packet.put("Y Velocity", state.get(4, 0));
-                packet.put("Theta Velocity", state.get(5, 0));
-                packet.put("PID X", wheelSpeeds.get(0, 0));
-                packet.put("PID Y", wheelSpeeds.get(1, 0));
-                packet.put("PID Theta", wheelSpeeds.get(2, 0));
-                if (Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < distanceThreshold * 10
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold) {
-                    setPower(stopMatrix);
-                    packet.put("Done", "done");
-                }
-                return !(Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < distanceThreshold * 10
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold);
-            }
-        };
+    public Action goToPose(
+            SimpleMatrix desiredPose
+    ) {
+        return this.goToPose(
+                desiredPose, this.THRESHOLD_PARAMETERS.distanceThreshold,
+                this.THRESHOLD_PARAMETERS.angleThreshold
+        );
     }
 
     /**
@@ -360,88 +358,88 @@ public class Drivetrain {
      * distanceThreshold.
      */
     public Action followPath(Path path) {
+        //        FtcDashboard ftcDashboard = FtcDashboard.getInstance();
+
         return new Action() {
-            ElapsedTime elapsedTimer = new ElapsedTime();
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
-                // Check if the distance between the current robot position (so maybe grab the
-                // pose from the state FIRST!)
-                // and the path's final waypoint is less than the geometricController's xy
-                // lookahead. If that is the case,
-                // you'd want to do what?
+                localizePath(path.waypoints);
+                if ((Math.abs(Utils.calculateDistance(
+                        state.get(0, 0),
+                        state.get(1, 0),
+                        path.getFinalPoint()[0],
+                        path.getFinalPoint()[1]
+                )) < 6)) {
+                    packet.addLine("USING POSE CONTROLLER");
+                    return goToPose(makePoseVector(
+                            path.getFinalPoint()[0], path.getFinalPoint()[1],
+                            path.finalHeading
+                    )).run(packet);
+                }
+                packet.addLine("USING GEO CONTROLLER");
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                // Rename to desiredPose! It contains a heading too so furthestPoint is misleading!
-                SimpleMatrix desiredPose = geometricController.calculate(state, path);
+
+                SimpleMatrix desiredPose = geometricController.calculate(pose, path);
                 SimpleMatrix wheelSpeeds =
                         mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                                 pose,
                                 desiredPose
                         ));
-                // not sure why you're using distanceThreshold here.
-                // it would be something like path.getMotionProfile.getVelocity(t), where t is an
-                // elapsed timer.
-                // ****This timer should started when you start following this path. Maybe you
-                // can put it above?
-                // It shouldn't have to be reset as it should be specific to the action where
-                // you're following the path.
-                double maxScale = path.getMotionProfile().getVelocity(elapsedTimer.seconds())
-                        / wheelSpeeds.elementMaxAbs(); // You also need to grab the maximum of
-                // the ABSOLUTE VALUE of all the wheel speeeds..
-                wheelSpeeds.scale(maxScale);
+
+                double maxScale = (MOTION_PARAMETERS.maxSpeed / MECHANICAL_PARAMETERS.wheelRadius)
+                        / wheelSpeeds.elementMaxAbs();
+
+                wheelSpeeds = wheelSpeeds.scale(maxScale);
                 SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+
                 setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
                 prevWheelSpeeds = wheelSpeeds;
 
-                // Please please please, write a function in drivetrain called isClose or
-                // something, which does this checking for you!!!
-                // replace it with that in both the goToPose and the followPath
-                if (!(Math.abs(Utils.calculateDistance(
+                return !(Math.abs(Utils.calculateDistance(
                         state.get(0, 0),
                         state.get(1, 0),
-                        wheelSpeeds.get(0, 0),
-                        wheelSpeeds.get(1, 0)
-                )) < distanceThreshold)) {
-                    if (Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                            < angleThreshold) {
-                        setPower(stopMatrix);
-                    }
-                }
-                return Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        wheelSpeeds.get(0, 0),
-                        wheelSpeeds.get(1, 0)
-                )) > distanceThreshold
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - wheelSpeeds.get(2, 0)))
-                        > angleThreshold;
+                        desiredPose.get(0, 0),
+                        desiredPose.get(1, 0)
+                )) < ThresholdParameters.distanceThreshold
+                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
+                        < ThresholdParameters.angleThreshold);
             }
         };
     }
 
-    /**
-     * Updates telemetry packet with current pose and motor power values. Useful for dashboard or
-     * driver station monitoring.
-     *
-     * @return An Action that always returns false (for continuous telemetry updates).
-     */
-    public Action updateTelemetry() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
-                packet.put("x", state.get(0, 0));
-                packet.put("y", state.get(1, 0));
-                packet.put("theta", state.get(2, 0));
-                packet.put("uLf", motorController.uLf);
-                packet.put("uLb", motorController.uLb);
-                packet.put("uRb", motorController.uRb);
-                packet.put("uRf", motorController.uRf);
+    public void updateTelemetry() {
+        if (!DebuggingParameters.debug) return;
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x position", state.get(0, 0));
+        packet.put("y position", state.get(1, 0));
+        packet.put("heading", Math.toDegrees(state.get(2, 0)));
+        packet.put("longitudinal Velocity", state.get(3, 0));
+        packet.put("lateral Velocity", state.get(4, 0));
+        packet.put("heading Velocity", state.get(5, 0));
 
-                return false;
-            }
-        };
+        // Draw robot
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawRobot(canvas, state);
+
+        ftcDashboard.sendTelemetryPacket(packet);
+    }
+
+    public void updateTelemetryGraph(double[][] points) {
+        if (!DebuggingParameters.debug) return;
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("x position", state.get(0, 0));
+        packet.put("y position", state.get(1, 0));
+        packet.put("heading", Math.toDegrees(state.get(2, 0)));
+        packet.put("longitudinal Velocity", state.get(3, 0));
+        packet.put("lateral Velocity", state.get(4, 0));
+        packet.put("heading Velocity", state.get(5, 0));
+
+        // Draw robot
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawPoint(canvas, state, points);
+
+        ftcDashboard.sendTelemetryPacket(packet);
     }
 
     /**
@@ -482,19 +480,23 @@ public class Drivetrain {
         };
     }
 
+    public static class MotionParameters {
+        public double maxSpeed = 80.0; // (in/s)
+    }
+
     public static class PoseConstants {
-        public PIDConstants xPIDConstants = new PIDConstants(10.5, 0, 0);
+        public PIDConstants xPIDConstants = new PIDConstants(30, 0, 0);
 
-        public PIDConstants yPIDConstants = new PIDConstants(10.5, 0, 0);
+        public PIDConstants yPIDConstants = new PIDConstants(35, 0, 0);
 
-        public PIDConstants headingPIDConstants = new PIDConstants(5, 0, 0);
+        public PIDConstants headingPIDConstants = new PIDConstants(6, 0, 0);
     }
 
     public static class FFConstantsController {
-        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.67);
-        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.67);
+        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.067);
     }
 
     public static class MechanicalParameters {
@@ -502,5 +504,35 @@ public class Drivetrain {
         public static double longDistToAxles = 5.7;
         // (in) Longitudinal distance from center to axles
         public static double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
+    }
+
+    /**
+     * Debugging parameters for the Drivetrain. Can turn telemetry printouts on/off globally.
+     */
+    public static class DebuggingParameters {
+        /**
+         * Set to true to enable telemetry printouts, false to disable
+         */
+        public static boolean debug = true;
+    }
+
+
+    public static class ThresholdParameters {
+        /**
+         * Acceptable difference between current and previous wheel power to make a hardware call
+         * Used to save battery
+         */
+        public static double acceptablePowerDifference = 0.000001;
+        /**
+         * Acceptable difference between wanted and current positions (Inches) to make a hardware
+         * call Used to save time & reduce unnecessary movements
+         */
+        public static double distanceThreshold = 0.25;
+        /**
+         * The acceptable difference between wanted and current angles (Radians) Used to save time &
+         * reduce unnecessary movements
+         */
+        public static double angleThreshold = 0.1;
+        public static boolean stopPlanning = true;
     }
 }

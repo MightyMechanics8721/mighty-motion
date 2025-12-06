@@ -61,6 +61,7 @@ public class Drivetrain {
     // Create new instance.
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
+    public static MechanicalParameters mechanicalParameters;
 
     public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
@@ -110,8 +111,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
-     * @param battery     The Battery level of the Robot
+     * to which name
+     * @param battery The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -176,8 +177,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x     Initial X position (inches)
-     * @param y     Initial Y position (inches)
+     * @param x Initial X position (inches)
+     * @param y Initial Y position (inches)
      * @param theta Initial heading (radians)
      */
     public void setInitialPosition(double x, double y, double theta) {
@@ -229,7 +230,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -251,6 +252,7 @@ public class Drivetrain {
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
+     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
@@ -352,6 +354,7 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
+     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -446,6 +449,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -467,11 +471,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));
@@ -493,10 +497,10 @@ public class Drivetrain {
     }
 
     public static class FFConstantsController {
-        public FFConstants lf = new FFConstants(0.1, 0.0225, 0.067);
-        public FFConstants lb = new FFConstants(0.1, 0.0225, 0.067);
-        public FFConstants rb = new FFConstants(0.1, 0.0225, 0.067);
-        public FFConstants rf = new FFConstants(0.1, 0.0225, 0.067);
+        public FFConstants lf = new FFConstants(0.0105, 0.124, 0.0165);
+        public FFConstants lb = new FFConstants(0.0105, 0.124, 0.0165);
+        public FFConstants rb = new FFConstants(0.0105, 0.124, 0.0165);
+        public FFConstants rf = new FFConstants(0.0105, 0.124, 0.0165);
     }
 
     public static class MechanicalParameters {

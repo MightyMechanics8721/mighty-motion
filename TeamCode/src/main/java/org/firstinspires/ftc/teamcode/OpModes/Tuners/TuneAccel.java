@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 
@@ -37,10 +38,33 @@ public class TuneAccel extends LinearOpMode {
         telemetry.addData("Current velocity (in/s)", drivetrain.state.get(4, 0));
         telemetry.addData("Max Velocity", maxVelocity);
 
+
         waitForStart();
+
+        double relXMovement = 0.0;
+
+        double previousHeading = 0.0;
+        double prevXEncoder = 0.0;
 
         while (opModeIsActive()) {
             drivetrain.localize();
+            //            dEncoder = drivetrain.twoWheelOdo.odo.getEncoderX() - prevEncoder;
+            double dx =
+                    (drivetrain.twoWheelOdo.odo.getEncoderX() - prevXEncoder) / 2000.0 * 2 * Math.PI
+                            * 0.63 //
+                            // convert
+                            // to in
+                            + drivetrain.twoWheelOdo.odo.getXOffset(DistanceUnit.INCH) * (
+                            drivetrain.state.get(
+                                    2
+                                    , 0
+                            )
+                                    - previousHeading);
+
+            relXMovement += dx;
+
+            previousHeading = drivetrain.state.get(2, 0);
+            prevXEncoder = drivetrain.twoWheelOdo.odo.getEncoderX();
 
             // Allow toggling reset mode
             if (gamepad1.circle) {
@@ -58,8 +82,8 @@ public class TuneAccel extends LinearOpMode {
                     turn = gamepad1.left_stick_x;
                     drivetrain.motorLeftFront.setPower(turn);
                     drivetrain.motorLeftBack.setPower(turn);
-                    drivetrain.motorRightFront.setPower(-turn);
-                    drivetrain.motorRightBack.setPower(-turn);
+                    drivetrain.motorRightFront.setPower(turn);
+                    drivetrain.motorRightBack.setPower(turn);
                     telemetry.addData("Turn", turn);
                 } else {
                     turn = gamepad1.left_stick_y;
@@ -73,9 +97,9 @@ public class TuneAccel extends LinearOpMode {
 
                 // Drive controls
                 if (gamepad1.triangle && !isStopped) {
-                    drivetrain.motorLeftFront.setPower(-power);
+                    drivetrain.motorLeftFront.setPower(power);
                     drivetrain.motorRightFront.setPower(power);
-                    drivetrain.motorRightBack.setPower(-power);
+                    drivetrain.motorRightBack.setPower(power);
                     drivetrain.motorLeftBack.setPower(power);
 
 
@@ -86,20 +110,20 @@ public class TuneAccel extends LinearOpMode {
                     drivetrain.motorLeftBack.setPower(0);
                     isStopped = true;
                     timer.reset();
-                    stopPos = drivetrain.state.get(1, 0);
+                    stopPos = relXMovement;
                 } else if (isStopped) {
-                    presentPos = drivetrain.state.get(1, 0);
+                    presentPos = relXMovement;
 
                     telemetry.addData("Stopping distance", presentPos - stopPos);
                     telemetry.addData("Stopping time (s)", timer.seconds());
                 }
             }
 
-            if (maxVelocity < drivetrain.state.get(4, 0)) {
-                maxVelocity = drivetrain.state.get(4, 0);
+            if (maxVelocity < drivetrain.state.get(3, 0)) {
+                maxVelocity = drivetrain.state.get(3, 0);
             }
 
-            telemetry.addData("Current velocity (in/s)", drivetrain.state.get(4, 0));
+            telemetry.addData("Current velocity (in/s)", drivetrain.state.get(3, 0));
             telemetry.addData("Max Velocity", maxVelocity);
             telemetry.addData("isReset", isReset);
             telemetry.update();

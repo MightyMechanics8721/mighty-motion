@@ -36,9 +36,9 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 @Config
 public class TwoWheelOdometery {
 
-    public static double xOffset = -139.7; //MM
-    public static double yOffset = -50.8; //MM
-    GoBildaPinpointDriver odo;
+    public static double xOffset = 156.65; //MM
+    public static double yOffset = 42.13; //MM
+    public GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
 
     public TwoWheelOdometery(HardwareMap hardwareMap) {
@@ -47,7 +47,7 @@ public class TwoWheelOdometery {
         this.odo.setOffsets(xOffset, yOffset, DistanceUnit.MM);
         this.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         this.odo.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
         this.odo.resetPosAndIMU();

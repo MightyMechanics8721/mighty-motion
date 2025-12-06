@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Planners.MotionProfile;
 
@@ -24,19 +25,34 @@ public class TuneFeedForwardGains extends LinearOpMode {
     // Use FTCDashboard
     FtcDashboard dashboard;
     Battery battery;
+    MecanumKinematicModel mecanumKinematicModel;
 
     @Override
     public void runOpMode() {
         // Set dashboard
         battery = new Battery(hardwareMap);
         drivetrain = new Drivetrain(hardwareMap, battery);
+        mecanumKinematicModel = new MecanumKinematicModel(Drivetrain.mechanicalParameters);
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
         TelemetryPacket packet = new TelemetryPacket();
         ElapsedTime looptime = new ElapsedTime();
         ElapsedTime lapTime = new ElapsedTime();
-        MotionProfile motionProfile = new MotionProfile(maxDistance, maxVelocity, maxAcceleration, maxAcceleration, false);
-        MotionProfile reverseMotionProfile = new MotionProfile(maxDistance, maxVelocity, maxAcceleration, maxAcceleration, true);
+        MotionProfile motionProfile = new MotionProfile(
+                maxDistance,
+                maxVelocity,
+                maxAcceleration,
+                maxAcceleration,
+                false
+        );
+        MotionProfile reverseMotionProfile = new MotionProfile(
+                maxDistance,
+                maxVelocity,
+                maxAcceleration,
+                maxAcceleration,
+                true
+        );
+
         boolean reverse = false;
         double deltaT = reverseMotionProfile.getTime();
         double velocity = maxVelocity;
@@ -73,13 +89,19 @@ public class TuneFeedForwardGains extends LinearOpMode {
                 velocity = reverseMotionProfile.getVelocity(lapTime.seconds());
                 speeds.set(0, 0, velocity);
                 accelerations.set(0, 0, reverseMotionProfile.getAcceleration(lapTime.seconds()));
-//                    drivetrain.setWheelSpeedAcceleration(Utils.inverseKinematics(speeds),Utils.inverseKinematics(accelerations));
+                drivetrain.setWheelSpeedAcceleration(
+                        mecanumKinematicModel.inverseKinematics(speeds),
+                        mecanumKinematicModel.inverseKinematics(accelerations)
+                );
             } else {
 
                 velocity = motionProfile.getVelocity(lapTime.seconds());
                 speeds.set(0, 0, velocity);
                 accelerations.set(0, 0, motionProfile.getAcceleration(lapTime.seconds()));
-//                    drivetrain.setWheelSpeedAcceleration(Utils.inverseKinematics(speeds),Utils.inverseKinematics(accelerations));
+                drivetrain.setWheelSpeedAcceleration(
+                        mecanumKinematicModel.inverseKinematics(speeds),
+                        mecanumKinematicModel.inverseKinematics(accelerations)
+                );
 
             }
             looptime.reset();

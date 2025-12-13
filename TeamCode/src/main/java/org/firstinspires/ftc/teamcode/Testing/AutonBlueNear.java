@@ -109,26 +109,22 @@ public class AutonBlueNear extends LinearOpMode {
                         ),
 
 
-                        shooter.setShooterVelocityInstant(0),
+                        shooter.setShooterVelocityInstant(
+                                -SHOOTER_VELOCITY / 2 * 2 * Math.PI / 60
+                        ),
 
                         // ----- GATHER SECOND BALL
 
-                        drivetrain.goToPose(Utils.makePoseVector(
-                                12, -28, -90)),
-                        drivetrain.goToPose(Utils.makePoseVector(
-                                12, -42, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(12, -28, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(12, -42, -90)),
+                        new ParallelAction(
+                                drivetrain.goToPose(Utils.makePoseVector(12, -55, -90)),
+                                new InstantAction(() -> indexer.motorController.setPower(1)),
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1)
+                        ),
                         shooter.setShooterVelocityTimed(
                                 -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
-                        ),
-                        new InstantAction(() -> indexer.motorController.setPower(1)),
-                        indexer.setIndexerPower(1),
-                        intake.setIntakePower(-1),
-                        new ParallelAction(
-                                drivetrain.goToPose(Utils.makePoseVector(
-                                        12, -55, -90)),
-                                shooter.setShooterVelocityTimed(
-                                        -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
-                                )
                         ),
                         new ParallelAction(
                                 drivetrain.goToPose(
@@ -149,23 +145,22 @@ public class AutonBlueNear extends LinearOpMode {
                                 )
                         ),
 
-                        shooter.setShooterVelocityInstant(0),
+                        shooter.setShooterVelocityInstant(
+                                -SHOOTER_VELOCITY / 2 * 2 * Math.PI / 60
+                        ),
 
                         // ----- GATHER THIRD ROW -----
 
-                        drivetrain.goToPose(Utils.makePoseVector(
-                                36, -28, -90)),
-                        drivetrain.goToPose(Utils.makePoseVector(
-                                36, -42, -90)),
-                        new InstantAction(() -> indexer.motorController.setPower(1)),
-                        indexer.setIndexerPower(1),
-                        intake.setIntakePower(-1),
+                        drivetrain.goToPose(Utils.makePoseVector(36, -28, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(36, -42, -90)),
                         new ParallelAction(
-                                shooter.setShooterVelocityTimed(
-                                        -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
-                                ),
-                                drivetrain.goToPose(Utils.makePoseVector(
-                                        36, -55, -90))
+                                drivetrain.goToPose(Utils.makePoseVector(36, -55, -90)),
+                                new InstantAction(() -> indexer.motorController.setPower(1)),
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1)
+                        ),
+                        shooter.setShooterVelocityTimed(
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
                         ),
                         new ParallelAction(
                                 drivetrain.goToPose(

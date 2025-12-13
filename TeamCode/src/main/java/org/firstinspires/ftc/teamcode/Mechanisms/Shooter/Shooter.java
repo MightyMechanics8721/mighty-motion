@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -99,9 +100,8 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 shooter.motorController.setVelocity(velocity);
-
                 return Math.abs(shooter.motorController.getVelocity() - velocity)
-                        <= shooter.SHOOTER_CONSTANTS.velocityTolerance;
+                        >= shooter.SHOOTER_CONSTANTS.velocityTolerance;
             }
         };
     }
@@ -118,7 +118,7 @@ public class Shooter {
                 }
                 time = timer.seconds();
                 Shooter.this.motorController.setVelocity(velocity);
-                return time >= seconds;
+                return time <= seconds;
             }
         };
     }

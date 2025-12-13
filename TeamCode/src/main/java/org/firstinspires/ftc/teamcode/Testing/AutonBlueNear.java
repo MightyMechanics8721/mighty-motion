@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -21,7 +22,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 @Config
 @Autonomous(name = "Blue Near", group = "test")
 public class AutonBlueNear extends LinearOpMode {
-    public static double SHOOTER_VELOCITY = 2500;
+    public static double SHOOTER_VELOCITY = 2350;
 
     /**
      * SHOOOTER DIRECTION: FORWARD INDEXER DIRECTION: INTAKE DIRECTION:
@@ -60,30 +61,133 @@ public class AutonBlueNear extends LinearOpMode {
                                         SHOOTER_VELOCITY * 2 * Math.PI / 60
                                 )
                         ),
-                        new SleepAction(1),
                         new ParallelAction(
                                 indexer.setIndexerPower(1),
-                                intake.setIntakePower(1),
+                                intake.setIntakePower(-1),
                                 shooter.setShooterVelocityTimed(
                                         SHOOTER_VELOCITY * 2 * Math.PI / 60,
-                                        3
+                                        0.5
                                 )
                         ),
-                        new SleepAction(1),
-                        indexer.setIndexerPower(0),
-                        intake.setIntakePower(0),
-                        shooter.setShooterVelocityInstant(0)
+                        shooter.setShooterVelocityInstant(
+                                -SHOOTER_VELOCITY / 2 * 2 * Math.PI / 60
+                        ),
+
+                        // ----- GATHER FIRST ROW -----
+
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                -12, -12, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                -12, -36, -90)),
+                        new ParallelAction(
+                                drivetrain.goToPose(Utils.makePoseVector(
+                                        -12, -55, -90)),
+                                new InstantAction(() -> indexer.motorController.setPower(1)),
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1)
+                        ),
+                        shooter.setShooterVelocityTimed(
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                        ),
+                        new ParallelAction(
+                                drivetrain.goToPose(
+                                        Utils.makePoseVector(-12, -12, -135)
+                                        , 0.75, 0.05
+                                ),
+                                indexer.setIndexerPower(-0.5),
+                                shooter.setShooterVelocityInstant(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60
+                                )
+                        ),
+                        new ParallelAction(
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1),
+                                shooter.setShooterVelocityTimed(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60,
+                                        0.5
+                                )
+                        ),
+
+
+                        shooter.setShooterVelocityInstant(0),
+
+                        // ----- GATHER SECOND BALL
+
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                12, -28, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                12, -42, -90)),
+                        shooter.setShooterVelocityTimed(
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                        ),
+                        new InstantAction(() -> indexer.motorController.setPower(1)),
+                        indexer.setIndexerPower(1),
+                        intake.setIntakePower(-1),
+                        new ParallelAction(
+                                drivetrain.goToPose(Utils.makePoseVector(
+                                        12, -55, -90)),
+                                shooter.setShooterVelocityTimed(
+                                        -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                                )
+                        ),
+                        new ParallelAction(
+                                drivetrain.goToPose(
+                                        Utils.makePoseVector(-12, -12, -135)
+                                        , 0.75, 0.05
+                                ),
+                                indexer.setIndexerPower(-0.5),
+                                shooter.setShooterVelocityInstant(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60
+                                )
+                        ),
+                        new ParallelAction(
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1),
+                                shooter.setShooterVelocityTimed(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60,
+                                        0.5
+                                )
+                        ),
+
+                        shooter.setShooterVelocityInstant(0),
+
+                        // ----- GATHER THIRD ROW -----
+
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                36, -28, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(
+                                36, -42, -90)),
+                        new InstantAction(() -> indexer.motorController.setPower(1)),
+                        indexer.setIndexerPower(1),
+                        intake.setIntakePower(-1),
+                        new ParallelAction(
+                                shooter.setShooterVelocityTimed(
+                                        -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                                ),
+                                drivetrain.goToPose(Utils.makePoseVector(
+                                        36, -55, -90))
+                        ),
+                        new ParallelAction(
+                                drivetrain.goToPose(
+                                        Utils.makePoseVector(-12, -12, -135)
+                                        , 0.75, 0.05
+                                ),
+                                indexer.setIndexerPower(-0.5),
+                                shooter.setShooterVelocityInstant(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60
+                                )
+                        ),
+                        new ParallelAction(
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(-1),
+                                shooter.setShooterVelocityTimed(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60,
+                                        0.5
+                                )
+                        )
 
 
                 )
         );
-
-
-        // MAKE NEW ACTION --- STOP POWER TO INDEXER SHOOTER
-        //        public Action stopShooting(){
-        //            return new SeAction(
-        //
-        //            );
-        //        }
     }
 }

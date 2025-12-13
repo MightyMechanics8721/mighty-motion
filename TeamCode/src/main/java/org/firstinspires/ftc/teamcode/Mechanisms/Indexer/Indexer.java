@@ -19,20 +19,22 @@ public class Indexer {
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     private Battery battery;
-    private MotorController motorController;
+    public MotorController motorController;
 
 
     public Indexer(HardwareMap hardwareMap, Battery battery) {
         this.battery = battery;
-        this.motorController = new MotorController(hardwareMap,
+        this.motorController = new MotorController(
+                hardwareMap,
                 new String[]{CONFIGURATION_NAMES.indexerMotorName},
-                battery, BATTERY_PARAMETERS.maxVoltage);
+                battery, BATTERY_PARAMETERS.maxVoltage
+        );
 
     }
 
     //    public void setIndexerPower(double power) {
-//        this.motorController.setPower(power);
-//    }
+    //        this.motorController.setPower(power);
+    //    }
     public Action setIndexerPower(double power) {
         return new Action() {
             @Override

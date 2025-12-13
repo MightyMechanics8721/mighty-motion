@@ -61,7 +61,7 @@ public class TestAutoIndexAndShoot extends LinearOpMode {
 
             if (!b1 && !b2) {
                 indexer.setIndexerPower(0.3);
-                shooter.setShooterVelocity(2500);
+                shooter.setShooterVelocityLoop(2500);
             }
         }
 

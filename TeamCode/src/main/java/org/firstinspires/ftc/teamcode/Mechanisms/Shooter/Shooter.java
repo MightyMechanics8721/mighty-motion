@@ -9,6 +9,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
@@ -27,12 +28,18 @@ public class Shooter {
     public static MotorControllerConstants MOTOR_CONTROLLER_CONSTANTS = new MotorControllerConstants();
 
     /**
+     * Constant values for Shooter Hardware
+     */
+    public static HardwareConstants SHOOTER_CONSTANTS = new HardwareConstants();
+
+    /**
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
 
     private Battery battery;
     private MotorController motorController;
+
 
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
@@ -71,7 +78,7 @@ public class Shooter {
 //    public void setVelocity(double velocity) {
 //        this.motorController.setVelocity(velocity);
 //    }
-    public Action setShooterVelocity(double velocity) {
+    public Action setShooterVelocityLoop(double velocity) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -80,6 +87,36 @@ public class Shooter {
             }
         };
     }
+
+    public Action setShooterVelocityInstant(double velocity) {
+
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                Shooter.this.motorController.setVelocity(velocity);
+                
+                return Math.abs(Shooter.this.motorController.getVelocity() - velocity) <= Shooter.SHOOTER_CONSTANTS.velocityTolerance;
+            }
+        };
+    }
+
+    public Action setShooterVelocityTimed(double velocity, double seconds) {
+        return new Action() {
+            double time = 0;
+            ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (time == 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                Shooter.this.motorController.setVelocity(velocity);
+                return time >= seconds;
+            }
+        };
+    }
+
 
     /**
      * Holds configuration names for the shooter hardware.
@@ -130,5 +167,9 @@ public class Shooter {
          * PID constants used for velocity control.
          */
         public PIDConstants pidConstants = new PIDConstants(0.008, 0, 0);
+    }
+
+    public static class HardwareConstants {
+        double velocityTolerance = 2.0; // (rad/s)
     }
 }

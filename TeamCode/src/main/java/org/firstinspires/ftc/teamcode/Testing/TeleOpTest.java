@@ -71,12 +71,12 @@ public class TeleOpTest extends LinearOpMode {
 
                 // ----- SHOOTER -----
                 if (gamepad2.right_trigger > 0.05) {
-                    runningActions.put("shooter", shooter.setShooterVelocity(SHOOTER_VELOCITY * 2 * Math.PI / 60));
+                    runningActions.put("shooter", shooter.setShooterVelocityLoop(SHOOTER_VELOCITY * 2 * Math.PI / 60));
                     // right_trigger -- float -- 0-255
                 } else if (gamepad2.left_trigger > 0.05) {
-                    runningActions.put("shooter", shooter.setShooterVelocity(-SHOOTER_VELOCITY * 2 * Math.PI / 60));
+                    runningActions.put("shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY * 2 * Math.PI / 60));
                 } else {
-                    runningActions.put("shooter", shooter.setShooterVelocity(0));
+                    runningActions.put("shooter", shooter.setShooterVelocityLoop(0));
                 }
 
                 // ----- INDEXER -----

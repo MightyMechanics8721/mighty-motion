@@ -56,15 +56,23 @@ public class AutonBlueNear extends LinearOpMode {
                 new SequentialAction(
                         new ParallelAction(
                                 drivetrain.goToPose(Utils.makePoseVector(-12, -12, -135)),
-                                shooter.setShooterVelocity(SHOOTER_VELOCITY * 2 * Math.PI / 60)
+                                shooter.setShooterVelocityInstant(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60
+                                )
                         ),
                         new SleepAction(1),
-                        indexer.setIndexerPower(1),
-                        intake.setIntakePower(0.5),
+                        new ParallelAction(
+                                indexer.setIndexerPower(1),
+                                intake.setIntakePower(1),
+                                shooter.setShooterVelocityTimed(
+                                        SHOOTER_VELOCITY * 2 * Math.PI / 60,
+                                        3
+                                )
+                        ),
                         new SleepAction(1),
                         indexer.setIndexerPower(0),
                         intake.setIntakePower(0),
-                        shooter.setShooterVelocity(0)
+                        shooter.setShooterVelocityInstant(0)
 
 
                 )

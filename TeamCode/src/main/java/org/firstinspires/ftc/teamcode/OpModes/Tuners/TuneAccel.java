@@ -9,7 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 
@@ -58,6 +60,10 @@ public class TuneAccel extends LinearOpMode {
 
         while (opModeIsActive()) {
             drivetrain.localize();
+            telemetry.addData(
+                    "BRUH",
+                    drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit.RADIANS)
+            );
             deltaHeading = drivetrain.state.get(2, 0) - previousHeading;
 
             if (deltaHeading > 180) {
@@ -84,7 +90,7 @@ public class TuneAccel extends LinearOpMode {
             relXMovement += dx;
 
 
-//            previousHeading = drivetrain.state.get(2, 0);
+            //            previousHeading = drivetrain.state.get(2, 0);
             prevXEncoder = drivetrain.twoWheelOdo.odo.getEncoderX();
 
             dy =
@@ -99,11 +105,14 @@ public class TuneAccel extends LinearOpMode {
 
             telemetry.addData("offet", drivetrain.twoWheelOdo.odo.getYOffset(DistanceUnit.INCH));
             telemetry.addData("encoder Y (ticks)", drivetrain.twoWheelOdo.odo.getEncoderY());
-            telemetry.addData("encoder Y (in)", drivetrain.twoWheelOdo.odo.getEncoderY() / 2000.0 * 2 * Math.PI
-                    * 0.63);
+            telemetry.addData(
+                    "encoder Y (in)",
+                    drivetrain.twoWheelOdo.odo.getEncoderY() / 2000.0 * 2 * Math.PI
+                            * 0.63
+            );
 
-//
-//            previousHeading = absoluteHeading; // moght break for x.y
+            //
+            //            previousHeading = absoluteHeading; // moght break for x.y
             prevYEncoder = drivetrain.twoWheelOdo.odo.getEncoderY();
 
             // Allow toggling reset mode
@@ -143,7 +152,7 @@ public class TuneAccel extends LinearOpMode {
 
 
                 } else if (gamepad1.square && !isStopped) {
-                    stopPos = absoluteHeading;
+                    stopPos = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit.RADIANS);
                     drivetrain.motorLeftFront.setPower(0);
                     drivetrain.motorRightFront.setPower(0);
                     drivetrain.motorRightBack.setPower(0);
@@ -152,7 +161,8 @@ public class TuneAccel extends LinearOpMode {
                     timer.reset();
 
                 } else if (isStopped) {
-                    presentPos = absoluteHeading;
+                    presentPos
+                            = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit.RADIANS);
 
                     telemetry.addData("Stopping distance", presentPos - stopPos);
                     telemetry.addData("Stopping time (s)", timer.seconds());

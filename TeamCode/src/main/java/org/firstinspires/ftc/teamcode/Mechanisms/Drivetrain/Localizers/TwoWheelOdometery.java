@@ -22,7 +22,9 @@
 
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Localizers;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.ejml.simple.SimpleMatrix;
@@ -54,7 +56,15 @@ public class TwoWheelOdometery {
     }
 
     public SimpleMatrix calculate() {
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("DEBUG X1: ", odo.getPosition().getX(DistanceUnit.INCH));
+        
         odo.update();
+
+        packet.put("DEBUG X2: ", odo.getPosition().getX(DistanceUnit.INCH));
+
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
         SimpleMatrix globalRelativeTVelocities = new SimpleMatrix(
                 new double[][]{
                         new double[]{odo.getVelX(DistanceUnit.INCH)},
@@ -72,11 +82,10 @@ public class TwoWheelOdometery {
                 new double[][]{
                         new double[]{odo.getPosition().getX(DistanceUnit.INCH)},
                         new double[]{odo.getPosition().getY(DistanceUnit.INCH)},
-                        new double[]{odo.getHeading(AngleUnit.RADIANS)},
+                        new double[]{odo.getHeading(UnnormalizedAngleUnit.RADIANS)},
                         new double[]{robotRelativeVelocities.get(0, 0)},
                         new double[]{robotRelativeVelocities.get(1, 0)},
                         new double[]{robotRelativeVelocities.get(2, 0)},
-
                         }
         );
     }

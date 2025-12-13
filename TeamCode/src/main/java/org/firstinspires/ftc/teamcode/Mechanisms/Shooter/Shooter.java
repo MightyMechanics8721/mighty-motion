@@ -40,7 +40,6 @@ public class Shooter {
     private Battery battery;
     private MotorController motorController;
 
-
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
      *
@@ -94,7 +93,7 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 Shooter.this.motorController.setVelocity(velocity);
-                
+
                 return Math.abs(Shooter.this.motorController.getVelocity() - velocity) <= Shooter.SHOOTER_CONSTANTS.velocityTolerance;
             }
         };

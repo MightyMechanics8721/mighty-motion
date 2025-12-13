@@ -5,12 +5,10 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Planners.ProfiledPathGenerator.generatePath;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
 
 import androidx.annotation.NonNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -23,13 +21,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.robotcore.util.Util;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
@@ -179,12 +175,13 @@ public class Drivetrain {
      *
      * @param x Initial X position (inches)
      * @param y Initial Y position (inches)
-     * @param theta Initial heading (radians)
+     * @param theta Initial heading (degrees)
      */
-    public void setInitialPosition(double x, double y, double theta) {
-        initialState.set(0, 0, x);
-        initialState.set(1, 0, y);
-        initialState.set(2, 0, theta);
+    public void setInitialPose(double x, double y, double theta) {
+        this.twoWheelOdo.odo.setPosX(x, DistanceUnit.INCH);
+        this.twoWheelOdo.odo.setPosY(y, DistanceUnit.INCH);
+        this.twoWheelOdo.odo.setHeading(theta, AngleUnit.DEGREES);
+        this.localize();
     }
 
     /**
@@ -192,8 +189,10 @@ public class Drivetrain {
      * locations. Updates the internal state matrix with the current estimated pose.
      */
     public void localize() {
-        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        //        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+        this.state = this.twoWheelOdo.calculate();
         this.updateTelemetry();
+
     }
 
     public void localizePath(double[][] points) {
@@ -241,11 +240,15 @@ public class Drivetrain {
     }
 
     private double stoppingDistanceX(double xVelocity) {
-        return 0.0932 * xVelocity + 0.00124 * xVelocity * xVelocity;
+        return 0.132 * xVelocity + 0.00132 * xVelocity * xVelocity;
     }
 
     private double stoppingDistanceY(double yVelocity) {
-        return 0.0832 * yVelocity + 0.00149 * yVelocity * yVelocity;
+        return 0.0716 * yVelocity + 0.00213 * yVelocity * yVelocity;
+    }
+
+    private double stoppingAngle(double angularVelocity) {
+        return 0.0658 * angularVelocity + 0.00522 * angularVelocity * angularVelocity;
     }
 
     /**
@@ -267,7 +270,7 @@ public class Drivetrain {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                localize();
+                drivetrain.localize();
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
 
 
@@ -287,7 +290,11 @@ public class Drivetrain {
                                         Math.signum(state.get(4, 0)) * drivetrain.stoppingDistanceY(
                                                 Math.abs(state.get(4, 0)))
                                 },
-                                new double[]{0}
+                                new double[]{
+                                        Math.signum(state.get(5, 0)) * drivetrain.stoppingAngle(
+                                                Math.abs(state.get(5, 0))
+                                        )
+                                }
                         }
                 );
                 // 4) Rotate this matrix to the global frame
@@ -489,11 +496,11 @@ public class Drivetrain {
     }
 
     public static class PoseConstants {
-        public PIDConstants xPIDConstants = new PIDConstants(30, 0, 0);
+        public PIDConstants xPIDConstants = new PIDConstants(4.5, 0, 0);
 
-        public PIDConstants yPIDConstants = new PIDConstants(35, 0, 0);
+        public PIDConstants yPIDConstants = new PIDConstants(4.5, 0, 0);
 
-        public PIDConstants headingPIDConstants = new PIDConstants(6, 0, 0);
+        public PIDConstants headingPIDConstants = new PIDConstants(1.8, 0, 0);
     }
 
     public static class FFConstantsController {
@@ -531,12 +538,12 @@ public class Drivetrain {
          * Acceptable difference between wanted and current positions (Inches) to make a hardware
          * call Used to save time & reduce unnecessary movements
          */
-        public static double distanceThreshold = 0.25;
+        public static double distanceThreshold = 0.5;
         /**
          * The acceptable difference between wanted and current angles (Radians) Used to save time &
          * reduce unnecessary movements
          */
-        public static double angleThreshold = 0.1;
+        public static double angleThreshold = 0.05;
         public static boolean stopPlanning = true;
     }
 }

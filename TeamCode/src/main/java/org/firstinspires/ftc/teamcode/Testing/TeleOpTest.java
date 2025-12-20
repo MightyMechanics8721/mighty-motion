@@ -17,9 +17,10 @@ import java.util.Map;
 
 @TeleOp(name = "Full Robot Test")
 public class TeleOpTest extends LinearOpMode {
-    public static boolean singleController = false;
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY = 2500;
+    public static double SHOOTER_VELOCITY_NORMAL = 2500;
+    public static double SHOOTER_VELOCITY_CLOSE = 1750;
+    public static double SHOOTER_VELOCITY_FAR = 4000;
 
     Battery battery;
     FtcDashboard dashboard;
@@ -42,73 +43,89 @@ public class TeleOpTest extends LinearOpMode {
         drivetrain = new Drivetrain(hardwareMap, battery);
 
         waitForStart();
-        if (singleController) {
 
-        } else {
-            while (opModeIsActive()) {
+        while (opModeIsActive()) {
 
-                TelemetryPacket packet = new TelemetryPacket();
+            TelemetryPacket packet = new TelemetryPacket();
 
-                // ----- DRIVETRAIN -----
-                runningActions.put(
-                        "manualDrive", drivetrain.manualControl(
-                                -gamepad1.left_stick_x,
-                                gamepad1.left_stick_y,
-                                gamepad1.right_stick_x)
-                );
-                // ----- INTAKE && INDEXER -----
-                if (gamepad1.right_trigger > 0.1) {
-                    runningActions.put("intake", intake.setIntakePower(-1));
-                    runningActions.put("indexer", indexer.setIndexerPower(1));
-                } else if (gamepad1.left_trigger > 0.1) {
-                    runningActions.put("intake", intake.setIntakePower(1));
-                } else if (gamepad1.left_bumper) {
-                    runningActions.put("indexer", indexer.setIndexerPower(-1));
-                } else {
-                    runningActions.put("intake", intake.setIntakePower(0.0));
-                    runningActions.put("indexer", indexer.setIndexerPower(0.0));
-                }
-
-                // ----- SHOOTER -----
-                if (gamepad2.right_trigger > 0.05) {
-                    runningActions.put("shooter", shooter.setShooterVelocityLoop(SHOOTER_VELOCITY * 2 * Math.PI / 60));
-                    // right_trigger -- float -- 0-255
-                } else if (gamepad2.left_trigger > 0.05) {
-                    runningActions.put("shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY * 2 * Math.PI / 60));
-                } else {
-                    runningActions.put("shooter", shooter.setShooterVelocityLoop(0));
-                }
-
-                // ----- INDEXER -----
-//
-//            if (gamepad1.cross) {
-//                runningActions.put("indexer", indexer.setIndexerPower(1.0));
-//            } else {
-//                runningActions.put("indexer", indexer.setIndexerPower(0.0));
-//            }
-
-//            if (gamepad2.right_trigger > 0.05) {
-//                runningActions.put("shooter", shooter.setShooterVelocity(SHOOTER_VELOCITY * ((double) gamepad1.right_trigger)));
-//                // right_trigger -- float -- 0-255
-//            }
-
-                // ----- RUN ACTIONS -----
-                HashMap<String, Action> newActions = new HashMap<>();
-                for (Map.Entry<String, Action> entry : runningActions.entrySet()) {
-                    entry.getValue().preview(packet.fieldOverlay());
-                    if (entry.getValue().run(packet)) {
-                        newActions.put(entry.getKey(), entry.getValue());
-                    }
-                }
-                runningActions = newActions;
-
-                dashboard.sendTelemetryPacket(packet);
-
-                // Dashboard telemetry
-                dashboard.getTelemetry().addData("Shooter Vel", shooter.getVelocity());
-                dashboard.getTelemetry().addData("Battery Voltage", battery.getVoltage());
-                dashboard.getTelemetry().update();
+            // ----- DRIVETRAIN -----
+            runningActions.put(
+                    "manualDrive", drivetrain.manualControl(
+                            -gamepad1.left_stick_x,
+                            gamepad1.left_stick_y,
+                            gamepad1.right_stick_x
+                    )
+            );
+            // ----- INTAKE && INDEXER -----
+            if (gamepad1.right_trigger > 0.1) {
+                runningActions.put("intake", intake.setIntakePower(-1));
+                runningActions.put("indexer", indexer.setIndexerPower(1));
+            } else if (gamepad1.left_trigger > 0.1) {
+                runningActions.put("intake", intake.setIntakePower(1));
+            } else if (gamepad1.left_bumper) {
+                runningActions.put("indexer", indexer.setIndexerPower(-1));
+            } else {
+                runningActions.put("intake", intake.setIntakePower(0.0));
+                runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
+
+            // ----- SHOOTER -----
+            if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
+                runningActions.put(
+                        "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
+                                                                          / 2 * 2 * Math.PI / 60)
+                );
+            } else if (gamepad2.square) { // ------ NORMAL ------
+                runningActions.put(
+                        "shooter", shooter.setShooterVelocityLoop(
+                                SHOOTER_VELOCITY_NORMAL * 2 * Math.PI / 60)
+                );
+            } else if (gamepad2.cross) { // ------ CLOSE ------
+                runningActions.put(
+                        "shooter",
+                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_CLOSE * 2 * Math.PI / 60)
+                );
+
+            } else if (gamepad2.triangle) { // ------ FAR ------
+                runningActions.put(
+                        "shooter",
+                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_FAR * 2 * Math.PI / 60)
+                );
+            } else {
+                runningActions.put("shooter", shooter.setShooterVelocityLoop(0));
+            }
+
+            // ----- INDEXER -----
+            //
+            //            if (gamepad1.cross) {
+            //                runningActions.put("indexer", indexer.setIndexerPower(1.0));
+            //            } else {
+            //                runningActions.put("indexer", indexer.setIndexerPower(0.0));
+            //            }
+
+            //            if (gamepad2.right_trigger > 0.05) {
+            //                runningActions.put("shooter", shooter.setShooterVelocity
+            //                (SHOOTER_VELOCITY * ((double) gamepad1.right_trigger)));
+            //                // right_trigger -- float -- 0-255
+            //            }
+
+            // ----- RUN ACTIONS -----
+            HashMap<String, Action> newActions = new HashMap<>();
+            for (Map.Entry<String, Action> entry : runningActions.entrySet()) {
+                entry.getValue().preview(packet.fieldOverlay());
+                if (entry.getValue().run(packet)) {
+                    newActions.put(entry.getKey(), entry.getValue());
+                }
+            }
+            runningActions = newActions;
+
+            dashboard.sendTelemetryPacket(packet);
+
+            // Dashboard telemetry
+            dashboard.getTelemetry().addData("Shooter Vel", shooter.getVelocity());
+            dashboard.getTelemetry().addData("Battery Voltage", battery.getVoltage());
+            dashboard.getTelemetry().update();
         }
+
     }
 }

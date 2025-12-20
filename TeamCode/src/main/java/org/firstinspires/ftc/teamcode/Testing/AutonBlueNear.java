@@ -87,7 +87,7 @@ public class AutonBlueNear extends LinearOpMode {
                                 intake.setIntakePower(-1)
                         ),
                         shooter.setShooterVelocityTimed(
-                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1.5
                         ),
                         new ParallelAction(
                                 drivetrain.goToPose(
@@ -124,7 +124,7 @@ public class AutonBlueNear extends LinearOpMode {
                                 intake.setIntakePower(-1)
                         ),
                         shooter.setShooterVelocityTimed(
-                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1.5
                         ),
                         new ParallelAction(
                                 drivetrain.goToPose(
@@ -141,7 +141,7 @@ public class AutonBlueNear extends LinearOpMode {
                                 intake.setIntakePower(-1),
                                 shooter.setShooterVelocityTimed(
                                         SHOOTER_VELOCITY * 2 * Math.PI / 60,
-                                        0.5
+                                        0.75
                                 )
                         ),
 
@@ -151,7 +151,7 @@ public class AutonBlueNear extends LinearOpMode {
 
                         // ----- GATHER THIRD ROW -----
 
-                        drivetrain.goToPose(Utils.makePoseVector(36, -28, -90)),
+                        drivetrain.goToPose(Utils.makePoseVector(36, -24, -90)),
                         drivetrain.goToPose(Utils.makePoseVector(36, -42, -90)),
                         new ParallelAction(
                                 drivetrain.goToPose(Utils.makePoseVector(36, -55, -90)),
@@ -160,12 +160,12 @@ public class AutonBlueNear extends LinearOpMode {
                                 intake.setIntakePower(-1)
                         ),
                         shooter.setShooterVelocityTimed(
-                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1
+                                -SHOOTER_VELOCITY / 3.5 * 2 * Math.PI / 60, 1.5
                         ),
                         new ParallelAction(
                                 drivetrain.goToPose(
                                         Utils.makePoseVector(-12, -12, -135)
-                                        , 0.75, 0.05
+                                        , 0.5, 0.05
                                 ),
                                 indexer.setIndexerPower(-0.5),
                                 shooter.setShooterVelocityInstant(

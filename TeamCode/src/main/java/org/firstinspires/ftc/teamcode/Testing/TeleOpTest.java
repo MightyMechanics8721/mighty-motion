@@ -19,8 +19,8 @@ import java.util.Map;
 public class TeleOpTest extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
-    public static double SHOOTER_VELOCITY_CLOSE = 1750;
-    public static double SHOOTER_VELOCITY_FAR = 4000;
+    public static double SHOOTER_VELOCITY_CLOSE = 2250;
+    public static double SHOOTER_VELOCITY_FAR = 3500;
 
     Battery battery;
     FtcDashboard dashboard;

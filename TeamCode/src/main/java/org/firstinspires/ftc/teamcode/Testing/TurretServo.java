@@ -104,6 +104,7 @@ public class TurretServo {
         };
     }
 
+        //now tell me how many ports ill use
 
     /**
      * @return Current turret encoder ticks.

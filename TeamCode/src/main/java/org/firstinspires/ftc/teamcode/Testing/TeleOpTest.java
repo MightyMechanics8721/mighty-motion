@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
+import org.firstinspires.ftc.teamcode.Testing.Turret;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
@@ -26,6 +27,7 @@ public class TeleOpTest extends LinearOpMode {
     FtcDashboard dashboard;
 
     // Hardware
+    private Turret turret;
     private Intake intake;
     private Indexer indexer;
     private Shooter shooter;
@@ -37,6 +39,7 @@ public class TeleOpTest extends LinearOpMode {
 
         dashboard = FtcDashboard.getInstance();
         battery = new Battery(hardwareMap);
+        turret = new Turret(hardwareMap);
         intake = new Intake(hardwareMap, battery);
         indexer = new Indexer(hardwareMap, battery);
         shooter = new Shooter(hardwareMap, battery);
@@ -68,12 +71,18 @@ public class TeleOpTest extends LinearOpMode {
                 runningActions.put("intake", intake.setIntakePower(0.0));
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
+            // ----- TURRET -----
+            if (gamepad2.dpad_up) {
+                runningActions.put("turret", turret.setTurretAngle(0));
+            } else if (gamepad2.dpad_left) {
+                runningActions.put("turret", turret.setTurretAngle(90));
+            }
 
             // ----- SHOOTER -----
             if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

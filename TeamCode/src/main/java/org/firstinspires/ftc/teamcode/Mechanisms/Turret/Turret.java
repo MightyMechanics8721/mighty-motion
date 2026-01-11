@@ -11,28 +11,24 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Turret {
 
-    // --- PID Constants (Dashboard Tunable) ---
-    public static double Kp = 0.01;
-    public static double Ki = 0.0;
-    public static double Kd = 0.0;
-
+    public static PIDConstants pidConstants = new PIDConstants(0.01, 0.0, 0.0);
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
-
     // --- Hardware ---
     private final CRServo turretLeft;
     private final CRServo turretRight;
-    private final Encoder turretEncoder; // <-- replaced DcMotorEx with Encoder
-
+    private final DcMotorEx turretEncoder; // <-- replaced DcMotorEx with Encoder
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
@@ -41,13 +37,11 @@ public class Turret {
     public Turret(HardwareMap hardwareMap) {
         turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
         turretRight = hardwareMap.get(CRServo.class, "servodotRight");
-        turretEncoder = new Encoder(hardwareMap.get(
-                com.qualcomm.robotcore.hardware.DcMotorEx.class,
-                "lfm"
-        )); // <-- use Encoder wrapper
+        turretEncoder = hardwareMap.get(DcMotorEx.class, "lfm");
+        // <-- use Encoder wrapper
 
         dashboard = FtcDashboard.getInstance();
-        pid = new PID(Kp, Ki, Kd, PID.functionType.LINEAR);
+        pid = new PID(pidConstants, PID.functionType.LINEAR);
     }
 
     // --- Hardware Functions ---
@@ -57,7 +51,7 @@ public class Turret {
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        return (ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO;
+        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
     }
 
     /**

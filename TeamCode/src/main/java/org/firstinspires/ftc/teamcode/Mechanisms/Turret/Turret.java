@@ -1,89 +1,152 @@
-package org.firstinspires.ftc.teamcode.Mechanisms.Turret;
+package org.firstinspires.ftc.teamcode.Testing;
+
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Turret {
-    private static final double TICKS_PER_REV = 4000.0;
-    // tuning
-    public static double Kp = 1.0 / 180;
-    public static double Ki = 0;
-    public static double Kd = 0;
-    private CRServo turretLeft;
-    private CRServo turretRight;
-    private DcMotorEx turretEncoder;
-    private PID pid;
 
+    // --- PID Constants (Dashboard Tunable) ---
+    public static double Kp = 0.01;
+    public static double Ki = 0.0;
+    public static double Kd = 0.0;
+
+    // --- Hardware constants ---
+    private final double TICKS_PER_REV = 4000.0;
+    private final double GEAR_RATIO = 140.0 / 30;
+
+    // --- Hardware ---
+    private final CRServo turretLeft;
+    private final CRServo turretRight;
+    private final Encoder turretEncoder; // <-- replaced DcMotorEx with Encoder
+
+    // --- Utilities ---
+    private final PID pid;
+    private final FtcDashboard dashboard;
+
+    // --- Constructor ---
     public Turret(HardwareMap hardwareMap) {
-        turretLeft = hardwareMap.get(CRServo.class, "servodot");
-        turretRight = hardwareMap.get(CRServo.class, "servodotty");
-        turretEncoder = hardwareMap.get(DcMotorEx.class, "encoding");
-        pid = new PID(new PIDConstants(Kp, Ki, Kd), PID.functionType.LINEAR);
+        turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
+        turretRight = hardwareMap.get(CRServo.class, "servodotRight");
+        turretEncoder = new Encoder(hardwareMap.get(
+                com.qualcomm.robotcore.hardware.DcMotorEx.class,
+                "lfm"
+        )); // <-- use Encoder wrapper
+
+        dashboard = FtcDashboard.getInstance();
+        pid = new PID(Kp, Ki, Kd, PID.functionType.LINEAR);
+    }
+
+    // --- Hardware Functions ---
+
+    /**
+     * Returns the current turret angle in degrees
+     */
+    public double getAngle() {
+        double ticks = turretEncoder.getCurrentPosition();
+        return (ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO;
     }
 
     /**
-     * Calculates the PID power needed to spin the Servo.
-     *
-     * @param desiredHeading The angle (degrees) that we attempt to reach.
-     * @return
+     * Computes PID power to reach a desired angle
      */
-    public double spinPower(double desiredHeading) {
-        double heading = getHeadingDegrees();
-        double output = pid.calculate(desiredHeading, heading);
-        return Range.clip(output, -1.0, 1.0);
+    private double computeSpinPower(double desiredAngle) {
+        return pid.calculate(desiredAngle, getAngle());
     }
 
     /**
-     * Spins the Turret
-     *
-     * @param desiredHeading The angle (degrees) that we attempt to reach.
-     * @return
+     * Rotates the turret to a specific angle using PID as a Roadrunner Action
      */
-    public Action turretSpin(double desiredHeading) {
+    public Action setTurretAngle(double desiredAngle) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power = spinPower(desiredHeading);
-                turretLeft.setPower(-power);
-                turretRight.setPower(-power);
-// NEGATIVE POWER BECAUSE REVERSED
-                telemetryPacket.put("A Target", desiredHeading);
-                telemetryPacket.put("B Current", getHeadingDegrees());
-                telemetryPacket.put("C Power", power);
+                double power = computeSpinPower(desiredAngle);
+                turretLeft.setPower(power);
+                turretRight.setPower(power);
 
-                // finish once close to target
-                return Math.abs(desiredHeading - getHeadingDegrees()) < 1;
+                telemetryPacket.put("Target Angle", desiredAngle);
+                telemetryPacket.put("Current Angle", getAngle());
+                telemetryPacket.put("Power", power);
+
+                // Stop when within 1 degree
+                return Math.abs(desiredAngle - getAngle()) < 1.0;
             }
         };
     }
 
     /**
-     * Gets the Encoder's current position in ticks
-     *
-     * @return
+     * Manual turret control using gamepad stick
      */
-    public int getEncoderTicks() {
-        return turretEncoder.getCurrentPosition();
+    public Action manualControl() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double stickPower = gamepad1.left_stick_y;
+                turretLeft.setPower(stickPower);
+                turretRight.setPower(stickPower);
+
+                telemetryPacket.put("Manual Power", stickPower);
+                return false; // continuous
+            }
+        };
+    }
+
+    // --- Auto-Aim Functions ---
+
+    /**
+     * Auto-aim at a field goal using robot pose
+     */
+    public Action autoAim(Pose2d robotPose, Vector2d goalPos) {
+        double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+        return setTurretAngle(angleToGoal);
     }
 
     /**
-     * Calculates the Encoder's current position in degrees
-     *
-     * @return
+     * Compute dx from robot to goal
      */
-    public double getHeadingDegrees() {
-        double ticks = turretEncoder.getCurrentPosition();
-        return (ticks / TICKS_PER_REV) * 360;
+    private double computeDx(Pose2d robotPose, Vector2d goalPos) {
+        return goalPos.x - robotPose.position.x;
+    }
+
+    /**
+     * Compute dy from robot to goal
+     */
+    private double computeDy(Pose2d robotPose, Vector2d goalPos) {
+        return goalPos.y - robotPose.position.y;
+    }
+
+    /**
+     * Compute field-relative angle to goal in degrees
+     */
+    private double computeFieldAngle(double dx, double dy) {
+        return Math.toDegrees(Math.atan2(dy, dx));
+    }
+
+    /**
+     * Compute robot-relative angle to goal in degrees
+     */
+    private double computeRobotRelativeAngle(Pose2d robotPose, Vector2d goalPos) {
+        double dx = computeDx(robotPose, goalPos);
+        double dy = computeDy(robotPose, goalPos);
+        double fieldAngle = computeFieldAngle(dx, dy);
+        double robotHeading = Math.toDegrees(robotPose.heading.toDouble());
+        double relativeAngle = fieldAngle - robotHeading;
+
+        // Wrap 0–360
+        return (relativeAngle % 360 + 360) % 360;
     }
 }

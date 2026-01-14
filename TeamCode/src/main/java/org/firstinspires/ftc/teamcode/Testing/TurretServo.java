@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
@@ -28,7 +29,7 @@ public class TurretServo {
         turretLeft = hardwareMap.get(CRServo.class, "servodot");
         turretRight = hardwareMap.get(CRServo.class, "servodotty");
         turretEncoder = hardwareMap.get(DcMotorEx.class, "encoding");
-        pid = new PID(Kp, Ki, Kd, PID.functionType.LINEAR);
+        pid = new PID(new PIDConstants(Kp, Ki, Kd), PID.functionType.LINEAR);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
 
 @Config
@@ -20,17 +21,21 @@ public class TuneStaticGain extends LinearOpMode {
     // Use FTCDashboard
     FtcDashboard dashboard;
     Battery battery;
-@Override
+
+    @Override
     public void runOpMode() {
         // Set dashboard
         battery = new Battery(hardwareMap);
         drivetrain = new Drivetrain(hardwareMap, battery);
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
-        drivetrain.motorController.ffLfm.setGains(0,0,drivetrain.motorController.ffLfm.kS);
-        drivetrain.motorController.ffLbm.setGains(0,0,drivetrain.motorController.ffLbm.kS);
-        drivetrain.motorController.ffRbm.setGains(0,0,drivetrain.motorController.ffRbm.kS);
-        drivetrain.motorController.ffRfm.setGains(0,0,drivetrain.motorController.ffRfm.kS);
+
+        // TODO: fix this problem
+        
+//        drivetrain.motorController.ffLfm.setGains(
+//        drivetrain.motorController.ffLbm.setGains(0, 0, drivetrain.motorController.ffLbm.kS);
+//        drivetrain.motorController.ffRbm.setGains(0, 0, drivetrain.motorController.ffRbm.kS);
+//        drivetrain.motorController.ffRfm.setGains(0, 0, drivetrain.motorController.ffRfm.kS);
         ElapsedTime looptime = new ElapsedTime();
         SimpleMatrix speeds = new SimpleMatrix(
                 new double[][]{
@@ -39,15 +44,15 @@ public class TuneStaticGain extends LinearOpMode {
                         {1},
                         {1}
 
-            }
+                }
         );
         SimpleMatrix accelerations = new SimpleMatrix(
-            new double[][]{
-                    {0},
-                {0},
-                {0},
-                {0}
-            }
+                new double[][]{
+                        {0},
+                        {0},
+                        {0},
+                        {0}
+                }
         );
         waitForStart();
 
@@ -55,7 +60,7 @@ public class TuneStaticGain extends LinearOpMode {
 
         while (opModeIsActive()) {
             drivetrain.localize();
-            drivetrain.setWheelSpeedAcceleration(speeds,accelerations);
+            drivetrain.setWheelSpeedAcceleration(speeds, accelerations);
             looptime.reset();
         }
     }

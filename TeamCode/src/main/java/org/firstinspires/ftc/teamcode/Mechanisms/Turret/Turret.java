@@ -28,6 +28,10 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 @Config
 public class Turret {
 
+    // --- Tunable ---
+    public static double staticGain = 0.15;
+    public static PIDConstants pidConstants = new PIDConstants(0.0015, 0.0, 0.0001);
+    public static double angleThreshold = 1.0;
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
@@ -38,10 +42,6 @@ public class Turret {
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
-    // --- Tunable ---
-    public static double staticGain = 0.4;
-    public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0.0);
-    public static double angleThreshold = 1.0;
 
     // --- Constructor ---
     public Turret(HardwareMap hardwareMap) {

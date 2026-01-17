@@ -89,10 +89,12 @@ public class TeleOpTest extends LinearOpMode {
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
                 runningActions.put("shooter", shooter.autoShoot());
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
+
             } else if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

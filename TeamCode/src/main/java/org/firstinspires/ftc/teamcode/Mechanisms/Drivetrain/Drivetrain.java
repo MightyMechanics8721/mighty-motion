@@ -59,7 +59,7 @@ public class Drivetrain {
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public static MechanicalParameters mechanicalParameters;
 
-    public SimpleMatrix state = new SimpleMatrix(6, 1);
+    public static SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
      */

@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.Mechanisms.Turret;
 
+import static androidx.core.math.MathUtils.clamp;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 
 import androidx.annotation.NonNull;
@@ -9,39 +10,52 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Turret {
 
-    public static PIDConstants pidConstants = new PIDConstants(0.01, 0.0, 0.0);
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
     // --- Hardware ---
     private final CRServo turretLeft;
     private final CRServo turretRight;
-    private final DcMotorEx turretEncoder; // <-- replaced DcMotorEx with Encoder
+    private final Encoder turretEncoder; // <-- replaced DcMotorEx with Encoder
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
+    // --- Tunable ---
+    public static double staticGain = 0.4;
+    public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0.0);
+    public static double angleThreshold = 1.0;
 
     // --- Constructor ---
     public Turret(HardwareMap hardwareMap) {
         turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
         turretRight = hardwareMap.get(CRServo.class, "servodotRight");
-        turretEncoder = hardwareMap.get(DcMotorEx.class, "lfm");
+        turretEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV);
         // <-- use Encoder wrapper
 
         dashboard = FtcDashboard.getInstance();
         pid = new PID(pidConstants, PID.functionType.LINEAR);
+        turretLeft.setDirection(CRServo.Direction.REVERSE);
+        turretRight.setDirection(CRServo.Direction.REVERSE);
+        turretEncoder.reset();
+
     }
 
     // --- Hardware Functions ---
@@ -58,7 +72,8 @@ public class Turret {
      * Computes PID power to reach a desired angle
      */
     private double computeSpinPower(double desiredAngle) {
-        return pid.calculate(desiredAngle, getAngle());
+        double pidOutput = pid.calculate(desiredAngle, getAngle());
+        return staticGain * Math.signum(pidOutput) + pidOutput;
     }
 
     /**
@@ -68,7 +83,7 @@ public class Turret {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power = computeSpinPower(desiredAngle);
+                double power = computeSpinPower(clamp(desiredAngle, -90, 90));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
@@ -77,7 +92,12 @@ public class Turret {
                 telemetryPacket.put("Power", power);
 
                 // Stop when within 1 degree
-                return Math.abs(desiredAngle - getAngle()) < 1.0;
+                if (Math.abs(desiredAngle - getAngle()) < 1.0) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return false;
+                }
+                return true;
             }
         };
     }
@@ -104,7 +124,14 @@ public class Turret {
     /**
      * Auto-aim at a field goal using robot pose
      */
-    public Action autoAim(Pose2d robotPose, Vector2d goalPos) {
+    public Action autoAim(Vector2d goalPos) {
+        SimpleMatrix robotState = Drivetrain.state;
+        Pose2d robotPose = new Pose2d(
+                robotState.get(0, 0),
+                robotState.get(1, 0),
+                robotState.get(2, 0)
+        );
+
         double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
         return setTurretAngle(angleToGoal);
     }

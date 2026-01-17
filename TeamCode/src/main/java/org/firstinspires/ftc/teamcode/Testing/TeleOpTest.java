@@ -1,21 +1,24 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-import org.firstinspires.ftc.teamcode.Testing.Turret;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
+import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Config
 @TeleOp(name = "Full Robot Test")
 public class TeleOpTest extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
@@ -72,17 +75,24 @@ public class TeleOpTest extends LinearOpMode {
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
             // ----- TURRET -----
+            //            if (gamepad2.left_trigger > 0.15) {
+            //                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
+            //            }
             if (gamepad2.dpad_up) {
                 runningActions.put("turret", turret.setTurretAngle(0));
             } else if (gamepad2.dpad_left) {
                 runningActions.put("turret", turret.setTurretAngle(90));
+            } else if (gamepad2.dpad_right) {
+                runningActions.put("turret", turret.setTurretAngle(-90));
             }
 
             // ----- SHOOTER -----
-            if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
+            if (gamepad2.right_trigger > 0.05) {
+                runningActions.put("shooter", shooter.autoShoot());
+            } else if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

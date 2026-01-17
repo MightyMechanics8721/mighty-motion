@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.state;
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
+
 import androidx.annotation.NonNull;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
@@ -73,6 +76,23 @@ public class Shooter {
      */
     public double getVelocity() {
         return this.motorController.getVelocity();
+    }
+
+    public double calculateVelocity(double distance) {
+        return 2695 + (-9.78 * distance) + 0.0811 * distance * distance
+                + 0.000264 * distance * distance * distance;
+    }
+
+    public Action autoShoot() {
+        return new Action() {
+            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double distance = calculateDistance(state.get(0, 0), state.get(1, 0), -60, -60);
+                Shooter.this.motorController.setVelocity(
+                        calculateVelocity(distance) * 2 * Math.PI / 60);
+                telemetryPacket.put("Distance bot to goal (in) ", distance);
+                return true;
+            }
+        };
     }
 
     /**

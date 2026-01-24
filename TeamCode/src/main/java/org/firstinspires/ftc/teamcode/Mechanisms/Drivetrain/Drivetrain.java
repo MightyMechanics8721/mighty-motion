@@ -5,10 +5,12 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.r;
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.w;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.makePoseVector;
 
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -56,10 +58,15 @@ public class Drivetrain {
     public static double maxVoltage = 12.5;
     // Create new instance.
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
+    public static PoseConstantsGeo POSE_CONSTANTS_GEO = new PoseConstantsGeo();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public static MechanicalParameters mechanicalParameters;
 
     public static SimpleMatrix state = new SimpleMatrix(6, 1);
+    public static SimpleMatrix stoppingDistancePose = new SimpleMatrix(3, 1);
+    public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
+    public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
+    public static MotionParameters MOTION_PARAMETERS = new MotionParameters();
     /**
      * Initialize Classes
      */
@@ -92,11 +99,12 @@ public class Drivetrain {
             POSE_CONSTANTS.yPIDConstants,
             POSE_CONSTANTS.headingPIDConstants
     );
-    MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
 
-    ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
-
-    MotionParameters MOTION_PARAMETERS = new MotionParameters();
+    public PoseController followController = new PoseController(
+            POSE_CONSTANTS_GEO.xPIDConstants,
+            POSE_CONSTANTS_GEO.yPIDConstants,
+            POSE_CONSTANTS_GEO.headingPIDConstants
+    );
     HardwareMap hardwareMap;
     SimpleMatrix initialState = new SimpleMatrix(6, 1);
     FtcDashboard ftcDashboard;
@@ -181,7 +189,11 @@ public class Drivetrain {
         this.twoWheelOdo.odo.setPosX(x, DistanceUnit.INCH);
         this.twoWheelOdo.odo.setPosY(y, DistanceUnit.INCH);
         this.twoWheelOdo.odo.setHeading(theta, AngleUnit.DEGREES);
+
+
+        // TODO: remove
         this.localize();
+        stoppingDistancePose = state.extractMatrix(0, 3, 0, 1);
     }
 
     /**
@@ -195,11 +207,50 @@ public class Drivetrain {
 
     }
 
-    public void localizePath(double[][] points) {
+    public void localizePath(double[][] points, TelemetryPacket packet) {
         this.state = this.initialState.plus(this.twoWheelOdo.calculate());
-        this.updateTelemetryGraph(points);
+        //        this.updateTelemetryGraph(points, packet);
     }
 
+
+    public SimpleMatrix stoppingDistance(TelemetryPacket packet) {
+        // 1) Get the x velocity and the y velocity
+        // 2) Plug in each velocity to each function to get the stopping distance of x
+        // and of y
+        // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop
+        // dist, 0]
+        //        Drivetrain drivetrain = this;
+        SimpleMatrix stopDistance = new SimpleMatrix(
+                new double[][]{
+                        new double[]{
+                                Math.signum(state.get(3, 0)) * this.stoppingDistanceX(
+                                        Math.abs(state.get(3, 0)))
+                        },
+                        new double[]{
+                                Math.signum(state.get(4, 0)) * this.stoppingDistanceY(
+                                        Math.abs(state.get(4, 0)))
+                        },
+                        new double[]{
+                                Math.signum(state.get(5, 0)) * this.stoppingAngle(
+                                        Math.abs(state.get(5, 0))
+                                )
+                        }
+                }
+        );
+        // 4) Rotate this matrix to the global frame
+        SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
+                stopDistance, state.get(
+                        2,
+                        0
+                )
+        );
+
+        packet.put("stopping x", stopDistance.get(0, 0));
+        packet.put("stopping y", stopDistance.get(1, 0));
+        packet.put("stopping angle", stopDistance.get(2, 0));
+
+        return stopDistanceGlobal;
+    }
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change
@@ -273,39 +324,13 @@ public class Drivetrain {
                 drivetrain.localize();
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
 
+                if (ThresholdParameters.stopPlanning) {
+                    pose =
+                            pose.plus(drivetrain.stoppingDistance(packet));
+                    packet.addLine("Using stopping distance!");
+                }
+                stoppingDistancePose = pose;
 
-                // 1) Get the x velocity and the y velocity
-                // 2) Plug in each velocity to each function to get the stopping distance of x
-                // and of y
-                // 3) Build a new simple matrix that is 3x1 that contains [x stop dist, y stop
-                // dist, 0]
-
-                SimpleMatrix stopDistance = new SimpleMatrix(
-                        new double[][]{
-                                new double[]{
-                                        Math.signum(state.get(3, 0)) * drivetrain.stoppingDistanceX(
-                                                Math.abs(state.get(3, 0)))
-                                },
-                                new double[]{
-                                        Math.signum(state.get(4, 0)) * drivetrain.stoppingDistanceY(
-                                                Math.abs(state.get(4, 0)))
-                                },
-                                new double[]{
-                                        Math.signum(state.get(5, 0)) * drivetrain.stoppingAngle(
-                                                Math.abs(state.get(5, 0))
-                                        )
-                                }
-                        }
-                );
-                // 4) Rotate this matrix to the global frame
-                SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
-                        stopDistance, state.get(
-                                2,
-                                0
-                        )
-                );
-                // 5) Add the result to the pose
-                if (ThresholdParameters.stopPlanning) pose = pose.plus(stopDistanceGlobal);
                 SimpleMatrix wheelSpeeds
                         = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
                         pose,
@@ -365,32 +390,79 @@ public class Drivetrain {
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
-    public Action followPath(Path path) {
+    public Action followPath(Path path, double distanceThreshold, double angleThreshold) {
         //        FtcDashboard ftcDashboard = FtcDashboard.getInstance();
+        Drivetrain drivetrain = this;
 
         return new Action() {
 
+
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                localizePath(path.waypoints);
-                if ((Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        path.getFinalPoint()[0],
+
+                localizePath(path.waypoints, packet);
+                double[][] xyPoints = path.getWaypoints();
+
+                packet.put("xy length", xyPoints.length);
+                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+                if (calculateDistance(
+                        pose.get(0, 0), pose.get(1, 0), path.getFinalPoint()[0],
                         path.getFinalPoint()[1]
-                )) < 6)) {
+                ) < GeometricController.lookAheadTheta) {
+                    //                    isClose = true;
                     packet.addLine("USING POSE CONTROLLER");
-                    return goToPose(makePoseVector(
+                    SimpleMatrix desiredPose = makePoseVector(
                             path.getFinalPoint()[0], path.getFinalPoint()[1],
                             path.finalHeading
-                    )).run(packet);
+                    );
+                    if (ThresholdParameters.stopPlanning) {
+                        pose =
+                                pose.plus(drivetrain.stoppingDistance(packet));
+                        packet.addLine("Using stopping distance!");
+                    }
+                    stoppingDistancePose = pose;
+                    drivetrain.updateTelemetryGraph(path.waypoints, packet);
+
+                    SimpleMatrix wheelSpeeds
+                            = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                            pose,
+                            desiredPose
+                    ));
+                    SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+                    //                deltaT.reset();
+                    setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
+                    prevWheelSpeeds = wheelSpeeds;
+                    if (Math.abs(Utils.calculateDistance(
+                            state.get(0, 0),
+                            state.get(1, 0),
+                            desiredPose.get(0, 0),
+                            desiredPose.get(1, 0)
+                    )) < distanceThreshold
+                            && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
+                            < angleThreshold) {
+                        setPower(stopMatrix);
+                        packet.put("Done", "done");
+                    }
+                    return !(Math.abs(Utils.calculateDistance(
+                            state.get(0, 0),
+                            state.get(1, 0),
+                            desiredPose.get(0, 0),
+                            desiredPose.get(1, 0)
+                    )) < ThresholdParameters.distanceThreshold
+                            && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
+                            < angleThreshold);
                 }
                 packet.addLine("USING GEO CONTROLLER");
-                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-
                 SimpleMatrix desiredPose = geometricController.calculate(pose, path);
+                if (ThresholdParameters.stopPlanning) {
+                    pose = pose.plus(drivetrain.stoppingDistance(packet));
+                    packet.addLine("Using stopping distance!");
+                }
+                stoppingDistancePose = pose;
+                drivetrain.updateTelemetryGraph(path.waypoints, packet);
+
                 SimpleMatrix wheelSpeeds =
-                        mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                        mecanumKinematicModel.inverseKinematics(followController.calculate(
                                 pose,
                                 desiredPose
                         ));
@@ -433,9 +505,9 @@ public class Drivetrain {
         ftcDashboard.sendTelemetryPacket(packet);
     }
 
-    public void updateTelemetryGraph(double[][] points) {
+    public void updateTelemetryGraph(double[][] points, TelemetryPacket packet) {
         if (!DebuggingParameters.debug) return;
-        TelemetryPacket packet = new TelemetryPacket();
+        //        TelemetryPacket packet = new TelemetryPacket();
         packet.put("x position", state.get(0, 0));
         packet.put("y position", state.get(1, 0));
         packet.put("heading", Math.toDegrees(state.get(2, 0)));
@@ -447,7 +519,7 @@ public class Drivetrain {
         Canvas canvas = packet.fieldOverlay();
         Drawing.drawPoint(canvas, state, points);
 
-        ftcDashboard.sendTelemetryPacket(packet);
+        //        ftcDashboard.sendTelemetryPacket(packet);
     }
 
     /**
@@ -492,7 +564,7 @@ public class Drivetrain {
     }
 
     public static class MotionParameters {
-        public double maxSpeed = 80.0; // (in/s)
+        public double maxSpeed = 110.0; // (in/s)
     }
 
     public static class PoseConstants {
@@ -501,6 +573,14 @@ public class Drivetrain {
         public PIDConstants yPIDConstants = new PIDConstants(4.5, 0, 0);
 
         public PIDConstants headingPIDConstants = new PIDConstants(1.8, 0, 0);
+    }
+
+    public static class PoseConstantsGeo {
+        public PIDConstants xPIDConstants = new PIDConstants(7, 0, 0);
+
+        public PIDConstants yPIDConstants = new PIDConstants(7, 0, 0);
+
+        public PIDConstants headingPIDConstants = new PIDConstants(7, 0, 0);
     }
 
     public static class FFConstantsController {

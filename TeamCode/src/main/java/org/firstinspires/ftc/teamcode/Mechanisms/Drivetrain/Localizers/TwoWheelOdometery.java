@@ -57,12 +57,8 @@ public class TwoWheelOdometery {
 
     public SimpleMatrix calculate() {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("DEBUG X1: ", odo.getPosition().getX(DistanceUnit.INCH));
-        
         odo.update();
-
-        packet.put("DEBUG X2: ", odo.getPosition().getX(DistanceUnit.INCH));
-
+        
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         SimpleMatrix globalRelativeTVelocities = new SimpleMatrix(

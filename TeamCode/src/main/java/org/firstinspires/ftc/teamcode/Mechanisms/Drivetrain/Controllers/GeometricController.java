@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 
@@ -8,22 +11,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drawing;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
 
 @Config
 public class GeometricController {
-    public static double lookAheadXY = 5;
-    public static double lookAheadTheta = 10;
+    public static double lookAheadXY = 20;
+    public static double lookAheadTheta = 20;
+    // TODO: remove!!!
+    public static double geoPosPointX = 0.0;
+    public static double geoPosPointY = 0.0;
+    public static double geoThetaX = 0.0;
+    public static double geoThetaY = 0.0;
+    public int lastIndexXY = 0;
     public boolean useStaticHeading = false;
-    public PoseController poseControl
+    public PoseController followControl
             = new PoseController(
-            Drivetrain.POSE_CONSTANTS.xPIDConstants,
-            Drivetrain.POSE_CONSTANTS.yPIDConstants,
-            Drivetrain.POSE_CONSTANTS.headingPIDConstants
+            Drivetrain.POSE_CONSTANTS_GEO.xPIDConstants,
+            Drivetrain.POSE_CONSTANTS_GEO.yPIDConstants,
+            Drivetrain.POSE_CONSTANTS_GEO.headingPIDConstants
     );
-    int lastIndexXY = 0;
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;
     int lastLookaheadTheta = 0;
@@ -166,7 +175,13 @@ public class GeometricController {
         // If we didn't find any lookahead intersections, fall back to nearest point
         double[] fallbackPoint = null;
         if (furthestIntersectionPointXY.isEmpty() || furthestIntersectionPointTheta.isEmpty()) {
-            fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
+            try {
+                fallbackPoint = xyPoints[lastIndexXY + 1];
+            } catch (Exception e) {
+                fallbackPoint = path.getFinalPoint();
+            }
+
+
         }
 
         ArrayList<double[]> thetaArray = new ArrayList<>(furthestIntersectionPointTheta);
@@ -175,25 +190,42 @@ public class GeometricController {
         double[] positionPoint;
         double[] thetaPoint;
 
-        // position (XY)
-        if (posArray.isEmpty()) {
-            if (fallbackPoint == null) {
-                fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
-            }
-            positionPoint = fallbackPoint;
-        } else {
+        if (fallbackPoint == null) {
             positionPoint = posArray.get(posArray.size() - 1);
+            thetaPoint = thetaArray.get(thetaArray.size() - 1);
+        } else {
+            positionPoint = fallbackPoint;
+            thetaPoint = fallbackPoint;
         }
 
-        // heading point (for theta lookahead)
-        if (thetaArray.isEmpty()) {
-            if (fallbackPoint == null) {
-                fallbackPoint = findClosestPointOnPath(x, y, xyPoints);
-            }
-            thetaPoint = fallbackPoint;
-        } else {
-            thetaPoint = thetaArray.get(thetaArray.size() - 1);
-        }
+        // position (XY)
+        //        if (posArray.isEmpty()) {
+        //            if (fallbackPoint == null) {
+        //                try {
+        //                    fallbackPoint = xyPoints[lastIndexXY + 1];
+        //                } catch (Exception e) {
+        //                    fallbackPoint = xyPoints[xyPoints.length - 1];
+        //                }
+        //            }
+        //            positionPoint = fallbackPoint;
+        //        } else {
+        //            positionPoint = posArray.get(posArray.size() - 1);
+        //        }
+        //
+        //        // heading point (for theta lookahead)
+        //        if (thetaArray.isEmpty()) {
+        //            if (fallbackPoint == null) {
+        //                try {
+        //                    fallbackPoint = xyPoints[lastIndexTheta + 1];
+        //                } catch (Exception e) {
+        //                    fallbackPoint = xyPoints[xyPoints.length - 1];
+        //                }
+        //            }
+        //            thetaPoint = fallbackPoint;
+        //        } else {
+        //            thetaPoint = thetaArray.get(thetaArray.size() - 1);
+        //        }
+
 
         double desiredTheta;
         if (path.useStaticHeading) {
@@ -219,6 +251,24 @@ public class GeometricController {
                         desiredTheta
                 }
         );
+
+        //        TelemetryPacket packet = new TelemetryPacket();
+        //        packet.put("GEO (x): ", desiredPose.get(0, 0));
+        //        packet.put("GEO (y): ", desiredPose.get(1, 0));
+        //        packet.put("GEO (theta): ", desiredPose.get(2, 0));/
+        //Canvas canvas = packet.fieldOverlay();
+        //Drawing.drawTarget(canvas, desiredPose);
+        //        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+        // TODO: remove
+        geoPosPointX = positionPoint[0];
+        geoPosPointY = positionPoint[1];
+        geoThetaX = thetaPoint[0];
+        geoThetaY = thetaPoint[1];
+
+        // do y for pos point
+        // also do the same for theta point
+
         return desiredPose;
     }
 

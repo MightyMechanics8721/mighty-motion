@@ -20,7 +20,7 @@
  *   SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -30,21 +30,19 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 /**
  * goBILDA Laser Distance Sensor Example (Digital Mode)
  * <p>
- * This example shows how to read the digital output of the goBILDA
- * Laser Distance Sensor.
+ * This example shows how to read the digital output of the goBILDA Laser Distance Sensor.
  * <p>
- * In Digital Mode, the sensor outputs either HIGH or LOW depending on
- * whether it detects an object in front of it. The onboard potentiometer
- * adjusts the detection distance from approximately 25mm up to 264mm.
+ * In Digital Mode, the sensor outputs either HIGH or LOW depending on whether it detects an object
+ * in front of it. The onboard potentiometer adjusts the detection distance from approximately 25mm
+ * up to 264mm.
  * <p>
- * This sensor is active-HIGH, meaning the output line goes HIGH (3.3V)
- * when an object is detected, and LOW (0V) when no object is present.
+ * This sensor is active-HIGH, meaning the output line goes HIGH (3.3V) when an object is detected,
+ * and LOW (0V) when no object is present.
  * <p>
- * Wire the sensor to a Digital port on your Hub and name it "laserDigitalInput"
- * in your Robot Configuration.
+ * Wire the sensor to a Digital port on your Hub and name it "laserDigitalInput" in your Robot
+ * Configuration.
  * <p>
- * Display:
- * The current detection state is displayed in telemetry.
+ * Display: The current detection state is displayed in telemetry.
  */
 @TeleOp(name = "DistanceSensorSampleCode")
 public class DistanceSensorSampleCode extends LinearOpMode {
@@ -55,7 +53,7 @@ public class DistanceSensorSampleCode extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Get the digital sensor from the hardware map
-        laserInput = hardwareMap.get(DigitalChannel.class, "laserDigitalInput");
+        laserInput = hardwareMap.get(DigitalChannel.class, "Distance1");
 
         // Set the channel as an input
         laserInput.setMode(DigitalChannel.Mode.INPUT);

@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -14,9 +15,11 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
+import org.firstinspires.ftc.teamcode.Prism.Prism;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 @Config
 @TeleOp(name = "Full Robot Test")
@@ -28,7 +31,15 @@ public class TeleOpTest extends LinearOpMode {
 
     Battery battery;
     FtcDashboard dashboard;
-
+    Prism prism;
+    // LED code
+    private final Runnable backgroundProcessingRunnable = () ->
+    {
+        while (opModeIsActive() || opModeInInit()) {
+            prism.runCheck();
+            sleep(1);
+        }
+    };
     // Hardware
     private Turret turret;
     private Intake intake;
@@ -36,6 +47,8 @@ public class TeleOpTest extends LinearOpMode {
     private Shooter shooter;
     private Drivetrain drivetrain;
     private Map<String, Action> runningActions = new HashMap<>();
+    // LEDs
+    private ExecutorService backgroundExecutor = null;
 
     @Override
     public void runOpMode() {
@@ -47,6 +60,8 @@ public class TeleOpTest extends LinearOpMode {
         indexer = new Indexer(hardwareMap, battery);
         shooter = new Shooter(hardwareMap, battery);
         drivetrain = new Drivetrain(hardwareMap, battery);
+        prism = new Prism(hardwareMap);
+        this.initBackgroundThreads();
 
         waitForStart();
 
@@ -146,5 +161,17 @@ public class TeleOpTest extends LinearOpMode {
             dashboard.getTelemetry().update();
         }
 
+    }
+
+    public void initBackgroundThreads() {
+        this.backgroundExecutor = ThreadPool.newSingleThreadExecutor("Background Thread");
+        this.backgroundExecutor.submit(backgroundProcessingRunnable);
+    }
+
+    public void stopBackgroundThreads() {
+        if (backgroundExecutor != null) {
+            backgroundExecutor.shutdownNow();
+            backgroundExecutor = null;
+        }
     }
 }

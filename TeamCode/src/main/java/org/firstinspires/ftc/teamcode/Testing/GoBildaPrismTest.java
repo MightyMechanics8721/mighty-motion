@@ -24,9 +24,11 @@ package org.firstinspires.ftc.teamcode.Testing;
 
 import static org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver.LayerHeight;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.teamcode.Prism.Color;
 import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
@@ -35,1164 +37,14 @@ import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations.AnimationType;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations.PoliceLights;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/*
- * This code creates a "Configurator" UI which exposes a somewhat limited amount of the
- * functionality
- * available to create animations and artboards to users without needing to work with very much
- * code.
- *
- * This file is not meant to serve as example code - unless you're trying to create a
- * telemetry-based
- * UI for the drivers station.
- * For example code that your team can leverage in your autonomous/teleop code to recall artboards
- * check out the GoBildaPrismArtboardExample. Run this code on your robot and use it to create
- * the artboards you'd like to be able to switch between. This means that switching between
- * animations
- * can be very fast and easy, and the work of creating animations (and sending this information over
- * I²C) only has to happen once!
- *
- */
 
 @TeleOp(name = "Prism Test", group = "Linear OpMode")
-//@Disabled
-
+@Disabled
 public class GoBildaPrismTest extends LinearOpMode {
 
-    GoBildaPrismDriver prism;
-    AnimationColor animationColor = AnimationColor.PRIMARY_COLOR;
-    // Set a default style for the Police Lights Animation.
-    PoliceLights.PoliceLightsStyle policeLightsStyle = PoliceLights.PoliceLightsStyle.Style1;
-    int startPoint = 0; // the start LED for any configured animation
-    int endPoint = 12; // the end LED for a configured animation
-    int brightness = 50; // the brightness of configured animation
-    int period = 1000; // the period of a configured animation
-    float speed = 0.5F; // the speed of a configured animation
-    int layerSelector = 0; // an integer used to create a cursor to select a layer
-    int animationSelector = 1; // animation cursor
-    int artboardSelector = 0; // artboard cursor
-    String hsbTelemetry;// string meant to send over telemetry that gets updated by hsbViaJoystick()
-    String hueTelemetry; // updated by hueViaJoystick()
-    /*
-     * An array of colors passed to the SingleFill animation.
-     */
-    Color[] singleFillColors = {
-            Color.RED, Color.WHITE, Color.BLUE
-    };
-    AnimationType selectedAnimation = AnimationType.SOLID;
-    ConfigState configState = ConfigState.WELCOME_SCREEN;
-    // store the animation that is being selected.
-    Layers selectedLayer = Layers.LAYER_0;
-    Artboard selectedArtboard = Artboard.ARTBOARD_0;
-    /*
-     * Create each Prism Animation which can be customized by the user.
-     */
-    PrismAnimations.Solid solid = new PrismAnimations.Solid();
-    PrismAnimations.Solid endpointsAnimation = new PrismAnimations.Solid();
-    PrismAnimations.Blink blink = new PrismAnimations.Blink();
-    PrismAnimations.Pulse pulse = new PrismAnimations.Pulse();
-    PrismAnimations.SineWave sineWave = new PrismAnimations.SineWave();
-    PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
-    PrismAnimations.Rainbow rainbow = new PrismAnimations.Rainbow();
-    PrismAnimations.Snakes snakes = new PrismAnimations.Snakes();
-    PrismAnimations.Random random = new PrismAnimations.Random();
-    PrismAnimations.Sparkle sparkle = new PrismAnimations.Sparkle();
-    PrismAnimations.SingleFill singleFill = new PrismAnimations.SingleFill();
-    PrismAnimations.RainbowSnakes rainbowSnakes = new PrismAnimations.RainbowSnakes();
-    PoliceLights policeLights = new PoliceLights();
-    // Three digital laser sensors (beam-break style)
-    private DigitalChannel laserInput1;
-    private DigitalChannel laserInput2;
-    private DigitalChannel laserInput3;
-
-    @Override
-    public void runOpMode() {
-        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
-        // Initialize digital laser sensors
-        laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1");
-        laserInput2 = hardwareMap.get(DigitalChannel.class, "bb2");
-        laserInput3 = hardwareMap.get(DigitalChannel.class, "bb3");
-
-        solid.setPrimaryColor(hsbViaJoystick(Color.GREEN));
-        prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-
-
-        // Wait for the game to start (driver presses START)
-        waitForStart();
-        resetRuntime();
-
-        int ballCount = 0;
-        int prevBallCount = 0;
-
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-            ballCount = 0;
-            ballCount += laserInput1.getState() ? 1 : 0;
-            ballCount += laserInput2.getState() ? 1 : 0;
-            ballCount += laserInput3.getState() ? 1 : 0;
-
-            if (ballCount != prevBallCount) {
-                prevBallCount = ballCount;
-                switch (ballCount) {
-                    case 1:
-                        prism.clearAllAnimations();
-                        solid.setPrimaryColor(hsbViaJoystick(Color.BLUE));
-                        prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-                        break;
-                    case 2:
-                        prism.clearAllAnimations();
-                        solid.setPrimaryColor(hsbViaJoystick(Color.ORANGE));
-                        prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-                        break;
-                    case 3:
-                        prism.clearAllAnimations();
-                        solid.setPrimaryColor(hsbViaJoystick(Color.GREEN));
-                        prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-                        break;
-                    default:
-                        prism.clearAllAnimations();
-                        solid.setPrimaryColor(hsbViaJoystick(Color.RED));
-                        prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-                        break;
-                }
-            }
-/*
-
-            if (gamepad1.dpad_right) {
-                solid.setPrimaryColor(hsbViaJoystick(Color.GREEN));
-                prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-
-            } else if (gamepad1.dpad_up) {
-                solid.setPrimaryColor(hsbViaJoystick(Color.RED));
-                prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-
-            } else if (gamepad1.dpad_down) {
-                solid.setPrimaryColor(hsbViaJoystick(Color.BLUE));
-                prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-
-            } else if (gamepad1.dpad_left) {
-                solid.setPrimaryColor(hsbViaJoystick(Color.WHITE));
-                prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-
-            }
-*/
-            telemetry.addData("BB1", laserInput1.getState());
-            telemetry.addData("BB2", laserInput2.getState());
-            telemetry.addData("BB3", laserInput3.getState());
-            telemetry.update();
-
-            sleep(20);
-        }
-    }
-
-    /*
-     * through this code I try and keep as much code as possible inside of functions, with how
-     * complex our main state machine is, stuff like telemetry is is nice to keep only where we
-     * need it.
-     */
-    public void welcomeScreen() {
-        telemetry.addLine("Welcome to the goBILDA Prism Configurator!");
-        telemetry.addLine("Hold on tight - we were cooking when we made this.");
-        telemetry.addLine("");
-        telemetry.addLine(
-                "Core to understanding how to use this product is knowing these three terms:");
-        telemetry.addLine(
-                "Animations: (Like RAINBOW or BLINK) - These have properties you can configure, " +
-                        "like their color. And they can have unique start and end points.");
-        telemetry.addLine("");
-        telemetry.addLine("Layers: There are 10 layers, each of which can store an animation. " +
-                                  "These are hierarchical. So an Animation on layer 5 will cover "
-                                  + "an animation on layer 2 "
-                                  +
-                                  "if they overlap. You can use start and end points to have "
-                                  + "layers overlap to create new patterns!"
-                                  +
-                                  "Or show multiple animations at once on different LEDs.");
-        telemetry.addLine("");
-        telemetry.addLine(
-                "Artboards: An Artboard is a set of 10 layers which is stored on the Prism. " +
-                        "you can have up to 8 unique Artboards. Artboards are easy and "
-                        + "computationally fast to switch between. "
-                        +
-                        "We recommend that you configure your Artboards for your robot once and "
-                        + "then switch between them.");
-        telemetry.addLine("");
-        telemetry.addLine("Press A to continue");
-        resetStoredAnimations();
-    }
-
-    public void selectLayer(int selector) {
-        telemetry.addLine("Select the Layer that you wish to save an Animation to.");
-        telemetry.addLine("Use D-Pad up and D-Pad down to navigate through the layers.");
-        telemetry.addLine("");
-        telemetry.addData(
-                "LAYER_0 Animation",
-                Layers.LAYER_0.animationType + layerCursor(Layers.LAYER_0, selector)
-        );
-        telemetry.addData(
-                "LAYER_1 Animation",
-                Layers.LAYER_1.animationType + layerCursor(Layers.LAYER_1, selector)
-        );
-        telemetry.addData(
-                "LAYER_2 Animation",
-                Layers.LAYER_2.animationType + layerCursor(Layers.LAYER_2, selector)
-        );
-        telemetry.addData(
-                "LAYER_3 Animation",
-                Layers.LAYER_3.animationType + layerCursor(Layers.LAYER_3, selector)
-        );
-        telemetry.addData(
-                "LAYER_4 Animation",
-                Layers.LAYER_4.animationType + layerCursor(Layers.LAYER_4, selector)
-        );
-        telemetry.addData(
-                "LAYER_5 Animation",
-                Layers.LAYER_5.animationType + layerCursor(Layers.LAYER_5, selector)
-        );
-        telemetry.addData(
-                "LAYER_6 Animation",
-                Layers.LAYER_6.animationType + layerCursor(Layers.LAYER_6, selector)
-        );
-        telemetry.addData(
-                "LAYER_7 Animation",
-                Layers.LAYER_7.animationType + layerCursor(Layers.LAYER_7, selector)
-        );
-        telemetry.addData(
-                "LAYER_8 Animation",
-                Layers.LAYER_8.animationType + layerCursor(Layers.LAYER_8, selector)
-        );
-        telemetry.addData(
-                "LAYER_9 Animation",
-                Layers.LAYER_9.animationType + layerCursor(Layers.LAYER_9, selector)
-        );
-        telemetry.addLine("");
-        telemetry.addLine("Press A to continue");
-    }
-
-    public String layerCursor(Layers layer, int selector) {
-        if (layer.index == selector) {
-            selectedLayer = layer;
-            return "<--";
-        } else {
-            return "";
-        }
-    }
-
-    public void selectAnimation(int animationSelector) {
-        telemetry.addLine("Select the Animation that you wish to use");
-        telemetry.addLine("Use D-Pad up and D-Pad down to navigate through the Animations.");
-        telemetry.addLine("");
-        telemetry.addData("Solid", animationCursor(AnimationType.SOLID, animationSelector));
-        telemetry.addData("Blink", animationCursor(AnimationType.BLINK, animationSelector));
-        telemetry.addData("Pulse", animationCursor(AnimationType.PULSE, animationSelector));
-        telemetry.addData("Sine Wave", animationCursor(AnimationType.SINE_WAVE, animationSelector));
-        telemetry.addData(
-                "Droid Scan",
-                animationCursor(AnimationType.DROID_SCAN, animationSelector)
-        );
-        telemetry.addData("Rainbow", animationCursor(AnimationType.RAINBOW, animationSelector));
-        telemetry.addData("Snakes", animationCursor(AnimationType.SNAKES, animationSelector));
-        telemetry.addData("Random", animationCursor(AnimationType.RANDOM, animationSelector));
-        telemetry.addData("Sparkle", animationCursor(AnimationType.SPARKLE, animationSelector));
-        telemetry.addData(
-                "Single Fill",
-                animationCursor(AnimationType.SINGLE_FILL, animationSelector)
-        );
-        telemetry.addData(
-                "Rainbow Snakes",
-                animationCursor(AnimationType.RAINBOW_SNAKES, animationSelector)
-        );
-        telemetry.addData(
-                "Police Lights",
-                animationCursor(AnimationType.POLICE_LIGHTS, animationSelector)
-        );
-        telemetry.addLine("");
-        telemetry.addLine("Press A to continue");
-        telemetry.addLine("Press B to go back");
-    }
-
-    public String animationCursor(AnimationType animationType, int selector) {
-        if (animationType.AnimationTypeIndex == selector) {
-            selectedAnimation = animationType;
-            configureAnimation(false, true);
-            return "<--";
-        } else {
-            return "";
-        }
-    }
-
-    public void configureEndPoints() {
-        if (gamepad1.dpadLeftWasPressed()) {
-            startPoint -= 1;
-            startPoint = Math.min(Math.min(255, Math.max(0, startPoint)), endPoint - 1);
-            configureEndpointsAnimation(false);
-        }
-        if (gamepad1.dpadRightWasPressed()) {
-            startPoint += 1;
-            startPoint = Math.min(Math.min(255, Math.max(0, startPoint)), endPoint - 1);
-            configureEndpointsAnimation(false);
-        }
-        if (gamepad1.leftBumperWasPressed()) {
-            endPoint -= 1;
-            endPoint = Math.max(Math.min(255, Math.max(0, endPoint)), startPoint + 1);
-            configureEndpointsAnimation(false);
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            endPoint += 1;
-            endPoint = Math.max(Math.min(255, Math.max(0, endPoint)), startPoint + 1);
-            configureEndpointsAnimation(false);
-        }
-
-        telemetry.addLine("Set the start and stop point for each LED");
-        telemetry.addLine("");
-        telemetry.addLine(
-                "Use the d-pad to set the start point, d-pad right moves it further from the "
-                        + "Prism. "
-                        +
-                        "d-pad left moves it closer.");
-        telemetry.addLine(
-                "Bumpers move the endpoint, The left bumper moves it closer to the Prism, right "
-                        + "moves it further.");
-        telemetry.addData("Start Point", startPoint);
-        telemetry.addData("End Point", endPoint);
-        telemetry.addLine("");
-        telemetry.addLine("Press A to Continue");
-        telemetry.addLine("Press B to go back");
-    }
-
-    public void configureBrightness() {
-        if (gamepad1.dpadDownWasPressed()) {
-            brightness -= 10;
-            brightness = Math.min(100, Math.max(0, brightness));
-            configureAnimation(false, false);
-        }
-        if (gamepad1.dpadUpWasPressed()) {
-            brightness += 10;
-            brightness = Math.min(100, Math.max(0, brightness));
-            configureAnimation(false, false);
-        }
-
-        telemetry.addLine("Set the brightness for this animation");
-        telemetry.addLine("");
-        telemetry.addLine("Use the d-pad to adjust the brightness, up increases, down decreases.");
-        telemetry.addLine("");
-        telemetry.addData("Brightness", brightness);
-        telemetry.addLine("");
-        telemetry.addLine("Press A to Continue");
-        telemetry.addLine("Press B to go back");
-    }
-
-    /**
-     * Returns: True if we should skip this animation type.
-     */
-    public boolean configureSpeed() {
-        switch (speedFromAnimation(selectedAnimation)) {
-            case NO_SPEED:
-                return true;
-            case SPEED_ONLY:
-                if (gamepad1.dpadUpWasPressed()) {
-                    speed += 0.1f;
-                    speed = Math.min(1.0f, Math.max(0, speed));
-                    configureAnimation(false, false);
-                }
-                if (gamepad1.dpadDownWasPressed()) {
-                    speed -= 0.1f;
-                    speed = Math.min(1.0f, Math.max(0, speed));
-                    configureAnimation(false, false);
-                }
-                telemetry.addLine("Set the speed for this animation from 0 to 1");
-                telemetry.addLine("");
-                telemetry.addLine("Use the d-pad to adjust the speed, up increases, down "
-                                          + "decreases.");
-                telemetry.addLine("");
-                telemetry.addData("Speed", speed);
-                telemetry.addLine("");
-                telemetry.addLine("Press A to Continue");
-                telemetry.addLine("Press B to go back");
-                break;
-            case PERIOD_ONLY:
-                if (gamepad1.dpadUpWasPressed()) {
-                    if (period < 401) {
-                        period += 100;
-                    } else {
-                        period += 500;
-                    }
-                    period = Math.min(300000, Math.max(0, period));
-                    configureAnimation(false, false);
-                }
-                if (gamepad1.dpadDownWasPressed()) {
-                    if (period < 501) {
-                        period -= 100;
-                    } else {
-                        period -= 500;
-                    }
-                    period = Math.min(300000, Math.max(0, period));
-                    configureAnimation(false, false);
-                }
-                telemetry.addLine("Set the period for this animation in Milliseconds");
-                telemetry.addLine("");
-                telemetry.addLine(
-                        "Use the d-pad to adjust the period, up increases, down decreases.");
-                telemetry.addLine("");
-                telemetry.addData("Period", period);
-                telemetry.addLine("");
-                telemetry.addLine("Press A to Continue");
-                telemetry.addLine("Press B to go back");
-                break;
-            case PERIOD_AND_SPEED:
-                if (gamepad1.dpadUpWasPressed()) {
-                    if (period < 401) {
-                        period += 100;
-                    } else {
-                        period += 500;
-                    }
-                    period = Math.min(300000, Math.max(0, period));
-                    configureAnimation(false, false);
-                }
-                if (gamepad1.dpadDownWasPressed()) {
-                    if (period < 501) {
-                        period -= 100;
-                    } else {
-                        period -= 500;
-                    }
-                    period = Math.min(300000, Math.max(0, period));
-                    configureAnimation(false, false);
-                }
-                if (gamepad1.dpadRightWasPressed()) {
-                    speed += 0.1f;
-                    speed = Math.min(1.0f, Math.max(0, speed));
-                    configureAnimation(false, false);
-                }
-                if (gamepad1.dpadLeftWasPressed()) {
-                    speed -= 0.1f;
-                    speed = Math.min(1.0f, Math.max(0, speed));
-                    configureAnimation(false, false);
-                }
-                telemetry.addLine("Set the period for this animation in Milliseconds");
-                telemetry.addLine("");
-                telemetry.addLine("Set the speed for this animation from 0-1");
-                telemetry.addLine("");
-                telemetry.addLine(
-                        "Use the d-pad to adjust the period, up increases, down decreases.");
-                telemetry.addLine("");
-                telemetry.addData("Period", period);
-                telemetry.addLine("");
-                telemetry.addLine(
-                        "Use the d-pad to adjust the speed, right increases, left decreases.");
-                telemetry.addLine("");
-                telemetry.addData("Speed", speed);
-                telemetry.addLine("");
-                telemetry.addLine("Press A to Continue");
-                telemetry.addLine("Press B to go back");
-                break;
-        }
-        return false;
-    }
-
-    public SpeedType speedFromAnimation(AnimationType animationType) {
-        if (animationType == AnimationType.BLINK || animationType == AnimationType.PULSE ||
-                animationType == AnimationType.SPARKLE
-                || animationType == AnimationType.POLICE_LIGHTS) {
-            return SpeedType.PERIOD_ONLY;
-        }
-        if (animationType == AnimationType.DROID_SCAN || animationType == AnimationType.RAINBOW ||
-                animationType == AnimationType.SNAKES || animationType == AnimationType.RANDOM ||
-                animationType == AnimationType.RAINBOW_SNAKES) {
-            return SpeedType.SPEED_ONLY;
-        }
-        if (animationType == AnimationType.SINE_WAVE
-                || animationType == AnimationType.SINGLE_FILL) {
-            return SpeedType.PERIOD_AND_SPEED;
-        } else {
-            return SpeedType.NO_SPEED;
-        }
-    }
-
-    public void forkInTheRoad() {
-        telemetry.addLine("If you are done with your creation, press A to save it to an Artboard.");
-        telemetry.addLine("");
-        telemetry.addLine("To go back, press B.");
-        telemetry.addLine("");
-        telemetry.addLine("If you'd instead like to layer another animation on top of this " +
-                                  "one, press Y.");
-        telemetry.addLine("");
-        telemetry.addLine("Press X to return to the start and clear currently set animations.");
-    }
-
-    public void selectArtboard(int artboardSelector) {
-        telemetry.addLine("Select the Artboard that you wish to save to");
-        telemetry.addLine("Use D-Pad up and D-Pad down to navigate through the Artboards.");
-        telemetry.addLine("");
-        telemetry.addData("Artboard 0", artboardCursor(Artboard.ARTBOARD_0, artboardSelector));
-        telemetry.addData("Artboard 1", artboardCursor(Artboard.ARTBOARD_1, artboardSelector));
-        telemetry.addData("Artboard 2", artboardCursor(Artboard.ARTBOARD_2, artboardSelector));
-        telemetry.addData("Artboard 3", artboardCursor(Artboard.ARTBOARD_3, artboardSelector));
-        telemetry.addData("Artboard 4", artboardCursor(Artboard.ARTBOARD_4, artboardSelector));
-        telemetry.addData("Artboard 5", artboardCursor(Artboard.ARTBOARD_5, artboardSelector));
-        telemetry.addData("Artboard 6", artboardCursor(Artboard.ARTBOARD_6, artboardSelector));
-        telemetry.addData("Artboard 7", artboardCursor(Artboard.ARTBOARD_7, artboardSelector));
-        telemetry.addLine("");
-        telemetry.addLine("Press A to save");
-        telemetry.addLine("Press B to go back");
-    }
-
-    public String artboardCursor(Artboard artboard, int selector) {
-        if (artboard.index == selector) {
-            selectedArtboard = artboard;
-            return "<--";
-        } else {
-            return "";
-        }
-    }
-
-    public void configureAnimation(boolean showTelemetry, boolean isBeingInserted) {
-        switch (selectedAnimation) {
-            case SOLID:
-                configureSolid(showTelemetry, isBeingInserted);
-                break;
-            case BLINK:
-                configureBlink(showTelemetry, isBeingInserted);
-                break;
-            case PULSE:
-                configurePulse(showTelemetry, isBeingInserted);
-                break;
-            case SINE_WAVE:
-                configureSineWave(showTelemetry, isBeingInserted);
-                break;
-            case DROID_SCAN:
-                configureDroidScan(showTelemetry, isBeingInserted);
-                break;
-            case RAINBOW:
-                configureRainbow(showTelemetry, isBeingInserted);
-                break;
-            case SNAKES:
-                configureSnakes(showTelemetry, isBeingInserted);
-                break;
-            case RANDOM:
-                configureRandom(showTelemetry, isBeingInserted);
-                break;
-            case SPARKLE:
-                configureSparkle(showTelemetry, isBeingInserted);
-                break;
-            case SINGLE_FILL:
-                configureSingleFill(showTelemetry, isBeingInserted);
-                break;
-            case RAINBOW_SNAKES:
-                configureRainbowSnakes(showTelemetry, isBeingInserted);
-                break;
-            case POLICE_LIGHTS:
-                configurePoliceLights(showTelemetry, isBeingInserted);
-                break;
-        }
-    }
-
-    public void configureEndpointsAnimation(boolean isBeingInserted) {
-        endpointsAnimation.setStartIndex(startPoint);
-        endpointsAnimation.setStopIndex(endPoint);
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, endpointsAnimation);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-    }
-
-    public void configureSolid(boolean showTelemetry, boolean isBeingInserted) {
-        solid.setPrimaryColor(hsbViaJoystick(solid.getPrimaryColor()));
-        solid.setStartIndex(startPoint);
-        solid.setStopIndex(endPoint);
-        solid.setBrightness(brightness);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, solid);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Solid");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureBlink(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                blink.setPrimaryColor(hsbViaJoystick(blink.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                blink.setSecondaryColor(hsbViaJoystick(blink.getSecondaryColor()));
-                break;
-        }
-        toggleThroughColors(gamepad1.yWasPressed(), false);
-
-        blink.setStartIndex(startPoint);
-        blink.setStopIndex(endPoint);
-        blink.setBrightness(brightness);
-        blink.setPeriod(period);
-        blink.setPrimaryColorPeriod(period / 2);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, blink);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Blink");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary and secondary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configurePulse(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                pulse.setPrimaryColor(hsbViaJoystick(pulse.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                pulse.setSecondaryColor(hsbViaJoystick(pulse.getSecondaryColor()));
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), false);
-
-        pulse.setStartIndex(startPoint);
-        pulse.setStopIndex(endPoint);
-        pulse.setBrightness(brightness);
-        pulse.setPeriod(period);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, pulse);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Pulse");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary and secondary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureSineWave(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                sineWave.setPrimaryColor(hsbViaJoystick(sineWave.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                sineWave.setSecondaryColor(hsbViaJoystick(sineWave.getSecondaryColor()));
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), false);
-
-        sineWave.setStartIndex(startPoint);
-        sineWave.setStopIndex(endPoint);
-        sineWave.setBrightness(brightness);
-        sineWave.setPeriod(period);
-        sineWave.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, sineWave);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Sine Wave");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary and secondary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    /*
-     * Past this point, we have a function to create each type of animation and configure the
-     * specifics to it. As often as I could, you'll find that actions that multiple animations
-     * share (like setPrimaryColor) get abstracted into their own functions (here we have
-     * "hsbViaJoystick) to do the work. This avoids copy and pasting code.
-     */
-
-    public void configureDroidScan(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                droidScan.setPrimaryColor(hsbViaJoystick(droidScan.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                droidScan.setSecondaryColor(hsbViaJoystick(droidScan.getSecondaryColor()));
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), false);
-
-        droidScan.setStartIndex(startPoint);
-        droidScan.setStopIndex(endPoint);
-        droidScan.setBrightness(brightness);
-        droidScan.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, droidScan);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Droid Scan");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary and secondary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureRainbow(boolean showTelemetry, boolean isBeingInserted) {
-        float[] hues = hueViaJoystick(rainbow.getStartHue(), rainbow.getStopHue());
-        rainbow.setStartHue(hues[0]);
-        rainbow.setStopHue(hues[1]);
-
-        rainbow.setStartIndex(startPoint);
-        rainbow.setStopIndex(endPoint);
-        rainbow.setBrightness(brightness);
-        rainbow.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, rainbow);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Rainbow");
-            telemetry.addLine("Move the joysticks to configure the range of the rainbow");
-            telemetry.addLine("Left Joystick X (side-to-side) changes the start hue");
-            telemetry.addLine("Right Joystick x (side-to-side) changes the end hue");
-            telemetry.addLine("");
-            telemetry.addLine(hueTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureSnakes(boolean showTelemetry, boolean isBeingInserted) {
-        snakes.setColors(hsbViaJoystick(snakes.getColors()[0]));
-
-        snakes.setStartIndex(startPoint);
-        snakes.setStopIndex(endPoint);
-        snakes.setBrightness(brightness);
-        snakes.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, snakes);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Snakes");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureRandom(boolean showTelemetry, boolean isBeingInserted) {
-        float[] hues = hueViaJoystick(random.getStartHue(), random.getStopHue());
-        random.setStartHue(hues[0]);
-        random.setStopHue(hues[1]);
-
-        random.setStartIndex(startPoint);
-        random.setStopIndex(endPoint);
-        random.setBrightness(brightness);
-        random.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, random);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Random");
-            telemetry.addLine("Move the joysticks to configure the range of the random colors");
-            telemetry.addLine("Left Joystick X (side-to-side) changes the start hue");
-            telemetry.addLine("Right Joystick x (side-to-side) changes the end hue");
-            telemetry.addLine("");
-            telemetry.addLine(hueTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureSparkle(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                sparkle.setPrimaryColor(hsbViaJoystick(sparkle.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                sparkle.setSecondaryColor(hsbViaJoystick(sparkle.getSecondaryColor()));
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), false);
-
-        sparkle.setStartIndex(startPoint);
-        sparkle.setStopIndex(endPoint);
-        sparkle.setBrightness(brightness);
-        sparkle.setPeriod(period);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, sparkle);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Sparkle");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary and secondary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureSingleFill(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                singleFillColors[0] = hsbViaJoystick(singleFill.getColors()[0]);
-                break;
-            case SECONDARY_COLOR:
-                singleFillColors[1] = hsbViaJoystick(singleFill.getColors()[1]);
-                break;
-            case TERTIARY_COLOR:
-                singleFillColors[2] = hsbViaJoystick(singleFill.getColors()[2]);
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), true);
-
-        singleFill.setColors(singleFillColors);
-
-        singleFill.setStartIndex(startPoint);
-        singleFill.setStopIndex(endPoint);
-        singleFill.setBrightness(brightness);
-        singleFill.setSpeed(speed);
-        singleFill.setPeriod(period);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, singleFill);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Single Fill");
-            telemetry.addLine("");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary, secondary, and "
-                            + "tertiary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configureRainbowSnakes(boolean showTelemetry, boolean isBeingInserted) {
-        float[] hues = hueViaJoystick(rainbowSnakes.getStartHue(), rainbowSnakes.getStopHue());
-        rainbowSnakes.setStartHue(hues[0]);
-        rainbowSnakes.setStopHue(hues[1]);
-
-        rainbowSnakes.setStartIndex(startPoint);
-        rainbowSnakes.setStopIndex(endPoint);
-        rainbowSnakes.setBrightness(brightness);
-        rainbowSnakes.setSpeed(speed);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, rainbowSnakes);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Rainbow Snakes");
-            telemetry.addLine("Move the joysticks to configure the range of the rainbow");
-            telemetry.addLine("Left Joystick X (side-to-side) changes the start hue");
-            telemetry.addLine("Right Joystick x (side-to-side) changes the end hue");
-            telemetry.addLine("");
-            telemetry.addLine(hueTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void configurePoliceLights(boolean showTelemetry, boolean isBeingInserted) {
-        switch (animationColor) {
-            case PRIMARY_COLOR:
-                policeLights.setPrimaryColor(hsbViaJoystick(policeLights.getPrimaryColor()));
-                break;
-            case SECONDARY_COLOR:
-                policeLights.setSecondaryColor(hsbViaJoystick(policeLights.getSecondaryColor()));
-                break;
-            case TERTIARY_COLOR:
-                policeLights.setTertiaryColor(hsbViaJoystick(policeLights.getTertiaryColor()));
-                break;
-        }
-
-        toggleThroughColors(gamepad1.yWasPressed(), true);
-
-        switch (policeLightsStyle) {
-            case Style1:
-                if (gamepad1.rightStickButtonWasPressed()) {
-                    policeLightsStyle = PoliceLights.PoliceLightsStyle.Style2;
-                }
-                break;
-            case Style2:
-                if (gamepad1.rightStickButtonWasPressed()) {
-                    policeLightsStyle = PoliceLights.PoliceLightsStyle.Style3;
-                }
-                break;
-            case Style3:
-                if (gamepad1.rightStickButtonWasPressed()) {
-                    policeLightsStyle = PoliceLights.PoliceLightsStyle.Style1;
-                }
-                break;
-        }
-
-        policeLights.setStartIndex(startPoint);
-        policeLights.setStopIndex(endPoint);
-        policeLights.setBrightness(brightness);
-        policeLights.setPoliceLightsStyle(policeLightsStyle);
-        policeLights.setPeriod(period);
-
-        if (isBeingInserted) {
-            prism.insertAndUpdateAnimation(selectedLayer.layerHeight, policeLights);
-        } else {
-            prism.updateAnimationFromIndex(selectedLayer.layerHeight);
-        }
-
-        if (showTelemetry) {
-            telemetry.addLine("Selected Animation: Police Lights");
-            telemetry.addLine("");
-            telemetry.addLine("Toggle between styles by clicking the right joystick");
-            telemetry.addData("Police Lights Style: ", policeLightsStyle);
-            telemetry.addLine("");
-            showHsbTelemetry();
-            telemetry.addLine(hsbTelemetry);
-            telemetry.addLine("");
-            telemetry.addLine(
-                    "Click the Y button to switch between setting the primary, secondary, and "
-                            + "tertiary color");
-            telemetry.addLine(animationColor.toString());
-            telemetry.addLine("");
-            telemetry.addLine("Press A to Continue");
-            telemetry.addLine("Press B to go back");
-        }
-    }
-
-    public void resetStoredAnimations() {
-        Layers.LAYER_0.animationType = AnimationType.NONE;
-        Layers.LAYER_1.animationType = AnimationType.NONE;
-        Layers.LAYER_2.animationType = AnimationType.NONE;
-        Layers.LAYER_3.animationType = AnimationType.NONE;
-        Layers.LAYER_4.animationType = AnimationType.NONE;
-        Layers.LAYER_5.animationType = AnimationType.NONE;
-        Layers.LAYER_6.animationType = AnimationType.NONE;
-        Layers.LAYER_7.animationType = AnimationType.NONE;
-        Layers.LAYER_8.animationType = AnimationType.NONE;
-        Layers.LAYER_9.animationType = AnimationType.NONE;
-    }
-
-    /*
-     * Reasonably, you might be wondering why I'm configuring the colors in HSB/HSL instead
-     * of RGB - The sane choice. And it's all to create a more intuitive user experience.
-     * Having the user create a color by combining sliders of red, green, and blue is very true
-     * to the colorspace we are actually working in, but folks I tried this on found it very
-     * difficult. Hue/Saturation/Brightness allows us to create one slider for each three intuitive
-     * variables. Hue changes the color, saturation changes the intensity of the color, and
-     * brightness
-     * changes, well the brightness.
-     * Actually implementing this isn't very clean, but the result for the user is a better
-     * experience.
-     */
-    public Color hsbViaJoystick(Color previousColor) {
-        final float HUE_JOYSTICK_SCALAR = 5;
-        final float SATURATION_JOYSTICK_SCALAR = 0.05F;
-        final float BRIGHTNESS_JOYSTICK_SCALAR = 0.05f;
-
-        float[] hsb
-                = new float[3]; // Android graphics library wants an array containing RGB values.
-        android.graphics.Color.RGBToHSV(
-                previousColor.red,
-                previousColor.green,
-                previousColor.blue,
-                hsb
-        );
-
-        /*
-         * Here we let the user increase or decrease H, S, or B with the joystick.
-         * Pushing the stick more moves the value more.
-         */
-        hsb[0] = Math.max(Math.min(hsb[0] + (gamepad1.left_stick_x * HUE_JOYSTICK_SCALAR), 360), 0);
-        hsb[1] = Math.max(
-                Math.min(
-                        hsb[1] + (gamepad1.right_stick_x * SATURATION_JOYSTICK_SCALAR),
-                        1
-                ), 0
-        );
-        hsb[2] = Math.max(
-                Math.min(
-                        hsb[2] + (-gamepad1.right_stick_y * BRIGHTNESS_JOYSTICK_SCALAR),
-                        0.98f
-                ), 0
-        );
-
-        /*
-         * Here we create an integer where the Android graphics library will store each component of
-         * our RGB color one-after-another. I hope we can agree that this is cursed.
-         */
-        int colorInt = android.graphics.Color.HSVToColor(hsb);
-        Color color = new Color(0, 0, 0); // Create a new color to return.
-
-        /*
-         * One of the big downsides in this multi-color model is that some behavior isn't very
-         * intuitive. In this case as you approach a saturation of 1, the number of hues you can
-         * display are limited to very pure versions of red, green, and blue. To avoid this we
-         * limit the maximum saturation to 0.98 (this limit happens above) and to reduce confusion,
-         * we display this to the user over telemetry as 1.0.
-         */
-        if (hsb[2] > 0.97) {
-            hsb[2] = 1.0f;
-        }
-        hsbTelemetry = String.format(
-                "Hue/Saturation/Brightness: %4.2f %4.2f %4.2f",
-                hsb[0],
-                hsb[1],
-                hsb[2]
-        );
-
-        color.red = android.graphics.Color.red(colorInt);
-        color.green = android.graphics.Color.green(colorInt);
-        color.blue = android.graphics.Color.blue(colorInt);
-        return color;
-    }
-
-    public float[] hueViaJoystick(float previousStartHue, float previousEndHue) {
-        final float HUE_JOYSTICK_SCALAR = 5;
-        float[] hues = new float[2];
-
-        hues[0] = Math.max(
-                Math.min(previousStartHue + (gamepad1.left_stick_x * HUE_JOYSTICK_SCALAR), 360), 0);
-        hues[1] = Math.max(
-                Math.min(
-                        previousEndHue + (gamepad1.right_stick_x * HUE_JOYSTICK_SCALAR),
-                        360
-                ), 0
-        );
-
-        hueTelemetry = String.format("Start hue/end hue: %4.2f %4.2f", hues[0], hues[1]);
-
-        return hues;
-    }
-
-    public void showHsbTelemetry() {
-        telemetry.addLine("Move the joysticks to configure the color of the LEDs");
-        telemetry.addLine("Left Joystick X (side-to-side) Changes the Hue of a color");
-        telemetry.addLine("Right Joystick X (side-to-side) changes the Saturation");
-        telemetry.addLine("Right Joystick Y (up-and-down) changes the Brightness");
-        telemetry.addLine("");
-    }
-
-    public void toggleThroughColors(boolean button, boolean thirdColor) {
-        if (button) {
-            switch (animationColor) {
-                case PRIMARY_COLOR:
-                    animationColor = AnimationColor.SECONDARY_COLOR;
-                    break;
-                case SECONDARY_COLOR:
-                    if (thirdColor) {
-                        animationColor = AnimationColor.TERTIARY_COLOR;
-                    } else {
-                        animationColor = AnimationColor.PRIMARY_COLOR;
-                    }
-                    break;
-                case TERTIARY_COLOR:
-                    animationColor = AnimationColor.PRIMARY_COLOR;
-                    break;
-            }
-        }
-    }
-
-    // an enum which is used in a mini state machine to allow the user to set different colors.
-    public enum AnimationColor {
-        PRIMARY_COLOR,
-        SECONDARY_COLOR,
-        TERTIARY_COLOR,
-    }
-
-    /*
-     * the enum powering the main state machine that this code moves through, each state represents
-     * a page the user can see displayed via telemetry on the driver's station.
-     */
-    public enum ConfigState {
-        WELCOME_SCREEN,
-        SELECT_LAYER,
-        SET_ENDPOINTS,
-        SELECT_ANIMATION,
-        CONFIGURE_ANIMATION,
-        SET_BRIGHTNESS,
-        SET_SPEED,
-        FORK_IN_THE_ROAD,
-        SAVE_TO_ARTBOARD,
-        COMPLETE;
-    }
-
-    /*
-     * This is actually a bit of a duplicate of the LayerHeight found in PrismAnimations. This adds
-     * an animation slot which can be stored at each position in the enum. This is not required for
-     * the Prism side, but I want to be able to show a user what animation is stored at what layer
-     * after they've created their first animation.
-     */
     public enum Layers {
         LAYER_0(AnimationType.NONE, 0, LayerHeight.LAYER_0),
         LAYER_1(AnimationType.NONE, 1, LayerHeight.LAYER_1),
@@ -1216,13 +68,117 @@ public class GoBildaPrismTest extends LinearOpMode {
         }
     }
 
-    /*
-     * This enum captures the kind of speed we can control on the animation.
-     */
-    public enum SpeedType {
-        NO_SPEED,
-        PERIOD_ONLY,
-        SPEED_ONLY,
-        PERIOD_AND_SPEED,
+    private ExecutorService backgroundExecutor = null;
+
+    PrismAnimations.Solid solid = new PrismAnimations.Solid();
+    GoBildaPrismDriver prism;
+    DigitalChannel laserInput1;
+    DigitalChannel laserInput2;
+    DigitalChannel laserInput3;
+
+    @Override
+    public void runOpMode() {
+        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+        solid.setPrimaryColor(Color.WHITE);
+        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+
+        // Three digital laser sensors (beam-break style)
+        laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1");
+        laserInput2 = hardwareMap.get(DigitalChannel.class, "bb2");
+        laserInput3 = hardwareMap.get(DigitalChannel.class, "bb3");
+
+        initBackgroundThreads();
+
+        // Wait for the game to start (driver presses START)
+        waitForStart();
+        resetRuntime();
+
+        int prevBallCount = 0;
+
+        // run until the end of the match (driver presses STOP)
+        while (opModeIsActive()) {
+            int ballCount = 0;
+            ballCount += laserInput1.getState() ? 1 : 0;
+            ballCount += laserInput2.getState() ? 1 : 0;
+            ballCount += laserInput3.getState() ? 1 : 0;
+
+            if (ballCount != prevBallCount) {
+                prevBallCount = ballCount;
+                switch (ballCount) {
+                    case 1:
+                        solid.setPrimaryColor(Color.BLUE);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    case 2:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.ORANGE);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    case 3:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.GREEN);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    default:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.RED);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                }
+            }
+            sleep(1);
+        }
     }
+
+    public void initBackgroundThreads() {
+        backgroundExecutor = ThreadPool.newSingleThreadExecutor("Background Thread");
+        backgroundExecutor.submit(backgroundProcessingRunnable);
+    }
+
+    public void stopBackgroundThreads() {
+        if (backgroundExecutor != null) {
+            backgroundExecutor.shutdownNow();
+            backgroundExecutor = null;
+        }
+    }
+
+    private final Runnable backgroundProcessingRunnable = () ->
+    {
+        int prevBallCount = 0;
+
+        while (!Thread.currentThread().isInterrupted() &&
+                (opModeIsActive() || opModeInInit()) &&
+                !isStopRequested()) {
+
+            int ballCount = 0;
+            ballCount += laserInput1.getState() ? 1 : 0;
+            ballCount += laserInput2.getState() ? 1 : 0;
+            ballCount += laserInput3.getState() ? 1 : 0;
+
+            if (ballCount != prevBallCount) {
+                prevBallCount = ballCount;
+                switch (ballCount) {
+                    case 1:
+                        solid.setPrimaryColor(Color.BLUE);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    case 2:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.ORANGE);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    case 3:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.GREEN);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                    default:
+                        prism.clearAllAnimations();
+                        solid.setPrimaryColor(Color.RED);
+                        prism.insertAndUpdateAnimation(Layers.LAYER_0.layerHeight, solid);
+                        break;
+                }
+            }
+        }
+    };
 }

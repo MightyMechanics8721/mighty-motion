@@ -25,6 +25,7 @@ package org.firstinspires.ftc.teamcode.Testing;
 
 import static org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver.Artboard;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -46,7 +47,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Prism Artboard Example", group="Linear OpMode")
-//@Disabled
+@Disabled
 
 public class GoBildaPrismArtboardExample extends LinearOpMode {
 

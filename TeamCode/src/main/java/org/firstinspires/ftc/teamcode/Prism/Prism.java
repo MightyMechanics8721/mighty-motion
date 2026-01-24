@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Testing.GoBildaPrismTest;
 public class Prism {
     GoBildaPrismDriver prism;
     PrismAnimations.Solid solid = new PrismAnimations.Solid();
-    int ballCount = 0;
+
     int prevBallCount = 0;
     private DigitalChannel laserInput1;
     private DigitalChannel laserInput2;
@@ -33,38 +33,32 @@ public class Prism {
         prism.insertAndUpdateAnimation(LayerHeight.LAYER_0, solid);
     }
 
+    public int runCheck() {
+        int ballCount = 0;
+        ballCount += laserInput1.getState() ? 1 : 0;
+        ballCount += laserInput2.getState() ? 1 : 0;
+        ballCount += laserInput3.getState() ? 1 : 0;
 
-    public Action ballCheck(boolean run) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                ballCount = 0;
-                ballCount += laserInput1.getState() ? 1 : 0;
-                ballCount += laserInput2.getState() ? 1 : 0;
-                ballCount += laserInput3.getState() ? 1 : 0;
-
-                if (ballCount != prevBallCount) {
-                    prevBallCount = ballCount;
-                    prism.clearAllAnimations();
-                    switch (ballCount) {
-                        case 1:
-                            solid.setPrimaryColor(Color.BLUE);
-                            break;
-                        case 2:
-                            solid.setPrimaryColor(Color.ORANGE);
-                            break;
-                        case 3:
-                            solid.setPrimaryColor(Color.GREEN);
-                            break;
-                        default:
-                            solid.setPrimaryColor(Color.RED);
-                            break;
-                    }
-                    prism.insertAndUpdateAnimation(LayerHeight.LAYER_0, solid);
-                }
-                return !run;
+        if (ballCount != prevBallCount) {
+            prevBallCount = ballCount;
+            prism.clearAllAnimations();
+            switch (ballCount) {
+                case 1:
+                    solid.setPrimaryColor(Color.BLUE);
+                    break;
+                case 2:
+                    solid.setPrimaryColor(Color.ORANGE);
+                    break;
+                case 3:
+                    solid.setPrimaryColor(Color.GREEN);
+                    break;
+                default:
+                    solid.setPrimaryColor(Color.RED);
+                    break;
             }
-
-        };
+            prism.insertAndUpdateAnimation(LayerHeight.LAYER_0, solid);
+        }
+        return ballCount;
     }
+
 }

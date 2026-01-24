@@ -18,8 +18,8 @@ public class Indexer {
 
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private Battery battery;
     public MotorController motorController;
+    private Battery battery;
 
 
     public Indexer(HardwareMap hardwareMap, Battery battery) {

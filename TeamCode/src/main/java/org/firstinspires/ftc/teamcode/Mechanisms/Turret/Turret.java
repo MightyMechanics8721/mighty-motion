@@ -22,6 +22,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
@@ -30,9 +31,9 @@ public class Turret {
 
     // --- Tunable ---
     public static double staticGain = 0.15;
-    public static PIDConstants pidConstants = new PIDConstants(0.0015, 0.0, 0.0001);
-    public static double angleThreshold = 1.0;
-    // --- Hardware constants ---
+    public static PIDConstants pidConstants = new PIDConstants(0.0085, 0.0, 0.0001);
+    public static double angleThreshold = 3.0;
+    // --- Hardware constants ---   
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
     // --- Hardware ---
@@ -45,8 +46,8 @@ public class Turret {
 
     // --- Constructor ---
     public Turret(HardwareMap hardwareMap) {
-        turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
-        turretRight = hardwareMap.get(CRServo.class, "servodotRight");
+        turretLeft = hardwareMap.get(CRServo.class, "turretLeft");
+        turretRight = hardwareMap.get(CRServo.class, "turretRight");
         turretEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV);
         // <-- use Encoder wrapper
 
@@ -65,7 +66,8 @@ public class Turret {
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
+        return Math.toDegrees(Utils.angleWrap(Math.toRadians(((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360)));
+
     }
 
     /**
@@ -83,16 +85,17 @@ public class Turret {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power = computeSpinPower(clamp(desiredAngle, -90, 90));
+                double desiredAngleWrapped = Math.toDegrees(Utils.angleWrap(Math.toRadians(desiredAngle)));
+                double power = computeSpinPower(clamp(desiredAngleWrapped, -90, 90));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
-                telemetryPacket.put("Target Angle", desiredAngle);
+                telemetryPacket.put("Target Angle", desiredAngleWrapped);
                 telemetryPacket.put("Current Angle", getAngle());
                 telemetryPacket.put("Power", power);
 
                 // Stop when within 1 degree
-                if (Math.abs(desiredAngle - getAngle()) < 1.0) {
+                if (Math.abs(desiredAngleWrapped - getAngle()) < angleThreshold) {
                     turretLeft.setPower(0);
                     turretRight.setPower(0);
                     return false;

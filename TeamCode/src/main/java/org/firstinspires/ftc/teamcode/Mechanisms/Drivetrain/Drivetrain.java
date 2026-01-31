@@ -115,8 +115,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
-     * @param battery     The Battery level of the Robot
+     * to which name
+     * @param battery The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -181,8 +181,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x     Initial X position (inches)
-     * @param y     Initial Y position (inches)
+     * @param x Initial X position (inches)
+     * @param y Initial Y position (inches)
      * @param theta Initial heading (degrees)
      */
     public void setInitialPose(double x, double y, double theta) {
@@ -200,17 +200,19 @@ public class Drivetrain {
      * Localizes the Robot, determines the current location of the Robot using odometry and previous
      * locations. Updates the internal state matrix with the current estimated pose.
      */
+    public void localize(TelemetryPacket packet) {
+        this.localize();
+        this.updateTelemetry(packet);
+    }
+
     public void localize() {
-        //        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
         this.state = this.twoWheelOdo.calculate();
-        this.updateTelemetry();
-
     }
 
-    public void localizePath(double[][] points, TelemetryPacket packet) {
-        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
-        //        this.updateTelemetryGraph(points, packet);
-    }
+    //    public void localizePath(double[][] points, TelemetryPacket packet) {
+    //        this.state = this.initialState.plus(this.twoWheelOdo.calculate());
+    //        //        this.updateTelemetryGraph(points, packet);
+    //    }
 
 
     public SimpleMatrix stoppingDistance(TelemetryPacket packet) {
@@ -280,7 +282,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -302,74 +304,233 @@ public class Drivetrain {
         return 0.0658 * angularVelocity + 0.00522 * angularVelocity * angularVelocity;
     }
 
-    /**
-     * Moves the robot to a desired pose using PID control.
-     *
-     * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
-     * the target.
-     */
-    public Action goToPose(
+    private double distance(
+            double[] desiredPos, double distanceThreshold,
+            TelemetryPacket packet
+    ) {
+        double distanceToGoal = Utils.calculateDistance(
+                state.get(0, 0),
+                state.get(1, 0),
+                desiredPos[0],
+                desiredPos[1]
+        );
+        packet.put("dist. to goal/final point (in)", distanceToGoal);
+        packet.put("dist. thresh (in)", distanceThreshold);
+        return distanceToGoal;
+    }
+
+    private boolean inHeading(double heading, double angleThreshold, TelemetryPacket packet) {
+        double headingError = Utils.angleWrap(heading - state.get(2, 0));
+        packet.put("heading error (deg)", Math.toDegrees(headingError));
+        packet.put("angle thresh (deg)", Math.toDegrees(angleThreshold));
+        return Math.abs(headingError) <= Math.abs(angleThreshold);
+    }
+
+    private boolean inStoppingZone(
             SimpleMatrix desiredPose, double distanceThreshold,
-            double angleThreshold
+            double angleThreshold,
+            TelemetryPacket packet
+    ) {
+        double[] position = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
+        return Math.abs(this.distance(position, distanceThreshold, packet)) <= Math.abs(
+                distanceThreshold) && this.inHeading(
+                desiredPose.get(2, 0),
+                angleThreshold,
+                packet
+        );
+    }
+
+    private boolean goToPoseFunction(
+            SimpleMatrix desiredPose,
+            double distanceThreshold,
+            double angleThreshold,
+            boolean useStoppingDistance,
+            TelemetryPacket packet
+    ) {
+        double[] desiredPosition = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawPoint(desiredPosition, canvas, "green");
+
+        SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+        if (useStoppingDistance) {
+            pose =
+                    pose.plus(this.stoppingDistance(packet));
+            packet.addLine("stop dist. used");
+        }
+        stoppingDistancePose = pose;
+
+        SimpleMatrix wheelSpeeds
+                = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
+                pose,
+                desiredPose
+        ));
+
+        SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+
+        setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
+
+        boolean readyToStop = this.inStoppingZone(
+                desiredPose,
+                distanceThreshold,
+                angleThreshold,
+                packet
+        );
+        if (readyToStop) {
+            setPower(stopMatrix);
+            packet.addLine("robot within pose thresh.");
+        }
+
+        Drawing.drawRobot(stoppingDistancePose, canvas, "blue");
+        return !readyToStop;
+    }
+
+    public Action goToPose(
+            SimpleMatrix desiredPose,
+            double distanceThreshold,
+            double angleThreshold,
+            boolean useStoppingDistance
     ) {
         Drivetrain drivetrain = this;
-
-        //Rename goToPosition
         return new Action() {
+
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                drivetrain.localize();
-                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+                drivetrain.localize(packet);
 
-                if (ThresholdParameters.stopPlanning) {
-                    pose =
-                            pose.plus(drivetrain.stoppingDistance(packet));
-                    packet.addLine("Using stopping distance!");
-                }
-                stoppingDistancePose = pose;
-
-                SimpleMatrix wheelSpeeds
-                        = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
-                        pose,
-                        desiredPose
-                ));
-                SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-                //                deltaT.reset();
-                setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
-                prevWheelSpeeds = wheelSpeeds;
-                if (Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < distanceThreshold
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold) {
-                    setPower(stopMatrix);
-                    packet.put("Done", "done");
-                }
-                return !(Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < angleThreshold);
+                return drivetrain.goToPoseFunction(
+                        desiredPose, distanceThreshold,
+                        angleThreshold,
+                        useStoppingDistance,
+                        packet
+                );
             }
         };
+
     }
 
+    // TODO: FIXME: REMOVE THIS!
     public Action goToPose(
-            SimpleMatrix desiredPose
+            SimpleMatrix simpl
     ) {
-        return this.goToPose(
-                desiredPose, this.THRESHOLD_PARAMETERS.distanceThreshold,
-                this.THRESHOLD_PARAMETERS.angleThreshold
-        );
+        Drivetrain drivetrain = this;
+        return new Action() {
+
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                return true;
+            }
+        };
+
     }
+
+    // TODO: so we can upload. REMOVE LATER
+    public Action goToPose(
+            SimpleMatrix simpl, double x, double y
+    ) {
+        Drivetrain drivetrain = this;
+        return new Action() {
+
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                return true;
+            }
+        };
+
+    }
+
+    private boolean followPathFunction(
+            Path path, double maxSpeed, double distanceThreshold, double angleThreshold
+            , boolean useStoppingDistance, TelemetryPacket packet
+    ) {
+        double[] position = {state.get(0, 0), state.get(1, 0)};
+
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawPath(path.getWaypoints(), canvas, "red");
+        Drawing.drawCircle(position, canvas, GeometricController.lookAheadXY, "purple", false);
+        Drawing.drawCircle(position, canvas, GeometricController.lookAheadTheta, "orange", false);
+
+        SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
+        double distanceToFinalPose = distance(
+                path.getFinalPoint(), distanceThreshold,
+                packet
+        );
+        packet.put("dist. to final point (in)", distanceToFinalPose);
+
+        if (Math.abs(distanceToFinalPose) <= GeometricController.lookAheadTheta) {
+            packet.addLine("follower: pose control");
+
+            SimpleMatrix desiredPose = makePoseVector(
+                    path.getFinalPoint()[0], path.getFinalPoint()[1],
+                    path.finalHeading
+            );
+
+            return this.goToPoseFunction(
+                    desiredPose, distanceThreshold, angleThreshold,
+                    useStoppingDistance, packet
+            );
+        }
+
+        packet.addLine("follower: pure pursuit");
+        if (useStoppingDistance) {
+            pose = pose.plus(this.stoppingDistance(packet));
+            packet.addLine("follower: stop dist. used");
+        }
+
+        stoppingDistancePose = pose;
+
+        SimpleMatrix desiredPose = this.geometricController.calculate(pose, path);
+        SimpleMatrix wheelSpeeds
+                = mecanumKinematicModel.inverseKinematics(followController.calculate(
+                pose,
+                desiredPose
+        ));
+
+        double maxScale = (maxSpeed / MECHANICAL_PARAMETERS.wheelRadius)
+                / wheelSpeeds.elementMaxAbs();
+
+        wheelSpeeds = wheelSpeeds.scale(maxScale);
+
+        SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
+
+        setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
+
+        double[] desiredPosition = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
+        Drawing.drawPoint(desiredPosition, canvas, "green");
+
+        return true;
+    }
+
+    public Action followPath(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            boolean useStoppingDistance
+    ) {
+        Drivetrain drivetrain = this;
+        return new Action() {
+
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                drivetrain.localize(packet);
+
+                return drivetrain.followPathFunction(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        angleThreshold,
+                        useStoppingDistance,
+                        packet
+                );
+            }
+        };
+
+    }
+
 
     /**
      * Stops the Motors of the drivetrain immediately.
@@ -380,145 +541,22 @@ public class Drivetrain {
         return new InstantAction(() -> setPower(stopMatrix));
     }
 
-    /**
-     * Follows a given path using geometric control and a motion profile. Scales wheel speeds based
-     * on the path's velocity profile.
-     *
-     * @param path The Path object to follow.
-     * @return An Action that runs until the robot reaches the end of the path within
-     * distanceThreshold.
-     */
-    public Action followPath(Path path, double distanceThreshold, double angleThreshold) {
-        //        FtcDashboard ftcDashboard = FtcDashboard.getInstance();
-        Drivetrain drivetrain = this;
 
-        return new Action() {
-            double distanceToFinalPose = 0;
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-
-                localizePath(path.waypoints, packet);
-                double[][] xyPoints = path.getWaypoints();
-
-//                packet.put("xy length", xyPoints.length);
-                SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                distanceToFinalPose = calculateDistance(pose.get(0, 0), pose.get(1, 0), path.getFinalPoint()[0],
-                        path.getFinalPoint()[1]);
-                packet.put("Distance to final point", distanceToFinalPose);
-                if (distanceToFinalPose < GeometricController.lookAheadTheta) {
-                    //                    isClose = true;
-                    packet.addLine("USING POSE CONTROLLER");
-                    SimpleMatrix desiredPose = makePoseVector(
-                            path.getFinalPoint()[0], path.getFinalPoint()[1],
-                            path.finalHeading
-                    );
-                    if (ThresholdParameters.stopPlanning && distanceToFinalPose > 3) {
-                        pose =
-                                pose.plus(drivetrain.stoppingDistance(packet));
-                        packet.addLine("Using stopping distance!");
-                    }
-                    stoppingDistancePose = pose;
-                    drivetrain.updateTelemetryGraph(path.waypoints, packet);
-
-                    SimpleMatrix wheelSpeeds
-                            = mecanumKinematicModel.inverseKinematics(poseControl.calculate(
-                            pose,
-                            desiredPose
-                    ));
-                    SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-                    //                deltaT.reset();
-                    setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
-                    prevWheelSpeeds = wheelSpeeds;
-                    if (Math.abs(Utils.calculateDistance(
-                            state.get(0, 0),
-                            state.get(1, 0),
-                            desiredPose.get(0, 0),
-                            desiredPose.get(1, 0)
-                    )) < distanceThreshold
-                            && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                            < angleThreshold) {
-                        setPower(stopMatrix);
-                        packet.put("Done", "done");
-                    }
-                    return !(Math.abs(Utils.calculateDistance(
-                            state.get(0, 0),
-                            state.get(1, 0),
-                            desiredPose.get(0, 0),
-                            desiredPose.get(1, 0)
-                    )) < ThresholdParameters.distanceThreshold
-                            && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                            < angleThreshold);
-                }
-                packet.addLine("USING GEO CONTROLLER");
-                SimpleMatrix desiredPose = geometricController.calculate(pose, path);
-                if (ThresholdParameters.stopPlanning && distanceToFinalPose > 5) {
-                    pose = pose.plus(drivetrain.stoppingDistance(packet));
-                    packet.addLine("Using stopping distance!");
-                }
-                stoppingDistancePose = pose;
-                drivetrain.updateTelemetryGraph(path.waypoints, packet);
-
-                SimpleMatrix wheelSpeeds =
-                        mecanumKinematicModel.inverseKinematics(followController.calculate(
-                                pose,
-                                desiredPose
-                        ));
-
-                double maxScale = (MOTION_PARAMETERS.maxSpeed / MECHANICAL_PARAMETERS.wheelRadius)
-                        / wheelSpeeds.elementMaxAbs();
-
-                wheelSpeeds = wheelSpeeds.scale(maxScale);
-                SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
-
-                setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
-                prevWheelSpeeds = wheelSpeeds;
-
-                return !(Math.abs(Utils.calculateDistance(
-                        state.get(0, 0),
-                        state.get(1, 0),
-                        desiredPose.get(0, 0),
-                        desiredPose.get(1, 0)
-                )) < ThresholdParameters.distanceThreshold
-                        && Math.abs(Utils.angleWrap(state.get(2, 0) - desiredPose.get(2, 0)))
-                        < ThresholdParameters.angleThreshold);
-            }
-        };
-    }
-
-    public void updateTelemetry() {
+    public void updateTelemetry(TelemetryPacket packet) {
         if (!DebuggingParameters.debug) return;
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("x position", state.get(0, 0));
-        packet.put("y position", state.get(1, 0));
-        packet.put("heading", Math.toDegrees(state.get(2, 0)));
-        packet.put("longitudinal Velocity", state.get(3, 0));
-        packet.put("lateral Velocity", state.get(4, 0));
-        packet.put("heading Velocity", state.get(5, 0));
 
-        // Draw robot
+        packet.put("x position (in)", state.get(0, 0));
+        packet.put("y position (in)", state.get(1, 0));
+        packet.put("heading (deg)", Math.toDegrees(state.get(2, 0)));
+        packet.put("longitudinal Velocity (in/s)", state.get(3, 0));
+        packet.put("lateral Velocity (in/s)", state.get(4, 0));
+        packet.put("heading Velocity (deg/s)", Math.toDegrees(state.get(5, 0)));
+
+
         Canvas canvas = packet.fieldOverlay();
-        Drawing.drawRobot(canvas, state);
-
-        ftcDashboard.sendTelemetryPacket(packet);
+        Drawing.drawRobot(state, canvas, "black");
     }
 
-    public void updateTelemetryGraph(double[][] points, TelemetryPacket packet) {
-        if (!DebuggingParameters.debug) return;
-        //        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("x position", state.get(0, 0));
-        packet.put("y position", state.get(1, 0));
-        packet.put("heading", Math.toDegrees(state.get(2, 0)));
-        packet.put("longitudinal Velocity", state.get(3, 0));
-        packet.put("lateral Velocity", state.get(4, 0));
-        packet.put("heading Velocity", state.get(5, 0));
-
-        // Draw robot
-        Canvas canvas = packet.fieldOverlay();
-        Drawing.drawPoint(canvas, state, points);
-
-        //        ftcDashboard.sendTelemetryPacket(packet);
-    }
 
     /**
      * Allows for manual control of Robot using controller joystick.
@@ -526,6 +564,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -533,8 +572,9 @@ public class Drivetrain {
 
         return new Action() {
             @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                drivetrain.localize();
+            public boolean run(@NonNull TelemetryPacket packet) {
+                drivetrain.localize(packet);
+
                 double y = ly;
                 double x = -lx;
                 double rx = -rX;
@@ -547,14 +587,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
-                telemetryPacket.put("X", state.get(0, 0));
-                telemetryPacket.put("Y", state.get(1, 0));
-                telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));
+                                              .scale(1 / denominator));
                 return false;
             }
         };

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -29,7 +30,6 @@ public class AutonBlueNearTesting extends LinearOpMode {
         // ----- TELEMETRY -----
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
-
         // ---- HARDWARE -----
         Battery battery = new Battery(hardwareMap);
         Drivetrain drivetrain = new Drivetrain(hardwareMap, battery);
@@ -58,18 +58,38 @@ public class AutonBlueNearTesting extends LinearOpMode {
         drivetrain.setInitialPose(-51, -51, 45);
         Actions.runBlocking(
                 new SequentialAction(
-                        drivetrain.followPath(path, 1, 0.05),
-                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90)),
-                        drivetrain.followPath(gate, 1.5, 0.05),
-                        drivetrain.followPath(shoot, 3, 0.05)
-//                        drivetrain.followPath(gate, 1.5, 0.05),
-//                        drivetrain.followPath(shoot, 3, 0.05),
-//                        drivetrain.followPath(gate, 1.5, 0.05),
-//                        drivetrain.followPath(shoot, 3, 0.05),
-//                        drivetrain.followPath(thirdRow, 1.5, 0.05),
-//                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90)),
-//                        drivetrain.followPath(firstRow, 1.5, 0.05),
-//                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90))
+                        //                        Path path,
+                        //        double maxSpeed,
+                        //        double distanceThreshold,
+                        //        double angleThreshold,
+                        //        boolean useStoppingDistance,
+                        //        TelemetryPacket packet
+                        drivetrain.followPath(
+                                path, 120, 1.5,
+                                Math.toRadians(2.5), true
+                        ),
+                        drivetrain.goToPose(
+                                Utils.makePoseVector(-6, -18, -90),
+                                1.5, Math.toRadians(2.5), true
+                        ),
+                        drivetrain.followPath(
+                                gate, 120, 1.5,
+                                Math.toRadians(2.5), true
+                        ),
+                        drivetrain.followPath(
+                                shoot, 120, 1.5,
+                                Math.toRadians(2.5), true
+                        )
+                        //                        drivetrain.followPath(gate, 1.5, 0.05),
+                        //                        drivetrain.followPath(shoot, 3, 0.05),
+                        //                        drivetrain.followPath(gate, 1.5, 0.05),
+                        //                        drivetrain.followPath(shoot, 3, 0.05),
+                        //                        drivetrain.followPath(thirdRow, 1.5, 0.05),
+                        //                        drivetrain.goToPose(Utils.makePoseVector(-6,
+                        //                        -18, -90)),
+                        //                        drivetrain.followPath(firstRow, 1.5, 0.05),
+                        //                        drivetrain.goToPose(Utils.makePoseVector(-6,
+                        //                        -18, -90))
 
                 )
         );

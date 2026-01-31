@@ -10,68 +10,45 @@ public final class Drawing {
     }
 
 
-    public static void drawRobot(Canvas canvas, SimpleMatrix state) {
+    public static void drawRobot(SimpleMatrix state, Canvas canvas, String color) {
         final double ROBOT_RADIUS = 7.5;
 
-        double x_position = state.get(0, 0); // x
-        double y_position = state.get(1, 0); // y
+        double xPosition = state.get(0, 0); // x
+        double yPosition = state.get(1, 0); // y
         double heading = state.get(2, 0); // heading
 
         canvas.setStrokeWidth(1);
-        canvas.strokeCircle(x_position, y_position, ROBOT_RADIUS);
+        canvas.setStroke(color);
+        canvas.strokeCircle(xPosition, yPosition, ROBOT_RADIUS);
 
         canvas.strokeLine(
-                x_position, y_position, Math.cos(heading) * ROBOT_RADIUS + x_position,
-                Math.sin(heading) * ROBOT_RADIUS + y_position
+                xPosition, yPosition, Math.cos(heading) * ROBOT_RADIUS + xPosition,
+                Math.sin(heading) * ROBOT_RADIUS + yPosition
         );
     }
 
-    public static void drawPoint(Canvas canvas, SimpleMatrix state, double[][] points) {
-        final double ROBOT_RADIUS = 7.5;
-
-        double x_position = state.get(0, 0); // x
-        double y_position = state.get(1, 0); // y
-        double heading = state.get(2, 0); // heading
-
+    public static void drawPath(double[][] points, Canvas canvas, String color) {
         canvas.setStrokeWidth(1);
-        canvas.strokeCircle(x_position, y_position, ROBOT_RADIUS);
-
-        canvas.strokeLine(
-                x_position, y_position, Math.cos(heading) * ROBOT_RADIUS + x_position,
-                Math.sin(heading) * ROBOT_RADIUS + y_position
-        );
-        final double POINT_RADIUS = 1;
-        canvas.setStrokeWidth(1);
+        canvas.setStroke(color);
         for (int i = 0; i < points.length - 1; i++) {
             canvas.strokeLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]);
         }
-
-        // Draw the pos point RED
-        // Draw the theta point BLUE
-        canvas.setStrokeWidth(2);
-        canvas.setStroke("red");
-        canvas.strokeCircle(GeometricController.geoPosPointX, GeometricController.geoPosPointY, 2);
-
-        canvas.setStrokeWidth(2);
-        canvas.setStroke("blue");
-        canvas.strokeCircle(GeometricController.geoThetaX, GeometricController.geoThetaY, 2);
-
-        canvas.setStrokeWidth(2);
-        canvas.setStroke("green");
-        canvas.strokeCircle(
-                Drivetrain.stoppingDistancePose.get(0, 0),
-                Drivetrain.stoppingDistancePose.get(1, 0), 2
-        );
     }
 
-    public static void drawTarget(Canvas canvas, SimpleMatrix state) {
-
-        double x_position = state.get(0, 0); // x
-        double y_position = state.get(1, 0); // y
-        double heading = state.get(2, 0); // heading
-
-        canvas.setStrokeWidth(2);
-        canvas.setFill("red");
-        canvas.strokeCircle(x_position, y_position, 2);
+    public static void drawCircle(
+            double[] point, Canvas canvas, double radius, String color,
+            boolean fill
+    ) {
+        canvas.setStrokeWidth(1);
+        canvas.setStroke(color);
+        if (fill) {
+            canvas.setFill(color);
+        }
+        canvas.strokeCircle(point[0], point[1], radius);
     }
+
+    public static void drawPoint(double[] point, Canvas canvas, String color) {
+        drawCircle(point, canvas, 1.5, color, true);
+    }
+
 }

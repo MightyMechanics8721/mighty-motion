@@ -53,6 +53,6 @@ public class TuneGeo extends LinearOpMode {
         looptime.reset();
         double[][] coords = {{0, 0}, {24, 0}, {24, -24}, {72, -24}, {72, 0}};
         Path path = new Path(coords, 90, false, false);
-        Actions.runBlocking(drivetrain.followPath(path, 2, 0.05));
+        //        Actions.runBlocking(drivetrain.followPath(path, 2, 0.05));
     }
 }

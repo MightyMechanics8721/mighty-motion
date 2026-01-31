@@ -43,15 +43,34 @@ public class AutonBlueNearTesting extends LinearOpMode {
         // ---- INIT ----- FIX ODO,UPDATE
         drivetrain.setInitialPose(-51, -51, 45);
         //        drivetrain.localize();
-        double[][] firstStep = {{-51, -51}, {-24, -24}, {6, -24}, {12, -36}, {12, -55}};
+        double[][] firstStep = {{-24, -24}, {6, -24}, {12, -36}, {12, -55}};
+        double[][] shootToGate = {{12, -48}, {14, -56}};
+        double[][] gateToShoot = {{12, -46}, {9, -36}, {-8, -18}};
+        double[][] thirdRowStep = {{28, -36}, {36, -36}, {36, -55}};
+        double[][] firstRowStep = {{-9, -36}, {-12, -36}, {-12, -55}};
         Path path = new Path(firstStep, -90, false, false);
+        Path gate = new Path(shootToGate, -140, false, false);
+        Path shoot = new Path(gateToShoot, -140, false, true);
+        Path thirdRow = new Path(thirdRowStep, -90, false, false);
+        Path firstRow = new Path(firstRowStep, -90, false, false);
         waitForStart();
         looptime.reset();
         drivetrain.setInitialPose(-51, -51, 45);
         Actions.runBlocking(
                 new SequentialAction(
-                        drivetrain.followPath(path, 2, 0.05),
-                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -135))
+                        drivetrain.followPath(path, 1, 0.05),
+                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90)),
+                        drivetrain.followPath(gate, 1.5, 0.05),
+                        drivetrain.followPath(shoot, 3, 0.05)
+//                        drivetrain.followPath(gate, 1.5, 0.05),
+//                        drivetrain.followPath(shoot, 3, 0.05),
+//                        drivetrain.followPath(gate, 1.5, 0.05),
+//                        drivetrain.followPath(shoot, 3, 0.05),
+//                        drivetrain.followPath(thirdRow, 1.5, 0.05),
+//                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90)),
+//                        drivetrain.followPath(firstRow, 1.5, 0.05),
+//                        drivetrain.goToPose(Utils.makePoseVector(-6, -18, -90))
+
                 )
         );
     }

@@ -115,8 +115,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     * to which name
-     * @param battery The Battery level of the Robot
+     *                    to which name
+     * @param battery     The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -181,8 +181,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x Initial X position (inches)
-     * @param y Initial Y position (inches)
+     * @param x     Initial X position (inches)
+     * @param y     Initial Y position (inches)
      * @param theta Initial heading (degrees)
      */
     public void setInitialPose(double x, double y, double theta) {
@@ -280,7 +280,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds Current Wheel Speed
+     * @param wheelSpeeds        Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -306,7 +306,6 @@ public class Drivetrain {
      * Moves the robot to a desired pose using PID control.
      *
      * @param desiredPose The target pose [x, y, theta] in field coordinates.
-     *
      * @return An Action that runs until the robot is within distanceThreshold and angleThreshold of
      * the target.
      */
@@ -386,7 +385,6 @@ public class Drivetrain {
      * on the path's velocity profile.
      *
      * @param path The Path object to follow.
-     *
      * @return An Action that runs until the robot reaches the end of the path within
      * distanceThreshold.
      */
@@ -395,7 +393,7 @@ public class Drivetrain {
         Drivetrain drivetrain = this;
 
         return new Action() {
-
+            double distanceToFinalPose = 0;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
@@ -403,19 +401,19 @@ public class Drivetrain {
                 localizePath(path.waypoints, packet);
                 double[][] xyPoints = path.getWaypoints();
 
-                packet.put("xy length", xyPoints.length);
+//                packet.put("xy length", xyPoints.length);
                 SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
-                if (calculateDistance(
-                        pose.get(0, 0), pose.get(1, 0), path.getFinalPoint()[0],
-                        path.getFinalPoint()[1]
-                ) < GeometricController.lookAheadTheta) {
+                distanceToFinalPose = calculateDistance(pose.get(0, 0), pose.get(1, 0), path.getFinalPoint()[0],
+                        path.getFinalPoint()[1]);
+                packet.put("Distance to final point", distanceToFinalPose);
+                if (distanceToFinalPose < GeometricController.lookAheadTheta) {
                     //                    isClose = true;
                     packet.addLine("USING POSE CONTROLLER");
                     SimpleMatrix desiredPose = makePoseVector(
                             path.getFinalPoint()[0], path.getFinalPoint()[1],
                             path.finalHeading
                     );
-                    if (ThresholdParameters.stopPlanning) {
+                    if (ThresholdParameters.stopPlanning && distanceToFinalPose > 3) {
                         pose =
                                 pose.plus(drivetrain.stoppingDistance(packet));
                         packet.addLine("Using stopping distance!");
@@ -454,7 +452,7 @@ public class Drivetrain {
                 }
                 packet.addLine("USING GEO CONTROLLER");
                 SimpleMatrix desiredPose = geometricController.calculate(pose, path);
-                if (ThresholdParameters.stopPlanning) {
+                if (ThresholdParameters.stopPlanning && distanceToFinalPose > 5) {
                     pose = pose.plus(drivetrain.stoppingDistance(packet));
                     packet.addLine("Using stopping distance!");
                 }
@@ -528,7 +526,6 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
-     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -550,11 +547,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                                }
+                        }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                                              .scale(1 / denominator));
+                        .scale(1 / denominator));
                 telemetryPacket.put("X", state.get(0, 0));
                 telemetryPacket.put("Y", state.get(1, 0));
                 telemetryPacket.put("Theta", Math.toDegrees(state.get(2, 0)));
@@ -618,7 +615,7 @@ public class Drivetrain {
          * Acceptable difference between wanted and current positions (Inches) to make a hardware
          * call Used to save time & reduce unnecessary movements
          */
-        public static double distanceThreshold = 0.5;
+        public static double distanceThreshold = 1;
         /**
          * The acceptable difference between wanted and current angles (Radians) Used to save time &
          * reduce unnecessary movements

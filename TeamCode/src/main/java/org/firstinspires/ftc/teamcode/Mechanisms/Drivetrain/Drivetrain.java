@@ -61,12 +61,11 @@ public class Drivetrain {
     public static PoseConstantsGeo POSE_CONSTANTS_GEO = new PoseConstantsGeo();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public static MechanicalParameters mechanicalParameters;
-
-    public static SimpleMatrix state = new SimpleMatrix(6, 1);
-    public static SimpleMatrix stoppingDistancePose = new SimpleMatrix(3, 1);
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static MotionParameters MOTION_PARAMETERS = new MotionParameters();
+    public SimpleMatrix stoppingDistancePose = new SimpleMatrix(3, 1);
+    public SimpleMatrix state = new SimpleMatrix(6, 1);
     /**
      * Initialize Classes
      */
@@ -115,8 +114,8 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     * to which name
-     * @param battery The Battery level of the Robot
+     *                    to which name
+     * @param battery     The Battery level of the Robot
      */
     public Drivetrain(HardwareMap hardwareMap, Battery battery) {
         this.hardwareMap = hardwareMap;
@@ -181,8 +180,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
-     * @param x Initial X position (inches)
-     * @param y Initial Y position (inches)
+     * @param x     Initial X position (inches)
+     * @param y     Initial Y position (inches)
      * @param theta Initial heading (degrees)
      */
     public void setInitialPose(double x, double y, double theta) {
@@ -282,7 +281,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds Current Wheel Speed
+     * @param wheelSpeeds        Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -332,8 +331,8 @@ public class Drivetrain {
             TelemetryPacket packet
     ) {
         double[] position = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
-        return Math.abs(this.distance(position, distanceThreshold, packet)) <= Math.abs(
-                distanceThreshold) && this.inHeading(
+        return (Math.abs(this.distance(position, distanceThreshold, packet)) <= Math.abs(
+                distanceThreshold)) && this.inHeading(
                 desiredPose.get(2, 0),
                 angleThreshold,
                 packet
@@ -564,7 +563,6 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
-     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -587,11 +585,11 @@ public class Drivetrain {
                                                 MechanicalParameters.longDistToAxles
                                                         + MechanicalParameters.latDistToAxles)) * rx
                                 },
-                                }
+                        }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                                              .scale(1 / denominator));
+                        .scale(1 / denominator));
                 return false;
             }
         };

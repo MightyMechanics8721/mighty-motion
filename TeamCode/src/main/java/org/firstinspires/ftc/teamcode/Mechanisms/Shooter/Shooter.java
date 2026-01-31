@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.state;
+//import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.state;
+
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 
 import androidx.annotation.NonNull;
@@ -49,7 +50,7 @@ public class Shooter {
      * Constructs a new Shooter mechanism and initializes its motor controller.
      *
      * @param hardwareMap the FTC HardwareMap used to retrieve motor hardware
-     * @param battery the Battery instance used to monitor voltage and apply compensation
+     * @param battery     the Battery instance used to monitor voltage and apply compensation
      */
     public Shooter(HardwareMap hardwareMap, Battery battery) {
 
@@ -85,11 +86,12 @@ public class Shooter {
 
     public Action autoShoot() {
         return new Action() {
-            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double distance = calculateDistance(state.get(0, 0), state.get(1, 0), -60, -60);
-                Shooter.this.motorController.setVelocity(
-                        calculateVelocity(distance) * 2 * Math.PI / 60);
-                telemetryPacket.put("Distance bot to goal (in) ", distance);
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+////                double distance = calculateDistance(state.get(0, 0), state.get(1, 0), -60, -60);
+////                Shooter.this.motorController.setVelocity(
+////                        calculateVelocity(distance) * 2 * Math.PI / 60);
+////                telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
         };

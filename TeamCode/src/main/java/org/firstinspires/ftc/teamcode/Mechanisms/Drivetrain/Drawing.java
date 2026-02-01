@@ -43,8 +43,20 @@ public final class Drawing {
         canvas.setStroke(color);
         if (fill) {
             canvas.setFill(color);
+            canvas.fillCircle(point[0], point[1], radius);
+        } else {
+            canvas.strokeCircle(point[0], point[1], radius);
         }
-        canvas.strokeCircle(point[0], point[1], radius);
+    }
+
+    public static void drawLine(
+            double[] startPoint, double[] endPoint, Canvas canvas, String color
+    ) {
+        canvas.setStrokeWidth(1);
+        canvas.setStroke(color);
+        canvas.strokeLine(
+                startPoint[0], startPoint[1], endPoint[0], endPoint[1]
+        );
     }
 
     public static void drawPoint(double[] point, Canvas canvas, String color) {

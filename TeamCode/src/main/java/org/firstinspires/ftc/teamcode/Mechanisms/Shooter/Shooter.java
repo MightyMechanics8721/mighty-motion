@@ -49,10 +49,9 @@ public class Shooter {
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
      *
-     * @param hardwareMap the FTC HardwareMap used to retrieve motor hardware
-     * @param battery     the Battery instance used to monitor voltage and apply compensation
+     * @param hardwareMap the FTC HardwareMap used to retrieve motor hardwar
      */
-    public Shooter(HardwareMap hardwareMap, Battery battery) {
+    public Shooter(HardwareMap hardwareMap) {
 
         this.motorController = new MotorController(
                 hardwareMap,
@@ -60,7 +59,6 @@ public class Shooter {
                         CONFIGURATION_NAMES.shooterMotor1Name,
                         CONFIGURATION_NAMES.shooterMotor2Name
                 },
-                battery,
                 BATTERY_PARAMETERS.maxVoltage,
                 CONFIGURATION_NAMES.encoderName,
                 28.0
@@ -88,10 +86,11 @@ public class Shooter {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-////                double distance = calculateDistance(state.get(0, 0), state.get(1, 0), -60, -60);
-////                Shooter.this.motorController.setVelocity(
-////                        calculateVelocity(distance) * 2 * Math.PI / 60);
-////                telemetryPacket.put("Distance bot to goal (in) ", distance);
+                ////                double distance = calculateDistance(state.get(0, 0), state
+                //                .get(1, 0), -60, -60);
+                ////                Shooter.this.motorController.setVelocity(
+                ////                        calculateVelocity(distance) * 2 * Math.PI / 60);
+                ////                telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
         };

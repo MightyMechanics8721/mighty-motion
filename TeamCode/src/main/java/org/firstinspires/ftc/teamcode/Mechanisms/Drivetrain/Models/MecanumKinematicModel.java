@@ -32,38 +32,40 @@ public class MecanumKinematicModel {
      * before this matrix is constructed.  Used by {@link #inverseKinematics(SimpleMatrix)} to
      * convert chassis velocities into individual wheel angular velocities.</p>
      */
-    static SimpleMatrix inverseJacobian = new SimpleMatrix(
-            new double[][]{
-                    new double[]{
-                            1d,
-                            -1d,
-                            -(Drivetrain.MechanicalParameters.longDistToAxles
-                                    + Drivetrain.MechanicalParameters.latDistToAxles)
-                    },
-                    new double[]{
-                            1d,
-                            1d,
-                            -(Drivetrain.MechanicalParameters.longDistToAxles
-                                    + Drivetrain.MechanicalParameters.latDistToAxles)
-                    },
-                    new double[]{
-                            1d,
-                            -1d,
-                            (Drivetrain.MechanicalParameters.longDistToAxles
-                                    + Drivetrain.MechanicalParameters.latDistToAxles)
-                    },
-                    new double[]{
-                            1d,
-                            1d,
-                            (Drivetrain.MechanicalParameters.longDistToAxles
-                                    + Drivetrain.MechanicalParameters.latDistToAxles)
-                    }
-            }
-    );
+    private final SimpleMatrix inverseJacobian;
+
     Drivetrain.MechanicalParameters mechanicalParameters;
 
     public MecanumKinematicModel(Drivetrain.MechanicalParameters mechanicalParameters) {
         this.mechanicalParameters = mechanicalParameters;
+        this.inverseJacobian = new SimpleMatrix(
+                new double[][]{
+                        new double[]{
+                                1d,
+                                -1d,
+                                -(mechanicalParameters.longDistToAxles
+                                        + mechanicalParameters.latDistToAxles)
+                        },
+                        new double[]{
+                                1d,
+                                1d,
+                                -(mechanicalParameters.longDistToAxles
+                                        + mechanicalParameters.latDistToAxles)
+                        },
+                        new double[]{
+                                1d,
+                                -1d,
+                                (mechanicalParameters.longDistToAxles
+                                        + mechanicalParameters.latDistToAxles)
+                        },
+                        new double[]{
+                                1d,
+                                1d,
+                                (mechanicalParameters.longDistToAxles
+                                        + mechanicalParameters.latDistToAxles)
+                        }
+                }
+        );
     }
 
     /**
@@ -103,8 +105,6 @@ public class MecanumKinematicModel {
      * initialized
      */
     public SimpleMatrix inverseKinematics(SimpleMatrix twist) {
-        SimpleMatrix wheelSpeeds =
-                inverseJacobian.scale(1 / mechanicalParameters.wheelRadius).mult(twist);
-        return wheelSpeeds;
+        return inverseJacobian.scale(1 / mechanicalParameters.wheelRadius).mult(twist);
     }
 }

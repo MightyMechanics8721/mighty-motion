@@ -22,9 +22,7 @@ public class Battery {
     }
 
     public static void initialize(HardwareMap hardwareMap) {
-        if (instance == null) {
-            instance = new Battery(hardwareMap);
-        }
+        instance = new Battery(hardwareMap);
     }
 
     public static Battery getInstance() {

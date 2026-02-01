@@ -18,16 +18,14 @@ public class Indexer {
 
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private Battery battery;
     public MotorController motorController;
 
 
     public Indexer(HardwareMap hardwareMap, Battery battery) {
-        this.battery = battery;
         this.motorController = new MotorController(
                 hardwareMap,
                 new String[]{CONFIGURATION_NAMES.indexerMotorName},
-                battery, BATTERY_PARAMETERS.maxVoltage
+                BATTERY_PARAMETERS.maxVoltage
         );
 
     }

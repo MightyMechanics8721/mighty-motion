@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Manages one or more DC motors with optional encoder feedback, PID control, and voltage compensation.
+ * Manages one or more DC motors with optional encoder feedback, PID control, and voltage
+ * compensation.
  */
 public class MotorController {
 
@@ -54,11 +55,14 @@ public class MotorController {
      * Adds multiple motors from the hardware map.
      *
      * @param hardwareMap FTC hardware map
-     * @param motorNames  array of motor names to initialize
+     * @param motorNames array of motor names to initialize
      */
     public MotorController(HardwareMap hardwareMap, String[] motorNames) {
         for (String motorName : motorNames) {
-            this.motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName)));
+            this.motors.put(
+                    motorName,
+                    new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName))
+            );
         }
     }
 
@@ -66,7 +70,7 @@ public class MotorController {
      * Adds one motor from the hardware map.
      *
      * @param hardwareMap FTC hardware map
-     * @param motorName   name of the motor
+     * @param motorName name of the motor
      */
     public MotorController(HardwareMap hardwareMap, String motorName) {
         this(hardwareMap, new String[]{motorName});
@@ -75,25 +79,38 @@ public class MotorController {
     /**
      * Adds multiple motors and an encoder (used for velocity feedback).
      *
-     * @param hardwareMap        FTC hardware map
-     * @param motorNames         array of motor names
-     * @param encoderName        name of encoder motor
+     * @param hardwareMap FTC hardware map
+     * @param motorNames array of motor names
+     * @param encoderName name of encoder motor
      * @param ticksPerRevolution encoder ticks per revolution
      */
-    public MotorController(HardwareMap hardwareMap, String[] motorNames, String encoderName, double ticksPerRevolution) {
+    public MotorController(
+            HardwareMap hardwareMap,
+            String[] motorNames,
+            String encoderName,
+            double ticksPerRevolution
+    ) {
         this(hardwareMap, motorNames);
-        this.encoder = new Encoder(hardwareMap.get(DcMotorEx.class, encoderName), ticksPerRevolution);
+        this.encoder = new Encoder(
+                hardwareMap.get(DcMotorEx.class, encoderName),
+                ticksPerRevolution
+        );
     }
 
     /**
      * Adds one motor and an encoder (used for velocity feedback).
      *
-     * @param hardwareMap        FTC hardware map
-     * @param motorName          name of motor
-     * @param encoderName        name of encoder motor
+     * @param hardwareMap FTC hardware map
+     * @param motorName name of motor
+     * @param encoderName name of encoder motor
      * @param ticksPerRevolution encoder ticks per revolution
      */
-    public MotorController(HardwareMap hardwareMap, String motorName, String encoderName, double ticksPerRevolution) {
+    public MotorController(
+            HardwareMap hardwareMap,
+            String motorName,
+            String encoderName,
+            double ticksPerRevolution
+    ) {
         this(hardwareMap, new String[]{motorName}, encoderName, ticksPerRevolution);
     }
 
@@ -101,13 +118,19 @@ public class MotorController {
      * Adds multiple motors with voltage compensation.
      *
      * @param hardwareMap FTC hardware map
-     * @param motorNames  array of motor names
-     * @param battery     battery reference for voltage compensation
-     * @param maxVoltage  max expected voltage for scaling power
+     * @param motorNames array of motor names
+     * @param maxVoltage max expected voltage for scaling power
      */
-    public MotorController(HardwareMap hardwareMap, String[] motorNames, Battery battery, double maxVoltage) {
+    public MotorController(
+            HardwareMap hardwareMap,
+            String[] motorNames,
+            double maxVoltage
+    ) {
         for (String motorName : motorNames) {
-            motors.put(motorName, new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName), battery, maxVoltage));
+            motors.put(
+                    motorName,
+                    new DcMotorAdvanced(hardwareMap.get(DcMotorEx.class, motorName), maxVoltage)
+            );
         }
     }
 
@@ -115,42 +138,62 @@ public class MotorController {
      * Adds one motor with voltage compensation.
      *
      * @param hardwareMap FTC hardware map
-     * @param motorName   name of motor
-     * @param battery     battery reference
-     * @param maxVoltage  max expected voltage
+     * @param motorName name of motor
+     * @param maxVoltage max expected voltage
      */
-    public MotorController(HardwareMap hardwareMap, String motorName, Battery battery, double maxVoltage) {
-        this(hardwareMap, new String[]{motorName}, battery, maxVoltage);
+    public MotorController(
+            HardwareMap hardwareMap,
+            String motorName,
+            double maxVoltage
+    ) {
+        this(hardwareMap, new String[]{motorName}, maxVoltage);
     }
 
     /**
      * Adds multiple motors, encoder, and battery compensation.
      *
-     * @param hardwareMap        FTC hardware map
-     * @param motorNames         array of motor names
-     * @param battery            battery reference
-     * @param maxVoltage         max expected voltage
-     * @param encoderName        name of encoder motor
+     * @param hardwareMap FTC hardware map
+     * @param motorNames array of motor names
+     * @param battery battery reference
+     * @param maxVoltage max expected voltage
+     * @param encoderName name of encoder motor
      * @param ticksPerRevolution encoder ticks per revolution
      */
-    public MotorController(HardwareMap hardwareMap, String[] motorNames, Battery battery, double maxVoltage, String encoderName, double ticksPerRevolution) {
-        this(hardwareMap, motorNames, battery, maxVoltage);
-        this.encoder = new Encoder(hardwareMap.get(DcMotorEx.class, encoderName), ticksPerRevolution);
+    public MotorController(
+            HardwareMap hardwareMap,
+            String[] motorNames,
+            double maxVoltage,
+            String encoderName,
+            double ticksPerRevolution
+    ) {
+        this(hardwareMap, motorNames, maxVoltage);
+        this.encoder = new Encoder(
+                hardwareMap.get(DcMotorEx.class, encoderName),
+                ticksPerRevolution
+        );
     }
 
     /**
      * Adds one motor, encoder, and battery compensation.
      *
-     * @param hardwareMap        FTC hardware map
-     * @param motorName          name of motor
-     * @param battery            battery reference
-     * @param maxVoltage         max expected voltage
-     * @param encoderName        name of encoder motor
+     * @param hardwareMap FTC hardware map
+     * @param motorName name of motor
+     * @param maxVoltage max expected voltage
+     * @param encoderName name of encoder motor
      * @param ticksPerRevolution encoder ticks per revolution
      */
-    public MotorController(HardwareMap hardwareMap, String motorName, Battery battery, double maxVoltage, String encoderName, double ticksPerRevolution) {
-        this(hardwareMap, motorName, battery, maxVoltage);
-        this.encoder = new Encoder(hardwareMap.get(DcMotorEx.class, encoderName), ticksPerRevolution);
+    public MotorController(
+            HardwareMap hardwareMap,
+            String motorName,
+            double maxVoltage,
+            String encoderName,
+            double ticksPerRevolution
+    ) {
+        this(hardwareMap, motorName, maxVoltage);
+        this.encoder = new Encoder(
+                hardwareMap.get(DcMotorEx.class, encoderName),
+                ticksPerRevolution
+        );
     }
 
     /**
@@ -168,7 +211,7 @@ public class MotorController {
      * Sets the same power to specific motors.
      *
      * @param motorNames array of motor names
-     * @param power      power value (-1.0 to +1.0)
+     * @param power power value (-1.0 to +1.0)
      */
     public void setPower(String[] motorNames, double power) {
         for (String motorName : motorNames) {
@@ -178,8 +221,8 @@ public class MotorController {
     }
 
     /**
-     * Sets individual power values to each motor.
-     * Order in array matches insertion order in motor map.
+     * Sets individual power values to each motor. Order in array matches insertion order in motor
+     * map.
      *
      * @param powers array of power values
      */

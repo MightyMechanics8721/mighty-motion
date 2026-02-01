@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 
-import com.acmerobotics.dashboard.config.Config;
-
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PoseConstants;
@@ -9,7 +7,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID.functionType;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 
-@Config //  Allows tuning these parameters through FTC Dashboard.
 public class PoseController {
     // PID Controllers for X, Y, and Theta (heading).
     private final PID xPID;

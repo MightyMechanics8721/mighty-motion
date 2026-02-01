@@ -15,6 +15,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
@@ -54,8 +55,8 @@ public class Drivetrain {
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
 
-    public SimpleMatrix driftedPose = new SimpleMatrix(3, 1);
-    public SimpleMatrix state = new SimpleMatrix(6, 1);
+    public SimpleMatrix driftedPose;
+    public SimpleMatrix state;
 
 
     private final TwoWheelOdometery twoWheelOdo;
@@ -150,13 +151,14 @@ public class Drivetrain {
         this.motorRightFront.setPower(0);
         this.motorRightBack.setPower(0);
 
+        this.state = new SimpleMatrix(6, 1);
+        this.driftedPose = new SimpleMatrix(3, 1);
+
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
 
     public static void initialize(HardwareMap hardwareMap) {
-        if (instance == null) {
-            instance = new Drivetrain(hardwareMap);
-        }
+        instance = new Drivetrain(hardwareMap);
     }
 
     public static Drivetrain getInstance() {
@@ -180,7 +182,7 @@ public class Drivetrain {
         this.twoWheelOdo.odo.setHeading(heading, AngleUnit.DEGREES);
 
         this.localize();
-        this.driftedPose = this.state.extractMatrix(0, 3, 0, 1);
+        this.updateTelemetry();
     }
 
     private void localize() {
@@ -256,10 +258,21 @@ public class Drivetrain {
      * @param powers matrix of wheel power values (order:lfm, lbm, rbm, rfm)
      */
     public void setPower(SimpleMatrix powers) {
-        motorLeftFront.setPower(powers.get(0, 0));
-        motorLeftBack.setPower(powers.get(1, 0));
-        motorRightBack.setPower(powers.get(2, 0));
-        motorRightFront.setPower(powers.get(3, 0));
+        double powerLeftFront = powers.get(0, 0);
+        double powerLeftBack = powers.get(1, 0);
+        double powerRightBack = powers.get(2, 0);
+        double powerRightFront = powers.get(3, 0);
+
+        this.packet.put("front-left pow.", powerLeftFront);
+        this.packet.put("front-right pow.", powerRightFront);
+        this.packet.put("back-left pow.", powerLeftBack);
+        this.packet.put("back-right pow.", powerRightBack);
+
+        motorLeftFront.setPower(powerLeftFront);
+        motorLeftBack.setPower(powerLeftBack);
+        motorRightBack.setPower(powerRightBack);
+        motorRightFront.setPower(powerRightFront);
+
     }
 
     /**
@@ -314,6 +327,17 @@ public class Drivetrain {
             double angleThreshold,
             boolean useStoppingDistance
     ) {
+        boolean readyToStop = this.inStoppingZone(
+                desiredPose,
+                distanceThreshold,
+                angleThreshold
+        );
+        if (readyToStop) {
+            setPower(this.stopMatrix);
+            this.packet.addLine("pose control: robot within thresh.");
+            return false;
+        }
+
         Canvas canvas = this.packet.fieldOverlay();
 
         double[] desiredPosition = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
@@ -329,27 +353,23 @@ public class Drivetrain {
             Drawing.drawRobot(this.driftedPose, canvas, "blue");
         }
 
-        SimpleMatrix wheelSpeeds
-                = mecanumKinematicModel.inverseKinematics(poseController.calculate(
-                pose,
-                desiredPose
-        ));
+        SimpleMatrix targetTwist = this.poseController.calculate(pose, desiredPose);
+        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
+        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
+        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
+
+        SimpleMatrix wheelSpeeds = this.mecanumKinematicModel.inverseKinematics(targetTwist);
+
+        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
+        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
+        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
 
         SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
 
         this.setWheelSpeedAcceleration(wheelSpeeds, wheelAccelerations);
 
-        boolean readyToStop = this.inStoppingZone(
-                desiredPose,
-                distanceThreshold,
-                angleThreshold
-        );
-        if (readyToStop) {
-            setPower(this.stopMatrix);
-            this.packet.addLine("pose control: robot within thresh.");
-        }
 
-        return !readyToStop;
+        return true;
     }
 
     public Action goToPose(
@@ -393,21 +413,21 @@ public class Drivetrain {
 
     }
 
-    // TODO: so we can upload. REMOVE LATER
-    public Action goToPose(
-            SimpleMatrix simpl, double x, double y
-    ) {
-        Drivetrain drivetrain = this;
-        return new Action() {
-
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                return true;
-            }
-        };
-
-    }
+    //    // TODO: so we can upload. REMOVE LATER
+    //    public Action goToPose(
+    //            SimpleMatrix simpl, double x, double y
+    //    ) {
+    //        Drivetrain drivetrain = this;
+    //        return new Action() {
+    //
+    //
+    //            @Override
+    //            public boolean run(@NonNull TelemetryPacket packet) {
+    //                return true;
+    //            }
+    //        };
+    //
+    //    }
 
     private boolean followPathFunction(
             Path path, double maxSpeed, double distanceThreshold, double angleThreshold
@@ -422,13 +442,19 @@ public class Drivetrain {
 
             SimpleMatrix desiredPose = makePoseVector(
                     path.getFinalPoint()[0], path.getFinalPoint()[1],
-                    path.finalHeading
+                    Math.toDegrees(path.finalHeading)
             );
 
-            return this.goToPoseFunction(
+            boolean isRunning = this.goToPoseFunction(
                     desiredPose, distanceThreshold, angleThreshold,
                     useStoppingDistance
             );
+
+            if (!isRunning) {
+                this.geometricController.resetLookAhead();
+            }
+
+            return isRunning;
         }
 
         double[] position = {state.get(0, 0), state.get(1, 0)};
@@ -557,6 +583,7 @@ public class Drivetrain {
 
     public void setTelemetry(TelemetryPacket packet) {
         this.packet = packet;
+        this.geometricController.setTelemetry(packet);
     }
 
     public static class PoseConstants {
@@ -566,11 +593,11 @@ public class Drivetrain {
     }
 
     public static class FollowerConstants {
-        public PIDConstants xPIDConstants = new PIDConstants(7, 0, 0);
-        public PIDConstants yPIDConstants = new PIDConstants(7, 0, 0);
-        public PIDConstants headingPIDConstants = new PIDConstants(7, 0, 0);
+        public PIDConstants xPIDConstants = new PIDConstants(4.5, 0, 0);
+        public PIDConstants yPIDConstants = new PIDConstants(4.5, 0, 0);
+        public PIDConstants headingPIDConstants = new PIDConstants(1.8, 0, 0);
         public double positionLookahead = 20.0;
-        public double headingLookahead = 20.0;
+        public double headingLookahead = 30.0;
     }
 
     public static class FFConstantsController {
@@ -594,6 +621,7 @@ public class Drivetrain {
          * Set to true to enable telemetry printouts, false to disable
          */
         public boolean printTelemetry = true;
+        public boolean autonActOnControl = true;
     }
 
 

@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 
 
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drawing;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 
@@ -27,9 +31,15 @@ public class GeometricController {
     int lastLookaheadXY = 0;
     int lastLookaheadTheta = 0;
 
+    private TelemetryPacket packet = new TelemetryPacket();
+
     public GeometricController(double positionLookahead, double headingLookahead) {
         this.lookAheadXY = positionLookahead;
         this.lookAheadTheta = headingLookahead;
+    }
+
+    public void setTelemetry(TelemetryPacket packet) {
+        this.packet = packet;
     }
 
 
@@ -218,6 +228,9 @@ public class GeometricController {
         //            thetaPoint = thetaArray.get(thetaArray.size() - 1);
         //        }
 
+        // TODO: REMOVE THIS
+        this.packet.put("heading point x (in)", thetaPoint[0] - y);
+        this.packet.put("heading point y (in)", thetaPoint[1] - x);
 
         double desiredTheta;
         if (path.useStaticHeading) {
@@ -230,7 +243,7 @@ public class GeometricController {
             if (path.reverse) {
                 if (Math.signum(desiredTheta) == -1) {
                     desiredTheta += Math.PI;
-                } else if (Math.signum(desiredTheta) == 0) {
+                } else if (Math.signum(desiredTheta) >= 0) {
                     desiredTheta -= Math.PI;
                 }
             }
@@ -253,10 +266,18 @@ public class GeometricController {
         //        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         // TODO: remove
-        geoPosPointX = positionPoint[0];
-        geoPosPointY = positionPoint[1];
-        geoThetaX = thetaPoint[0];
-        geoThetaY = thetaPoint[1];
+        Canvas canvas = this.packet.fieldOverlay();
+        Drawing.drawPoint(positionPoint, canvas, "purple");
+        Drawing.drawPoint(thetaPoint, canvas, "orange");
+
+        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
+        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
+        this.packet.put("target heading GEO (deg)", Math.toDegrees(desiredPose.get(2, 0)));
+
+        //        geoPosPointX = positionPoint[0];
+        //        geoPosPointY = positionPoint[1];
+        //        geoThetaX = thetaPoint[0];
+        //        geoThetaY = thetaPoint[1];
 
         // do y for pos point
         // also do the same for theta point

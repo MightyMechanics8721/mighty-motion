@@ -18,19 +18,18 @@ public class Intake {
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
 
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private Battery battery;
     private MotorController motorController;
 
     private DcMotorEx intake;
 
 
-    public Intake(HardwareMap hardwareMap, Battery battery) {
+    public Intake(HardwareMap hardwareMap) {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
         this.motorController = new MotorController(
                 hardwareMap,
                 new String[]{CONFIGURATION_NAMES.intakeMotorName},
-                battery, BATTERY_PARAMETERS.maxVoltage
+                BATTERY_PARAMETERS.maxVoltage
         );
 
     }

@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Planners;
 
-import com.acmerobotics.dashboard.config.Config;
-
-
-@Config
 public class MotionProfile {
 
     // Motion Profile parameters
@@ -21,18 +17,24 @@ public class MotionProfile {
     int reverse; //
 
     /**
-     * Generates a motion profile based on distance and motion constraints.
-     * It creates either a trapezoidal profile (acceleration → cruise → deceleration)
-     * or a triangular profile (acceleration → deceleration only if not enough distance).
+     * Generates a motion profile based on distance and motion constraints. It creates either a
+     * trapezoidal profile (acceleration → cruise → deceleration) or a triangular profile
+     * (acceleration → deceleration only if not enough distance).
      *
-     * @param targetDistance  Distance to move
-     * @param maxVelocity     Max velocity during motion
+     * @param targetDistance Distance to move
+     * @param maxVelocity Max velocity during motion
      * @param maxAcceleration Max acceleration
      * @param maxDeceleration Max deceleration
-     * @param reverse         Whether to reverse the direction of motion
+     * @param reverse Whether to reverse the direction of motion
      */
 
-    public MotionProfile(double targetDistance, double maxVelocity, double maxAcceleration, double maxDeceleration, boolean reverse) {
+    public MotionProfile(
+            double targetDistance,
+            double maxVelocity,
+            double maxAcceleration,
+            double maxDeceleration,
+            boolean reverse
+    ) {
 
         // Calculate time to reach max velocity (acceleration and deceleration phases)
         double accelerationTime = maxVelocity / maxAcceleration;
@@ -44,7 +46,9 @@ public class MotionProfile {
 
         // If the distance is too short to reach full speed, switch to triangular profile
         if (targetDistance < accelerationDistance + decelerationDistance) {
-            decelerationTime = Math.sqrt((2 * maxAcceleration * targetDistance) / (Math.pow(maxDeceleration, 2) + maxAcceleration * maxDeceleration));
+            decelerationTime = Math.sqrt(
+                    (2 * maxAcceleration * targetDistance) / (Math.pow(maxDeceleration, 2)
+                            + maxAcceleration * maxDeceleration));
             accelerationTime = (maxDeceleration / maxAcceleration) * decelerationTime;
 
             // Recalculate distances for triangular profile
@@ -88,6 +92,7 @@ public class MotionProfile {
      * Returns the position (distance traveled) at a given time.
      *
      * @param time Time since start of motion
+     *
      * @return Position in distance units (positive or negative based on direction)
      */
 
@@ -112,7 +117,8 @@ public class MotionProfile {
 
         // Deceleration phase
         else if (accelerationTime + cruiseTime < time && time <= totalTime) {
-            return (accelerationDistance + cruiseDistance + maxVelocity * timeDeceleration - maxDeceleration * Math.pow(timeDeceleration, 2) / 2) * reverse;
+            return (accelerationDistance + cruiseDistance + maxVelocity * timeDeceleration
+                    - maxDeceleration * Math.pow(timeDeceleration, 2) / 2) * reverse;
         }
 
         // Should not reach here unless input is invalid
@@ -123,6 +129,7 @@ public class MotionProfile {
      * Returns the velocity at a given time.
      *
      * @param time Time since start of motion
+     *
      * @return Velocity (positive or negative based on direction)
      */
 
@@ -153,10 +160,11 @@ public class MotionProfile {
      * Returns the acceleration at a given time.
      *
      * @param t Time since start of motion
+     *
      * @return Acceleration (positive, zero, or negative depending on phase)
      * <p>
-     * I'm pretty sure that t is time, but I'm unsure how to change the variable, because whenever
-     * I attempt to change it, it brings up errors
+     * I'm pretty sure that t is time, but I'm unsure how to change the variable, because whenever I
+     * attempt to change it, it brings up errors
      */
 
     public double getAcceleration(double t) {

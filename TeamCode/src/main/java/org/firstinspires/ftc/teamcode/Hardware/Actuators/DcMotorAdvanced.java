@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Hardware.Actuators;
 
-import com.acmerobotics.dashboard.config.Config;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
-@Config
+
 public class DcMotorAdvanced {
     private double previousPower = 0;
     private double powerThreshold;

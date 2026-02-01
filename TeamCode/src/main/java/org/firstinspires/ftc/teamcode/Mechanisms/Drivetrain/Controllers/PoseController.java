@@ -12,13 +12,10 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 @Config //  Allows tuning these parameters through FTC Dashboard.
 public class PoseController {
     // PID Controllers for X, Y, and Theta (heading).
-    public PID xPID;
-    public PID yPID;
-    public PID tPID;
-    // Last known valid pose to avoid NaN issues.
-    private double lastTheta = 0;
-    private double lastX;
-    private double lastY;
+    private final PID xPID;
+    private final PID yPID;
+    private final PID tPID;
+
 
     /**
      * Constructor for the Pose Controller.
@@ -55,18 +52,6 @@ public class PoseController {
      * @return (SimpleMatrix) A 3x1 matrix representing the drive power to apply to each wheel.
      */
     public SimpleMatrix calculate(SimpleMatrix pose, SimpleMatrix desiredPose) {
-        // If current pose has invalid values, use the last valid pose.
-        if (pose.hasUncountable()) {
-            pose.set(0, 0, lastX);
-            pose.set(1, 0, lastY);
-            pose.set(2, 0, lastTheta);
-        } else {
-            // Update last known valid pose.
-            lastX = pose.get(0, 0);
-            lastY = pose.get(1, 0);
-            lastTheta = pose.get(2, 0);
-        }
-
 
         // Compute error in the global field frame.
         SimpleMatrix errorVectorInFieldFrame = new SimpleMatrix(
@@ -98,16 +83,13 @@ public class PoseController {
         );   // radians/sec?
 
         // Create a velocity vector in robot frame.
-        SimpleMatrix velocityVectorInRobotFrame = new SimpleMatrix(
+        return new SimpleMatrix(
                 new double[][]{
                         new double[]{vX},
                         new double[]{vY},
                         new double[]{omega}
                 }
         );
-
-        // Convert robot-frame velocity vector to individual wheel powers.
-        return velocityVectorInRobotFrame;
     }
 }
 

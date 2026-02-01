@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Controllers;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.ejml.simple.SimpleMatrix;
 
@@ -11,33 +7,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drawing;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
 
-@Config
+
 public class GeometricController {
-    public static double lookAheadXY = 20;
-    public static double lookAheadTheta = 20;
+    private double lookAheadXY;
+    private double lookAheadTheta;
+
     // TODO: remove!!!
     public static double geoPosPointX = 0.0;
     public static double geoPosPointY = 0.0;
     public static double geoThetaX = 0.0;
     public static double geoThetaY = 0.0;
+
     public int lastIndexXY = 0;
-    public boolean useStaticHeading = false;
-    public PoseController followControl
-            = new PoseController(
-            Drivetrain.POSE_CONSTANTS_GEO.xPIDConstants,
-            Drivetrain.POSE_CONSTANTS_GEO.yPIDConstants,
-            Drivetrain.POSE_CONSTANTS_GEO.headingPIDConstants
-    );
+
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;
     int lastLookaheadTheta = 0;
 
-    public GeometricController() {
+    public GeometricController(double positionLookahead, double headingLookahead) {
+        this.lookAheadXY = positionLookahead;
+        this.lookAheadTheta = headingLookahead;
     }
 
 

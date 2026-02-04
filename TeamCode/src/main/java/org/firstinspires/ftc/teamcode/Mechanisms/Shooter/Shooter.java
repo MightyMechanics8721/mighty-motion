@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.c
 import androidx.annotation.NonNull;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
+import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -21,29 +22,24 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorControll
 
 @Config
 public class Shooter {
-
+    private static Shooter instance;
     /**
      * Configuration parameters for battery behavior.
      */
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
-
     /**
      * Configuration parameters for the motor controller (PID and FF constants).
      */
     public static MotorControllerConstants MOTOR_CONTROLLER_CONSTANTS
             = new MotorControllerConstants();
-
     /**
      * Constant values for Shooter Hardware
      */
     public static HardwareConstants SHOOTER_CONSTANTS = new HardwareConstants();
-
     /**
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-
-    private Battery battery;
     private MotorController motorController;
 
     /**
@@ -51,7 +47,7 @@ public class Shooter {
      *
      * @param hardwareMap the FTC HardwareMap used to retrieve motor hardwar
      */
-    public Shooter(HardwareMap hardwareMap) {
+    private Shooter(HardwareMap hardwareMap) {
 
         this.motorController = new MotorController(
                 hardwareMap,
@@ -66,6 +62,17 @@ public class Shooter {
 
         this.motorController.setVelocityPIDConstants(MOTOR_CONTROLLER_CONSTANTS.pidConstants);
         this.motorController.setVelocityFeedForwardConstants(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
+    }
+
+    public static void initialize(HardwareMap hardwareMap) {
+        instance = new Shooter(hardwareMap);
+    }
+
+    public static Shooter getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Shooter not initialized!");
+        }
+        return instance;
     }
 
     /**

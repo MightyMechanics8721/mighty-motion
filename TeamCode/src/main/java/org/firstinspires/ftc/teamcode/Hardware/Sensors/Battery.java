@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class Battery {
     private static Battery instance;
 
+    // How many times a second to check?
     public static double updateFrequency = 2; // (Hz)
 
     private final VoltageSensor voltageSensor;

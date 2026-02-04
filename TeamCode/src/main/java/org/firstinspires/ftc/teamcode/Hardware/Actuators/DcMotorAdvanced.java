@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Hardware.Actuators;
 
 
+import static com.acmerobotics.roadrunner.Math.clamp;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -18,10 +20,10 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
 public class DcMotorAdvanced {
     private double previousPower = 0;
-    private double powerThreshold;
-    private DcMotorEx motor;
+    private final double powerThreshold;
+    private final DcMotorEx motor;
 
-    private double maxVoltage;
+    private final double maxVoltage;
 
     public DcMotorAdvanced(DcMotorEx motor, double maxVoltage, double powerThreshold) {
         this.motor = motor;
@@ -42,6 +44,9 @@ public class DcMotorAdvanced {
 
             if (this.maxVoltage != Double.POSITIVE_INFINITY) {
                 double batteryVoltage = Battery.getInstance().getVoltage();
+
+                // NOTE: might want to clip the power between (-1 and 1).
+                // Maybe for shooter - @kevin.
                 motor.setPower(maxVoltage / batteryVoltage * power);
 
             } else {

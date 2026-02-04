@@ -10,11 +10,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
+import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
 
 @Config
 public class Intake {
-
+    private static Intake instance;
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
 
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
@@ -22,8 +23,7 @@ public class Intake {
 
     private DcMotorEx intake;
 
-
-    public Intake(HardwareMap hardwareMap) {
+    private Intake(HardwareMap hardwareMap) {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
 
         this.motorController = new MotorController(
@@ -32,6 +32,17 @@ public class Intake {
                 BATTERY_PARAMETERS.maxVoltage
         );
 
+    }
+
+    public static void initialize(HardwareMap hardwareMap) {
+        instance = new Intake(hardwareMap);
+    }
+
+    public static Intake getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Intake not initialized!");
+        }
+        return instance;
     }
 
     //        public void setIntakePower(double power) {

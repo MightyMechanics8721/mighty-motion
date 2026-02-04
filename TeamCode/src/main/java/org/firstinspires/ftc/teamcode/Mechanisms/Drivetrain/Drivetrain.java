@@ -172,6 +172,8 @@ public class Drivetrain {
     /**
      * Sets the Position of the bot in its start position.
      *
+     * NOTE: Make sure 'setTelemetry' is called before this.
+     *
      * @param xPosition Initial X position (inches)
      * @param yPosition Initial Y position (inches)
      * @param heading Initial heading (degrees)
@@ -185,7 +187,7 @@ public class Drivetrain {
         this.updateTelemetry();
     }
 
-    private void localize() {
+    public void localize() {
         this.state = this.twoWheelOdo.calculate();
         this.driftedPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
@@ -230,8 +232,8 @@ public class Drivetrain {
                                         Math.abs(this.state.get(4, 0)))
                         },
                         new double[]{
-                                Math.signum(state.get(5, 0)) * this.stoppingAngle(
-                                        Math.abs(state.get(5, 0))
+                                Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
+                                        Math.abs(this.state.get(5, 0))
                                 )
                         }
                 }

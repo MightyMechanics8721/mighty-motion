@@ -399,38 +399,6 @@ public class Drivetrain {
 
     }
 
-    // TODO: FIXME: REMOVE THIS!
-    public Action goToPose(
-            SimpleMatrix simpl
-    ) {
-        Drivetrain drivetrain = this;
-        return new Action() {
-
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                return true;
-            }
-        };
-
-    }
-
-    //    // TODO: so we can upload. REMOVE LATER
-    //    public Action goToPose(
-    //            SimpleMatrix simpl, double x, double y
-    //    ) {
-    //        Drivetrain drivetrain = this;
-    //        return new Action() {
-    //
-    //
-    //            @Override
-    //            public boolean run(@NonNull TelemetryPacket packet) {
-    //                return true;
-    //            }
-    //        };
-    //
-    //    }
-
     private boolean followPathFunction(
             Path path, double maxSpeed, double distanceThreshold, double angleThreshold
             , boolean useStoppingDistance

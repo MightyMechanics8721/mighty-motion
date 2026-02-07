@@ -46,8 +46,8 @@ public class Turret {
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
-        turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
-        turretRight = hardwareMap.get(CRServo.class, "servodotRight");
+        turretLeft = hardwareMap.get(CRServo.class, "turretLeft");
+        turretRight = hardwareMap.get(CRServo.class, "turretRight");
         turretEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV);
         // <-- use Encoder wrapper
 

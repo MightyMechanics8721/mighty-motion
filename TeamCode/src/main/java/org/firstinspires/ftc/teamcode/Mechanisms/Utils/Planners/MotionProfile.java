@@ -205,4 +205,8 @@ public class MotionProfile {
     public int isReverse() {
         return reverse;
     }
+
+    public double getDistance() {
+        return accelerationDistance + cruiseDistance + decelerationDistance;
+    }
 }

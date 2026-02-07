@@ -35,7 +35,7 @@ public class DecodeTeleOp extends LinearOpMode {
 
         dashboard = FtcDashboard.getInstance();
 
-        Battery.getInstance();
+        Battery.initialize(hardwareMap);
         Turret.initialize(hardwareMap);
         Intake.initialize(hardwareMap);
         Indexer.initialize(hardwareMap);
@@ -76,10 +76,9 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
             // ----- TURRET -----
-            //            if (gamepad2.left_trigger > 0.15) {
-            //                runningActions.put("turret", turret.autoAim(new Vector2d(-60,
-            //-60)));
-            //            }
+            if (gamepad2.left_trigger > 0.15) {
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
+            }
             if (gamepad2.dpad_up) {
                 runningActions.put("turret", turret.setTurretAngle(0));
             } else if (gamepad2.dpad_left) {

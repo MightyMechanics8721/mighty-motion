@@ -18,16 +18,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 @Autonomous(name = "Tune Pure Pursuit", group = "Autonomous")
 public class TunePurePursuit extends LinearOpMode {
     public static double maxSpeed = 10;
-
-    public enum PathSelection {
-        STRAIGHT_FORWARD,
-        STRAIGHT_OFFSET,
-        STRAIGHT_REVERSE,
-        TURN_90_FORWARD,
-        TURN_90_REVERSE,
-        COMPLEX,
-    }
-
     public static PathSelection pathSelection = PathSelection.STRAIGHT_FORWARD;
 
     @Override
@@ -117,13 +107,25 @@ public class TunePurePursuit extends LinearOpMode {
                         0.05, true
                 ).run(packet);
             } else if (gamepad1.left_trigger > 0.1) {
-                drivetrain.goToPose(Utils.makePoseVector(
-                        0, 0, 0)).run(packet);
+                drivetrain.goToPose(
+                        Utils.makePoseVector(
+                                0, 0, 0), Drivetrain.THRESHOLD_PARAMETERS.distanceThreshold,
+                        Drivetrain.THRESHOLD_PARAMETERS.angleThreshold, true
+                ).run(packet);
             } else {
                 drivetrain.stopMotors().run(packet);
             }
 
             dashboard.sendTelemetryPacket(packet);
         }
+    }
+
+    public enum PathSelection {
+        STRAIGHT_FORWARD,
+        STRAIGHT_OFFSET,
+        STRAIGHT_REVERSE,
+        TURN_90_FORWARD,
+        TURN_90_REVERSE,
+        COMPLEX,
     }
 }

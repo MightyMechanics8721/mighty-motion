@@ -28,6 +28,7 @@ public class TuneTwoWheelLocalizer extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Set dashboard
+        Battery.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         drivetrain = Drivetrain.getInstance();
         packet = new TelemetryPacket();

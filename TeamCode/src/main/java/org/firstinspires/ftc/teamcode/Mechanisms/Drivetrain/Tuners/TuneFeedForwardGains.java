@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
+import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Models.MecanumKinematicModel;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Planners.MotionProfile;
@@ -25,13 +26,13 @@ public class TuneFeedForwardGains extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        Battery.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         drivetrain = Drivetrain.getInstance();
         mecanumKinematicModel = new MecanumKinematicModel(Drivetrain.MECHANICAL_PARAMETERS);
 
         packet = new TelemetryPacket();
         drivetrain.setTelemetry(packet);
-        dashboard.sendTelemetryPacket(packet);
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
 
@@ -44,6 +45,7 @@ public class TuneFeedForwardGains extends LinearOpMode {
                 maxAcceleration,
                 false
         );
+
         MotionProfile reverseMotionProfile = new MotionProfile(
                 maxDistance,
                 maxVelocity,
@@ -105,7 +107,17 @@ public class TuneFeedForwardGains extends LinearOpMode {
             }
             looptime.reset();
             telemetry.addData("Robot velocity ", drivetrain.state.get(3, 0));
+            telemetry.addData("Robot x pos ", drivetrain.state.get(0, 0));
             telemetry.addData("Target velocity ", velocity);
+            telemetry.addData(
+                    "Robot acceleration ",
+                    motionProfile.getAcceleration(lapTime.seconds())
+            );
+            telemetry.addData(
+                    "Robot position ",
+                    motionProfile.getPosition(lapTime.seconds())
+            );
+            telemetry.addData("Distance ", motionProfile.getDistance());
             /*packet.fieldOverlay()
                     .setRotation(drivetrain.state.get(2,0))
                     .setFill("blue")

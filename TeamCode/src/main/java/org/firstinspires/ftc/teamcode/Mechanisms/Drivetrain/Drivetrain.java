@@ -45,37 +45,26 @@ import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
  */
 @Config
 public class Drivetrain {
-    private static Drivetrain instance;
-
     public static PoseConstants POSE_CONSTANTS = new PoseConstants();
     public static FollowerConstants FOLLOWER_CONSTANTS = new FollowerConstants();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
-
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
-
-    public SimpleMatrix driftedPose;
-    public SimpleMatrix state;
-
-
-    private final TwoWheelOdometery twoWheelOdo;
+    private static Drivetrain instance;
+    public final TwoWheelOdometery twoWheelOdo;
+    public final DcMotorAdvanced motorLeftFront;
+    public final DcMotorAdvanced motorLeftBack;
+    public final DcMotorAdvanced motorRightBack;
+    public final DcMotorAdvanced motorRightFront;
     private final DrivetrainMotorController motorController;
     private final GeometricController geometricController;
-
-    private final DcMotorAdvanced motorLeftFront;
-    private final DcMotorAdvanced motorLeftBack;
-    private final DcMotorAdvanced motorRightBack;
-    private final DcMotorAdvanced motorRightFront;
-
-
     private final SimpleMatrix stopMatrix = new SimpleMatrix(4, 1);
-
     private final PoseController poseController;
     private final PoseController followController;
-
     private final MecanumKinematicModel mecanumKinematicModel;
-
+    public SimpleMatrix driftedPose;
+    public SimpleMatrix state;
     private TelemetryPacket packet;
 
     /**
@@ -287,6 +276,7 @@ public class Drivetrain {
             SimpleMatrix wheelSpeeds,
             SimpleMatrix wheelAccelerations
     ) {
+        // TODO: multiply by gear reduction
         setPower(motorController.calculate(wheelSpeeds, wheelAccelerations));
     }
 
@@ -581,6 +571,8 @@ public class Drivetrain {
         public double wheelRadius = 2.16535; // (in)
         public double longDistToAxles = 5.7; // (in) Longitudinal distance from center to axles
         public double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
+
+        public double gearRatioMotorToWheel = 2.0;
     }
 
     /**

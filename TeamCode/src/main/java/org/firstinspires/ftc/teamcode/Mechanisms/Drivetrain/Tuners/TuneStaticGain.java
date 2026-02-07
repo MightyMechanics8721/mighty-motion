@@ -29,7 +29,8 @@ public class TuneStaticGain extends LinearOpMode {
 
 
         // TODO: fix this problem
-        //        drivetrain.motorController.ffLfm.setGains(
+        //        drivetrain.motorController.ffLfm.setGains(0, 0, drivetrain.motorController
+        //        .ffLfm.kS);
         //        drivetrain.motorController.ffLbm.setGains(0, 0, drivetrain.motorController
         //        .ffLbm.kS);
         //        drivetrain.motorController.ffRbm.setGains(0, 0, drivetrain.motorController

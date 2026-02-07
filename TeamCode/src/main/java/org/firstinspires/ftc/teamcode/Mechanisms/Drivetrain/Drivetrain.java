@@ -302,7 +302,7 @@ public class Drivetrain {
         return Math.abs(headingError) <= Math.abs(angleThreshold);
     }
 
-    private boolean inStoppingZone(
+    public boolean inStoppingZone(
             SimpleMatrix desiredPose, double distanceThreshold,
             double angleThreshold
     ) {

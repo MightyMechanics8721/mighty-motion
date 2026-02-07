@@ -37,9 +37,9 @@ public class DecodeTeleOp extends LinearOpMode {
 
         Battery.initialize(hardwareMap);
         Turret.initialize(hardwareMap);
-        Intake.initialize(hardwareMap);
         Indexer.initialize(hardwareMap);
         Shooter.initialize(hardwareMap);
+        Intake.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         // Hardware
         Turret turret = Turret.getInstance();

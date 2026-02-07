@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -27,10 +29,8 @@ import java.util.Map;
 public class MotorController {
 
     // Map of motor names to motor objects
-    private HashMap<String, DcMotorAdvanced> motors = new HashMap<>();
+    private final HashMap<String, DcMotorAdvanced> motors = new HashMap<>();
 
-    // Optional battery reference for voltage compensation
-    private Battery battery;
 
     // Maximum voltage used for scaling power
     private double maxVoltage;
@@ -202,9 +202,22 @@ public class MotorController {
      * @param power power value (-1.0 to +1.0)
      */
     public void setPower(double power) {
-        for (DcMotorAdvanced motor : motors.values()) {
-            motor.setPower(power);
+        //        for (DcMotorAdvanced motor : motors.values()) {
+        //
+        //            motor.setPower(power);
+        //        }
+        TelemetryPacket packet = new TelemetryPacket();
+
+        this.motors.get("indexer").setPower(power);
+
+
+        for (String motorName : motors.keySet()) {
+            packet.put("USING MOTOR", motorName);
+            if (motorName.equals("indexer")) {
+                this.motors.get(motorName).setPower(power);
+            }
         }
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
     }
 
     /**

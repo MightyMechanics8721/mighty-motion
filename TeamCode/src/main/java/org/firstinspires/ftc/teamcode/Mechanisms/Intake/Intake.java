@@ -19,7 +19,7 @@ public class Intake {
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
 
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private MotorController motorController;
+    private final MotorController motorController;
 
     private DcMotorEx intake;
 
@@ -45,9 +45,6 @@ public class Intake {
         return instance;
     }
 
-    //        public void setIntakePower(double power) {
-    //        this.motorController.setPower(power);
-    //    }
     public Action setIntakePower(double power) {
         return new Action() {
             @Override

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Hardware.Actuators;
 
 import static com.acmerobotics.roadrunner.Math.clamp;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -40,6 +41,9 @@ public class DcMotorAdvanced {
     }
 
     public void setPower(double power) {
+        TelemetryPacket packet = new TelemetryPacket();
+
+
         if (Math.abs(power - previousPower) > this.powerThreshold) {
 
             if (this.maxVoltage != Double.POSITIVE_INFINITY) {
@@ -47,14 +51,16 @@ public class DcMotorAdvanced {
 
                 // NOTE: might want to clip the power between (-1 and 1).
                 // Maybe for shooter - @kevin.
-                motor.setPower(maxVoltage / batteryVoltage * power);
+                power = maxVoltage / batteryVoltage * power;
+                motor.setPower(power);
 
             } else {
                 motor.setPower(power);
             }
-            previousPower = power;
-
         }
+
+        packet.put("power", power);
+        previousPower = power;
     }
 
     public DcMotorSimple.Direction getDirection() {

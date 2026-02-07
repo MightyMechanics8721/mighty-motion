@@ -19,7 +19,7 @@ public class Indexer {
     private static Indexer instance;
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    public MotorController motorController;
+    private final MotorController motorController;
 
 
     private Indexer(HardwareMap hardwareMap) {
@@ -42,9 +42,7 @@ public class Indexer {
         return instance;
     }
 
-    //    public void setIndexerPowerFunction(double power) {
-    //        this.motorController.setPower(power);
-    //    }
+
     public Action setIndexerPower(double power) {
         return new Action() {
             @Override

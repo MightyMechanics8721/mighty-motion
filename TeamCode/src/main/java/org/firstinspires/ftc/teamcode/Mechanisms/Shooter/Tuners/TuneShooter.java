@@ -11,12 +11,11 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 
 @Config
-@Autonomous(name = "Shooter Test", group = "Autonomous")
-public class TunedShooter extends LinearOpMode {
+@Autonomous(name = "Tune Shooter", group = "Testing")
+public class TuneShooter extends LinearOpMode {
 
     public static double targetVelocity = 2500; // (RPM)
     FtcDashboard dashboard;
-    Battery battery;
 
     @Override
     public void runOpMode() {
@@ -25,7 +24,6 @@ public class TunedShooter extends LinearOpMode {
         Shooter.initialize(hardwareMap);
         Shooter shooter = Shooter.getInstance();
         dashboard = FtcDashboard.getInstance();
-        ElapsedTime looptime = new ElapsedTime();
         TelemetryPacket packet = new TelemetryPacket();
 
         packet.put("Velocity (RPM)", 0.0);
@@ -36,7 +34,6 @@ public class TunedShooter extends LinearOpMode {
 
 
         while (opModeIsActive()) {
-
             shooter.setShooterVelocityLoop(targetVelocity * 2 * Math.PI / 60.0);
             double velocity = shooter.getVelocity();
             packet.put("Velocity (RPM)", velocity * 60.0 / (2 * Math.PI));

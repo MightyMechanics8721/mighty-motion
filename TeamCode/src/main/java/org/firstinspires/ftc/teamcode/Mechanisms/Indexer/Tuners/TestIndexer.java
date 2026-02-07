@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Tuners;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 
 @Config
-@Autonomous(name = "TestIndexer", group = "5")
+@Autonomous(name = "Test Indexer", group = "Testing")
 public class TestIndexer extends LinearOpMode {
 
     FtcDashboard dashboard;
@@ -24,11 +25,13 @@ public class TestIndexer extends LinearOpMode {
 
         double power;
 
+        TelemetryPacket packet = new TelemetryPacket();
+
         waitForStart();
 
         while (opModeIsActive()) {
-            power = (double) gamepad1.right_trigger;
-            Actions.runBlocking(indexer.setIndexerPower(power));
+            power = gamepad1.right_trigger;
+            indexer.setIndexerPower(power).run(packet);
         }
     }
 }

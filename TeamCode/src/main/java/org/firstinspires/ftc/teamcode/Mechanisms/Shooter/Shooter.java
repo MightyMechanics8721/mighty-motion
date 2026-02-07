@@ -40,7 +40,7 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private MotorController motorController;
+    private final MotorController motorController;
 
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
@@ -108,14 +108,14 @@ public class Shooter {
      *
      * @param velocity the target velocity to set for the shooter motors
      */
-    //    public void setVelocity(double velocity) {
-    //        this.motorController.setVelocity(velocity);
-    //    }
     public Action setShooterVelocityLoop(double velocity) {
+        Shooter shooter = this;
+
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                Shooter.this.motorController.setVelocity(velocity);
+                shooter.motorController.setVelocity(velocity);
+
                 return false;
             }
         };

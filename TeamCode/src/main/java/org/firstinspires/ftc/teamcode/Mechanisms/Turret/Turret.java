@@ -22,16 +22,17 @@ import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Turret {
-
     // --- Tunable ---
     public static double staticGain = 0.4;
     public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0.0);
     public static double angleThreshold = 1.0;
+    private static Turret instance;
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
@@ -44,7 +45,7 @@ public class Turret {
     private final FtcDashboard dashboard;
 
     // --- Constructor ---
-    public Turret(HardwareMap hardwareMap) {
+    private Turret(HardwareMap hardwareMap) {
         turretLeft = hardwareMap.get(CRServo.class, "servodotLeft");
         turretRight = hardwareMap.get(CRServo.class, "servodotRight");
         turretEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV);
@@ -56,6 +57,17 @@ public class Turret {
         turretRight.setDirection(CRServo.Direction.REVERSE);
         turretEncoder.reset();
 
+    }
+
+    public static void initialize(HardwareMap hardwareMap) {
+        instance = new Turret(hardwareMap);
+    }
+
+    public static Turret getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Shooter not initialized!");
+        }
+        return instance;
     }
 
     // --- Hardware Functions ---
@@ -126,11 +138,11 @@ public class Turret {
      */
     public Action autoAim(Vector2d goalPos) {
         //SimpleMatrix robotState = Drivetrain.state;
-//        Pose2d robotPose = new Pose2d(
-//                robotState.get(0, 0),
-//                robotState.get(1, 0),
-//                robotState.get(2, 0)
-//        );
+        //        Pose2d robotPose = new Pose2d(
+        //                robotState.get(0, 0),
+        //                robotState.get(1, 0),
+        //                robotState.get(2, 0)
+        //        );
 
         //double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
         return setTurretAngle(90);

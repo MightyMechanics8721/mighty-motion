@@ -19,9 +19,10 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
+import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 
 @Config
-@Autonomous(name = "Blue Near Pursuit", group = "aaa")
+@Autonomous(name = "Blue Near Pursuit", group = "Competition")
 public class AutonBlueNearTesting extends LinearOpMode {
 
 
@@ -33,11 +34,7 @@ public class AutonBlueNearTesting extends LinearOpMode {
         Drivetrain.initialize(hardwareMap);
         Battery.initialize(hardwareMap);
         // ---- HARDWARE -----
-        Battery battery = Battery.getInstance();
         Drivetrain drivetrain = Drivetrain.getInstance();
-        Intake intake = new Intake(hardwareMap);
-        Indexer indexer = new Indexer(hardwareMap, battery);
-        Shooter shooter = new Shooter(hardwareMap);
 
         // ---- UTILS -----
         ElapsedTime looptime = new ElapsedTime();

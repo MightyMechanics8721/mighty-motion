@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
@@ -45,8 +46,8 @@ public class Shooter {
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     private static Shooter instance;
-    private final DcMotorAdvanced shooterMotor1;
-    private final DcMotorAdvanced shooterMotor2;
+    public final DcMotorAdvanced shooterMotor1;
+    public final DcMotorAdvanced shooterMotor2;
     private final PID velocityPidController;
     private final FeedForward velocityFeedForwardController;
 
@@ -101,13 +102,17 @@ public class Shooter {
 
     public Action autoShoot() {
         return new Action() {
+            double distance = 0;
+            double power = 0;
+
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                ////                double distance = calculateDistance(state.get(0, 0), state
-                //                .get(1, 0), -60, -60);
-                ////                Shooter.this.motorController.setVelocity(
-                ////                        calculateVelocity(distance) * 2 * Math.PI / 60);
-                ////                telemetryPacket.put("Distance bot to goal (in) ", distance);
+                //TODO: INIT DRIVETRAIN TO ACCESS STATE
+//                distance = calculateDistance(state.get(0, 0), state.get(1, 0), -60, -60);
+                power = calculateVelocity(distance) * 2 * Math.PI / 60;
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
+//                telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
         };
@@ -120,13 +125,14 @@ public class Shooter {
      */
     public Action setShooterVelocityLoop(double velocity) {
         Shooter shooter = this;
-
         return new Action() {
+            double power = 0;
+
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power = velocityFeedForwardController.calculate(velocity, 5);
-                shooterMotor1.setPower(power);
-                shooterMotor2.setPower(power);
+                power = velocityPidController.calculate(velocity, getVelocity()) + velocityFeedForwardController.calculate(velocity, 5);
+                shooterMotor1.setPower(0.2);
+                shooterMotor2.setPower(0.2);
                 return false;
             }
         };
@@ -134,15 +140,16 @@ public class Shooter {
 
     public Action setShooterVelocityInstant(double velocity) {
         Shooter shooter = this;
-
         return new Action() {
+            double power = 0;
+
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power = velocityFeedForwardController.calculate(velocity, 5);
+                power = velocityPidController.calculate(velocity, getVelocity()) + velocityFeedForwardController.calculate(velocity, 5);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return Math.abs(shooterMotor1.getVelocity() - velocity)
-                        >= shooter.SHOOTER_CONSTANTS.velocityTolerance;
+                        >= SHOOTER_CONSTANTS.velocityTolerance;
             }
         };
     }
@@ -151,6 +158,7 @@ public class Shooter {
         return new Action() {
             double time = -1;
             ElapsedTime timer = new ElapsedTime();
+            double power = 0;
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -158,7 +166,7 @@ public class Shooter {
                     timer.reset();
                 }
                 time = timer.seconds();
-                double power = velocityFeedForwardController.calculate(velocity, 5);
+                power = velocityPidController.calculate(velocity, getVelocity()) + velocityFeedForwardController.calculate(velocity, 5);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return time <= seconds;

@@ -49,6 +49,9 @@ public class Intake {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (instance == null) {
+                    throw new IllegalStateException("Intake not initialized!");
+                }
                 intake.setPower(power);
 
                 return false;

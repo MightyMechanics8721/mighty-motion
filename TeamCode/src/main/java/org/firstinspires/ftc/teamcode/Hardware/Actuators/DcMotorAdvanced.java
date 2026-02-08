@@ -20,11 +20,10 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
 
 public class DcMotorAdvanced {
-    private double previousPower = 0;
     private final double powerThreshold;
     private final DcMotorEx motor;
-
     private final double maxVoltage;
+    private double previousPower = 0;
 
     public DcMotorAdvanced(DcMotorEx motor, double maxVoltage, double powerThreshold) {
         this.motor = motor;
@@ -44,21 +43,21 @@ public class DcMotorAdvanced {
         TelemetryPacket packet = new TelemetryPacket();
 
 
-        if (Math.abs(power - previousPower) > this.powerThreshold) {
+//        if (Math.abs(power - previousPower) > this.powerThreshold) {
 
-            if (this.maxVoltage != Double.POSITIVE_INFINITY) {
-                double batteryVoltage = Battery.getInstance().getVoltage();
-
-                // NOTE: might want to clip the power between (-1 and 1).
-                // Maybe for shooter - @kevin.
-                power = maxVoltage / batteryVoltage * power;
-                motor.setPower(power);
-
-            } else {
-                motor.setPower(power);
-            }
-        }
-
+//        if (this.maxVoltage != Double.POSITIVE_INFINITY) {
+//            double batteryVoltage = Battery.getInstance().getVoltage();
+//
+//            // NOTE: might want to clip the power between (-1 and 1).
+//            // Maybe for shooter - @kevin.
+//            power = maxVoltage / batteryVoltage * power;
+//            motor.setPower(power);
+//
+//        } else {
+//            motor.setPower(power);
+//        }
+//        }
+        motor.setPower(0.2);
         packet.put("power", power);
         previousPower = power;
     }
@@ -91,4 +90,7 @@ public class DcMotorAdvanced {
         motor.setMode(mode);
     }
 
+    public Object getCurrent(CurrentUnit currentUnit) {
+        return motor.getCurrent(currentUnit);
+    }
 }

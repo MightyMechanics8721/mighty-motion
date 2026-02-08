@@ -10,15 +10,10 @@ public class FeedForward {
 
 
     /***
-     *
-     * @param kV (double) Voltage constant
-     * @param kA (double) Acceleration constant
-     * @param kS (double) Static constant
+     * @param feedforwardConstants kV, kA, kS, Voltage constant, acceleration constant, static constant (double)
      */
     public FeedForward(FFConstants feedforwardConstants) {
         this.feedforwardConstants = feedforwardConstants;
-
-
     }
 
     /***

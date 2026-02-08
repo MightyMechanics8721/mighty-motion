@@ -40,26 +40,23 @@ public class DcMotorAdvanced {
     }
 
     public void setPower(double power) {
-        TelemetryPacket packet = new TelemetryPacket();
-
-
+//        TelemetryPacket packet = new TelemetryPacket();
 //        if (Math.abs(power - previousPower) > this.powerThreshold) {
-
-//        if (this.maxVoltage != Double.POSITIVE_INFINITY) {
-//            double batteryVoltage = Battery.getInstance().getVoltage();
 //
-//            // NOTE: might want to clip the power between (-1 and 1).
-//            // Maybe for shooter - @kevin.
-//            power = maxVoltage / batteryVoltage * power;
-//            motor.setPower(power);
+//            if (this.maxVoltage != Double.POSITIVE_INFINITY) {
+//                double batteryVoltage = Battery.getInstance().getVoltage();
 //
-//        } else {
-//            motor.setPower(power);
+//                // NOTE: might want to clip the power between (-1 and 1).
+//                // Maybe for shooter - @kevin.
+//                power = maxVoltage / batteryVoltage * power;
+//                motor.setPower(power);
+//
+//            } else {
+//                motor.setPower(power);
+//            }
 //        }
-//        }
-        motor.setPower(0.2);
-        packet.put("power", power);
-        previousPower = power;
+//        previousPower = power;
+        motor.setPower(power);
     }
 
     public DcMotorSimple.Direction getDirection() {

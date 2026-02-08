@@ -94,14 +94,14 @@ public class Turret {
     public Action setTurretAngle(double desiredAngle) {
         return new Action() {
             @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            public boolean run(@NonNull TelemetryPacket packet) {
                 double power = computeSpinPower(clamp(desiredAngle, -90, 90));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
-                telemetryPacket.put("Target Angle", desiredAngle);
-                telemetryPacket.put("Current Angle", getAngle());
-                telemetryPacket.put("Power", power);
+                packet.put("Target Angle", desiredAngle);
+                packet.put("Current Angle", getAngle());
+                packet.put("Power", power);
 
                 // Stop when within 1 degree
                 if (Math.abs(desiredAngle - getAngle()) < 1.0) {
@@ -116,17 +116,16 @@ public class Turret {
 
     /**
      * Manual turret control using gamepad stick
+     *
+     * @param stickPower (double) Gamepad Stick power
      */
-    public Action manualControl() {
+    public Action manualControl(double stickPower) {
         return new Action() {
             @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double stickPower = gamepad1.left_stick_y;
+            public boolean run(@NonNull TelemetryPacket packet) {
                 turretLeft.setPower(stickPower);
                 turretRight.setPower(stickPower);
-
-                telemetryPacket.put("Manual Power", stickPower);
-                return false; // continuous
+                return true; // continuous
             }
         };
     }

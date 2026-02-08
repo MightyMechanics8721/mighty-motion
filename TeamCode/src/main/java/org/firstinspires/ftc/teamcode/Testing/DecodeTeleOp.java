@@ -25,7 +25,12 @@ public class DecodeTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
-
+    Battery battery;
+    Turret turret;
+    Indexer indexer;
+    Shooter shooter;
+    Intake intake;
+    Drivetrain drivetrain;
     FtcDashboard dashboard;
 
     private Map<String, Action> runningActions = new HashMap<>();
@@ -42,12 +47,12 @@ public class DecodeTeleOp extends LinearOpMode {
         Intake.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         // Hardware
-        Turret turret = Turret.getInstance();
-        Intake intake = Intake.getInstance();
-        Indexer indexer = Indexer.getInstance();
-        Shooter shooter = Shooter.getInstance();
-        Drivetrain drivetrain = Drivetrain.getInstance();
-        Battery battery = Battery.getInstance();
+        turret = Turret.getInstance();
+        intake = Intake.getInstance();
+        indexer = Indexer.getInstance();
+        shooter = Shooter.getInstance();
+        drivetrain = Drivetrain.getInstance();
+        battery = Battery.getInstance();
 
         waitForStart();
 
@@ -93,7 +98,7 @@ public class DecodeTeleOp extends LinearOpMode {
             } else if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

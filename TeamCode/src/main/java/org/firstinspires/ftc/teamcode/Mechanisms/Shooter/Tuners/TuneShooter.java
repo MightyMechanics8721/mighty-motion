@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 public class TuneShooter extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     FtcDashboard dashboard;
+    Shooter shooter;
 
     @Override
     public void runOpMode() {
@@ -25,34 +26,34 @@ public class TuneShooter extends LinearOpMode {
         Shooter.initialize(hardwareMap);
         Battery.getInstance();
         Shooter.getInstance();
-        Shooter shooter = Shooter.getInstance();
+        shooter = Shooter.getInstance();
         dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
 
         packet.put("Velocity (RPM)", 0.0);
         packet.put("Target Velocity (RPM)", targetVelocity);
         dashboard.sendTelemetryPacket(packet);
-        double velocity;
+        double currentVelocity = 0;
         waitForStart();
 
 
         while (opModeIsActive()) {
-//            shooter.setShooterVelocityLoop(targetVelocity * 2 * Math.PI / 60.0);
-            if (gamepad1.left_trigger > 0.05) { // ----- REVERSE -----
-//                shooter.setShooterVelocityLoop(gamepad1.left_trigger * 10
-//                        / 2 * 2 * Math.PI / 60);
-                shooter.shooterMotor1.setPower(255);
-                shooter.shooterMotor2.setPower(255);
-            }
-            shooter.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
-            shooter.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-            shooter.shooterMotor1.setPower(-255);
-            shooter.shooterMotor2.setPower(-255);
+//            if (gamepad1.left_trigger > 0.05) { // ----- REVERSE -----
+//                shooter.setShooterVelocityLoop(targetVelocity * 2 * Math.PI / 60.0);
+//            } else {
+//                shooter.shooterMotor1.setPower(gamepad1.left_trigger * 10);
+//                shooter.shooterMotor2.setPower(gamepad1.left_trigger * 10);
+//            }
+            shooter.setShooterVelocityLoop(targetVelocity * 2 * Math.PI / 60.0).run(packet);
 
-            velocity = shooter.getVelocity();
-//            packet.put("power", shooter.shooterMotor1.getCurrent(CurrentUnit.AMPS) * Battery.getInstance().getVoltage();
-            packet.put("Velocity (RPM)", velocity * 60.0 / (2 * Math.PI));
+
+            currentVelocity = shooter.getVelocity();
+            packet.put("shooterpowerPID", shooter.velocityPidController.calculate(targetVelocity * 2 * Math.PI / 60.0, currentVelocity));
+            packet.put("shooterpowerFF", shooter.velocityFeedForwardController.calculate(targetVelocity * 2 * Math.PI / 60.0, 5));
+            packet.put("shooterpower", shooter.velocityPidController.calculate(targetVelocity * 2 * Math.PI / 60.0, currentVelocity) + shooter.velocityFeedForwardController.calculate(targetVelocity, 5));
+            packet.put("Velocity (RPM)", currentVelocity * 60.0 / (2 * Math.PI));
             packet.put("Target Velocity (RPM)", targetVelocity);
+            packet.put("Target Velocity (Input)", targetVelocity * 2 * Math.PI / 60.0);
             dashboard.sendTelemetryPacket(packet);
 
         }

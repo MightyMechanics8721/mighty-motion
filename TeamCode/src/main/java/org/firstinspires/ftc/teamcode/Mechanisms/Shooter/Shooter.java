@@ -2,10 +2,12 @@ package org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 
 //import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.state;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 
 import androidx.annotation.NonNull;
 
+import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
@@ -14,15 +16,17 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.FeedForward;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
+import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Shooter {
-    private static Shooter instance;
     /**
      * Configuration parameters for battery behavior.
      */
@@ -40,7 +44,11 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private final MotorController motorController;
+    private static Shooter instance;
+    private final DcMotorAdvanced shooterMotor1;
+    private final DcMotorAdvanced shooterMotor2;
+    private final PID velocityPidController;
+    private final FeedForward velocityFeedForwardController;
 
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
@@ -48,20 +56,22 @@ public class Shooter {
      * @param hardwareMap the FTC HardwareMap used to retrieve motor hardwar
      */
     private Shooter(HardwareMap hardwareMap) {
-
-        this.motorController = new MotorController(
-                hardwareMap,
-                new String[]{
-                        CONFIGURATION_NAMES.shooterMotor1Name,
-                        CONFIGURATION_NAMES.shooterMotor2Name
-                },
-                BATTERY_PARAMETERS.maxVoltage,
-                CONFIGURATION_NAMES.encoderName,
-                28.0
+        this.shooterMotor1 = new DcMotorAdvanced(
+                hardwareMap.get(DcMotorEx.class, "f1"),
+                THRESHOLD_PARAMETERS.maxVoltage,
+                THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
-
-        this.motorController.setVelocityPIDConstants(MOTOR_CONTROLLER_CONSTANTS.pidConstants);
-        this.motorController.setVelocityFeedForwardConstants(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
+        this.shooterMotor2 = new DcMotorAdvanced(
+                hardwareMap.get(DcMotorEx.class, "f2"),
+                THRESHOLD_PARAMETERS.maxVoltage,
+                THRESHOLD_PARAMETERS.acceptablePowerDifference
+        );
+        this.velocityPidController = new PID(
+                MOTOR_CONTROLLER_CONSTANTS.pidConstants,
+                PID.functionType.LINEAR
+        );
+        this.velocityFeedForwardController
+                = new FeedForward(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -81,7 +91,7 @@ public class Shooter {
      * @return the current velocity of the shooter wheels (units depend on encoder configuration)
      */
     public double getVelocity() {
-        return this.motorController.getVelocity();
+        return this.shooterMotor1.getVelocity();
     }
 
     public double calculateVelocity(double distance) {
@@ -114,8 +124,9 @@ public class Shooter {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                shooter.motorController.setVelocity(velocity);
-
+                double power = velocityFeedForwardController.calculate(velocity, 5);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
                 return false;
             }
         };
@@ -127,8 +138,10 @@ public class Shooter {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                shooter.motorController.setVelocity(velocity);
-                return Math.abs(shooter.motorController.getVelocity() - velocity)
+                double power = velocityFeedForwardController.calculate(velocity, 5);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
+                return Math.abs(shooterMotor1.getVelocity() - velocity)
                         >= shooter.SHOOTER_CONSTANTS.velocityTolerance;
             }
         };
@@ -145,7 +158,9 @@ public class Shooter {
                     timer.reset();
                 }
                 time = timer.seconds();
-                Shooter.this.motorController.setVelocity(velocity);
+                double power = velocityFeedForwardController.calculate(velocity, 5);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
                 return time <= seconds;
             }
         };

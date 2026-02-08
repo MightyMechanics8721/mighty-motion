@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Intake;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -8,6 +10,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
@@ -15,21 +18,18 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorControll
 
 @Config
 public class Intake {
-    private static Intake instance;
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
-
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private final MotorController motorController;
+    private static Intake instance;
+    private final DcMotorAdvanced intakeMotor;
 
     private DcMotorEx intake;
 
     private Intake(HardwareMap hardwareMap) {
-        intake = hardwareMap.get(DcMotorEx.class, "intake");
-
-        this.motorController = new MotorController(
-                hardwareMap,
-                new String[]{CONFIGURATION_NAMES.intakeMotorName},
-                BATTERY_PARAMETERS.maxVoltage
+        this.intakeMotor = new DcMotorAdvanced(
+                hardwareMap.get(DcMotorEx.class, "intake"),
+                THRESHOLD_PARAMETERS.maxVoltage,
+                THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
 
     }

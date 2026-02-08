@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.Mechanisms.Indexer;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -16,17 +19,16 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorControll
 
 @Config
 public class Indexer {
-    private static Indexer instance;
     public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
-    public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    private final MotorController motorController;
+    private static Indexer instance;
+    private final DcMotorAdvanced indexMotor;
 
 
     private Indexer(HardwareMap hardwareMap) {
-        this.motorController = new MotorController(
-                hardwareMap,
-                new String[]{CONFIGURATION_NAMES.indexerMotorName},
-                BATTERY_PARAMETERS.maxVoltage
+        this.indexMotor = new DcMotorAdvanced(
+                hardwareMap.get(DcMotorEx.class, "indexer"),
+                THRESHOLD_PARAMETERS.maxVoltage,
+                THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
 
     }
@@ -47,17 +49,10 @@ public class Indexer {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                motorController.setPower(power);
+                indexMotor.setPower(power);
                 return false;
             }
         };
-    }
-
-    public static class ConfigurationNames {
-
-        public String indexerMotorName = "indexer";
-
-
     }
 
     public static class BatteryParameters {

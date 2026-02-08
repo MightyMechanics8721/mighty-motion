@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PID
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Manages one or more DC motors with optional encoder feedback, PID control, and voltage
@@ -154,7 +155,6 @@ public class MotorController {
      *
      * @param hardwareMap FTC hardware map
      * @param motorNames array of motor names
-     * @param battery battery reference
      * @param maxVoltage max expected voltage
      * @param encoderName name of encoder motor
      * @param ticksPerRevolution encoder ticks per revolution
@@ -281,7 +281,7 @@ public class MotorController {
         int index = 0;
         for (DcMotorAdvanced motor : motors.values()) {
             double power = velocityFeedForwardController.calculate(targetVelocities[index], 5);
-            setPower(power);
+            motor.setPower(power);
             index++;
         }
     }

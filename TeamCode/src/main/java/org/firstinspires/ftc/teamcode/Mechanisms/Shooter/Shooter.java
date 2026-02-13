@@ -137,7 +137,7 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 5);
+                        + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 // TODO: Returning false makes this run once but with the PID this will cause it
@@ -174,7 +174,7 @@ public class Shooter {
                 }
                 time = timer.seconds();
                 double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 5);
+                        + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return time <= seconds;

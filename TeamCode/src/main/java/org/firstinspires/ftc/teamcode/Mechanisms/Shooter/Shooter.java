@@ -8,6 +8,7 @@ import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.c
 import androidx.annotation.NonNull;
 
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
+import org.firstinspires.ftc.teamcode.Hardware.Actuators.ServoAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -18,9 +19,11 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
@@ -50,6 +53,7 @@ public class Shooter {
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
+    public final ServoAdvanced hardStop;
     public final PID velocityPidController;
     public final FeedForward velocityFeedForwardController;
 
@@ -75,11 +79,11 @@ public class Shooter {
                 MOTOR_CONTROLLER_CONSTANTS.pidConstants,
                 PID.functionType.LINEAR
         );
+        this.hardStop = new ServoAdvanced(hardwareMap.get(Servo.class, "hardStop"));
         this.velocityFeedForwardController
                 = new FeedForward(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
         this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-
         encoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rfm"), 28);
 
     }
@@ -178,6 +182,26 @@ public class Shooter {
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return time <= seconds;
+            }
+        };
+    }
+
+    public Action hardStop() {
+        return new Action() {
+            boolean extend = false;
+            ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (timer.seconds() > 0.3) { //timer just to prevent jittering, since its a toggle
+                    if (!extend) {
+                        hardStop.setPosition(1);
+                    } else {
+                        hardStop.setPosition(0);
+                    }
+                    timer.reset();
+                }
+                return true;
             }
         };
     }

@@ -52,7 +52,7 @@ public class Intake {
                 if (instance == null) {
                     throw new IllegalStateException("Intake not initialized!");
                 }
-                intake.setPower(power);
+                intakeMotor.setPower(power);
 
                 return false;
             }

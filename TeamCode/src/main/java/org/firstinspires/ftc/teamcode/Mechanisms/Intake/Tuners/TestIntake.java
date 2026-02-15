@@ -28,7 +28,7 @@ public class TestIntake extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            power = (double) gamepad1.right_trigger;
+            power = (double) gamepad1.left_stick_x;
             Actions.runBlocking(intake.setIntakePower(power));
         }
     }

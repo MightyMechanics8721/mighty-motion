@@ -250,12 +250,12 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0, 0.00189, 0);
+        public FFConstants ffConstants = new FFConstants(0, 0.0025, 0);
 
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.009, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.0125, 0, 0);
     }
 
     public static class HardwareConstants {

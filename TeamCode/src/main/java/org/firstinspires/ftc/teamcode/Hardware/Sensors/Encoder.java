@@ -22,14 +22,18 @@ public class Encoder {
         storedPos = encoder.getCurrentPosition();
     }
 
+    /**
+     * @return ticks of current encoder // possibly different per different encoder
+     */
     public int getCurrentPosition() {
         return encoder.getCurrentPosition() - storedPos;
     }
 
+    /**
+     * @return radians/second
+     */
     public double getVelocity() {
         return this.encoder.getVelocity() / this.TICKS_PER_RADIAN;
-
-
     }
 
     public void setDirection(DcMotorSimple.Direction direction) {

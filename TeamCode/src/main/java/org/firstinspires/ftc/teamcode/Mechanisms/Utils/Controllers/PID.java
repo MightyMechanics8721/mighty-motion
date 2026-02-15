@@ -45,6 +45,20 @@ public class PID {
         }
     }
 
+    public double calculate(double target, double currentState, double currentSpeed) {
+        double error = target - currentState;
+        double dt = timer.seconds();
+        eIntegralSum += (error - ePrev) * dt;
+        ePrev = error;
+        timer.reset();
+        if (type == functionType.LINEAR) {
+            return (this.pidConstants.kP * error) + (this.pidConstants.kI * eIntegralSum) + (this.pidConstants.kD * -currentSpeed);
+        } else {
+            return (this.pidConstants.kP * Math.pow(Math.abs(error), 0.5) * Math.signum(error)) + (this.pidConstants.kI * eIntegralSum)
+                    + (this.pidConstants.kD * -currentSpeed);
+        }
+    }
+
     public enum functionType {
         LINEAR,
         SQRT

@@ -40,23 +40,22 @@ public class DcMotorAdvanced {
     }
 
     public void setPower(double power) {
-//        TelemetryPacket packet = new TelemetryPacket();
-//        if (Math.abs(power - previousPower) > this.powerThreshold) {
-//
-//            if (this.maxVoltage != Double.POSITIVE_INFINITY) {
-//                double batteryVoltage = Battery.getInstance().getVoltage();
-//
-//                // NOTE: might want to clip the power between (-1 and 1).
-//                // Maybe for shooter - @kevin.
-//                power = maxVoltage / batteryVoltage * power;
-//                motor.setPower(power);
-//
-//            } else {
-//                motor.setPower(power);
-//            }
-//        }
-//        previousPower = power;
-        motor.setPower(power);
+        TelemetryPacket packet = new TelemetryPacket();
+        if (Math.abs(power - previousPower) > this.powerThreshold) {
+
+            if (this.maxVoltage != Double.POSITIVE_INFINITY) {
+                double batteryVoltage = Battery.getInstance().getVoltage();
+
+                // NOTE: might want to clip the power between (-1 and 1).
+                // Maybe for shooter - @kevin.
+                power = maxVoltage / batteryVoltage * power;
+                motor.setPower(power);
+
+            } else {
+                motor.setPower(power);
+            }
+        }
+        previousPower = power;
     }
 
     public DcMotorSimple.Direction getDirection() {
@@ -67,14 +66,23 @@ public class DcMotorAdvanced {
         motor.setDirection(direction);
     }
 
+    /**
+     * @return ticks/sec
+     */
     public double getVelocity() {
         return motor.getVelocity();
     }
 
+    /**
+     * ticks/sec
+     */
     public void setVelocity(double angularRate) {
         motor.setVelocity(angularRate);
     }
 
+    /**
+     * @return desired unit /sec
+     */
     public double getVelocity(AngleUnit unit) {
         return motor.getVelocity(unit);
     }
@@ -87,6 +95,9 @@ public class DcMotorAdvanced {
         motor.setMode(mode);
     }
 
+    /**
+     * @return current consumed by motor (currentUnit)
+     */
     public Object getCurrent(CurrentUnit currentUnit) {
         return motor.getCurrent(currentUnit);
     }

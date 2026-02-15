@@ -28,8 +28,8 @@ public class TuneTurret extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            turret.manualControl(gamepad1.left_stick_y * 5).run(packet);
-            packet.put("power", gamepad1.left_stick_y * 5);
+            turret.manualControl(gamepad1.left_stick_y).run(packet);
+            packet.put("power", gamepad1.left_stick_y);
             packet.put("angle", turret.getAngle());
             dashboard.sendTelemetryPacket(packet);
         }

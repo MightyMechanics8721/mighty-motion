@@ -76,12 +76,14 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("intake", intake.setIntakePower(1));
             } else if (gamepad1.left_bumper) {
                 runningActions.put("indexer", indexer.setIndexerPower(-1));
+            } else if (gamepad1.right_bumper) {
+                runningActions.put("intake", intake.setIntakePower(-1));
             } else {
                 runningActions.put("intake", intake.setIntakePower(0.0));
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
             // ----- TURRET -----
-            if (gamepad2.left_trigger > 0.15) {
+            if (gamepad2.right_trigger > 0.15) {
                 runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
             }
             if (gamepad2.dpad_up) {
@@ -90,11 +92,16 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("turret", turret.setTurretAngle(90));
             } else if (gamepad2.dpad_right) {
                 runningActions.put("turret", turret.setTurretAngle(-90));
-            }
+            } //else {
+            //                runningActions.put("turret", turret.setTurretAngle(0));
+            //            }
 
-            if (gamepad2.circle) {
-                runningActions.put("stopper", shooter.hardStop());
-            }
+            //            if (gamepad1.dpad_up) {
+            //                runningActions.put("stopper", shooter.hardStopOpen());
+            //            }
+            //            if (gamepad1.dpad_down) {
+            //                runningActions.put("stopper", shooter.hardStopClose());
+            //            }
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
@@ -109,19 +116,22 @@ public class DecodeTeleOp extends LinearOpMode {
                         "shooter", shooter.setShooterVelocityLoop(
                                 SHOOTER_VELOCITY_NORMAL * 2 * Math.PI / 60)
                 );
+                runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.cross) { // ------ CLOSE ------
                 runningActions.put(
                         "shooter",
                         shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_CLOSE * 2 * Math.PI / 60)
                 );
-
+                runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.triangle) { // ------ FAR ------
                 runningActions.put(
                         "shooter",
                         shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_FAR * 2 * Math.PI / 60)
                 );
+                runningActions.put("stopper", shooter.hardStopOpen());
             } else {
                 runningActions.put("shooter", shooter.setShooterVelocityLoop(0));
+                runningActions.put("stopper", shooter.hardStopClose());
             }
 
             // ----- INDEXER -----

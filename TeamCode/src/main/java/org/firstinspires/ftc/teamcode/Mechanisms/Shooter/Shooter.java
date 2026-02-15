@@ -100,9 +100,9 @@ public class Shooter {
     }
 
     /**
-     * Returns the current shooter wheel velocity.
+     * Returns the current shooter flywheel velocity.
      *
-     * @return the current velocity of the shooter wheels (units depend on encoder configuration)
+     * @return the current velocity of the shooter flywheel (rad/sec)
      */
     public double getVelocity() {
         return this.encoder.getVelocity();
@@ -145,7 +145,7 @@ public class Shooter {
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 // TODO: Returning false makes this run once but with the PID this will cause it
-                //  to overshoot?
+                //  to overshoot greatly?
                 return false;
             }
         };
@@ -157,7 +157,7 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 5);
+                        + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return Math.abs(shooterMotor1.getVelocity() - velocity)

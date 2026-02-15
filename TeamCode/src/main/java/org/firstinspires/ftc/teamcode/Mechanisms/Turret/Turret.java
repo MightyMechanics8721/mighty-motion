@@ -29,8 +29,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 @Config
 public class Turret {
     // --- Tunable ---
-    public static double staticGain = 0.4;
-    public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0.0);
+    public static double staticGain = 0.2;
+    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.00005);
     public static double angleThreshold = 1.0;
     private static Turret instance;
     // --- Hardware constants ---
@@ -73,7 +73,7 @@ public class Turret {
     // --- Hardware Functions ---
 
     /**
-     * Returns the current turret angle in degrees
+     * Returns the current bot-relative turret angle in degrees
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
@@ -81,10 +81,17 @@ public class Turret {
     }
 
     /**
+     * Returns the current turret velocity in degrees/sec
+     */
+    public double getVelocity() {
+        return Math.toDegrees(turretEncoder.getVelocity());
+    }
+
+    /**
      * Computes PID power to reach a desired angle
      */
     private double computeSpinPower(double desiredAngle) {
-        double pidOutput = pid.calculate(desiredAngle, getAngle());
+        double pidOutput = pid.calculate(desiredAngle, getAngle(), getVelocity());
         return staticGain * Math.signum(pidOutput) + pidOutput;
     }
 

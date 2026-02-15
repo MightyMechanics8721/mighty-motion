@@ -92,13 +92,17 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("turret", turret.setTurretAngle(-90));
             }
 
+            if (gamepad2.circle) {
+                runningActions.put("stopper", shooter.hardStop());
+            }
+
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
                 runningActions.put("shooter", shooter.autoShoot());
             } else if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

@@ -50,13 +50,14 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
+    public static double openPos = 0;
+    public static double closePos = 1;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
     public final ServoAdvanced hardStop;
     public final PID velocityPidController;
     public final FeedForward velocityFeedForwardController;
-
     private final Encoder encoder;
 
     /**
@@ -195,12 +196,34 @@ public class Shooter {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (timer.seconds() > 0.3) { //timer just to prevent jittering, since its a toggle
                     if (!extend) {
-                        hardStop.setPosition(1);
+                        hardStopClose();
                     } else {
-                        hardStop.setPosition(0);
+                        hardStopOpen();
                     }
                     timer.reset();
                 }
+                return true;
+            }
+        };
+    }
+
+    public Action hardStopClose() {
+        return new Action() {
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                hardStop.setPosition(closePos);
+                return true;
+            }
+        };
+    }
+
+    public Action hardStopOpen() {
+        return new Action() {
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                hardStop.setPosition(openPos);
                 return true;
             }
         };

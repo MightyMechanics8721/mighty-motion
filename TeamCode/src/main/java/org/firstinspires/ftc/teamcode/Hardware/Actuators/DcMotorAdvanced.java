@@ -24,6 +24,17 @@ public class DcMotorAdvanced {
     private final DcMotorEx motor;
     private final double maxVoltage;
     private double previousPower = 0;
+    private boolean clipBeforeBatteryCompensation = false;
+
+    public DcMotorAdvanced(
+            DcMotorEx motor,
+            double maxVoltage,
+            double powerThreshold,
+            boolean clipBeforeBatteryCompensation
+    ) {
+        this(motor, maxVoltage, powerThreshold);
+        this.clipBeforeBatteryCompensation = clipBeforeBatteryCompensation;
+    }
 
     public DcMotorAdvanced(DcMotorEx motor, double maxVoltage, double powerThreshold) {
         this.motor = motor;
@@ -48,6 +59,10 @@ public class DcMotorAdvanced {
 
                 // NOTE: might want to clip the power between (-1 and 1).
                 // Maybe for shooter - @kevin.
+                if (this.clipBeforeBatteryCompensation) {
+                    power = clamp(power, -1.0, 1.0);
+                }
+
                 power = maxVoltage / batteryVoltage * power;
                 motor.setPower(power);
 

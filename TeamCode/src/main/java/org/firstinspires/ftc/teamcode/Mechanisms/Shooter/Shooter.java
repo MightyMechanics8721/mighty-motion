@@ -69,12 +69,14 @@ public class Shooter {
         this.shooterMotor1 = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, "f1"),
                 THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                THRESHOLD_PARAMETERS.acceptablePowerDifference, true
         );
+
+
         this.shooterMotor2 = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, "f2"),
                 THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                THRESHOLD_PARAMETERS.acceptablePowerDifference, true
         );
         this.velocityPidController = new PID(
                 MOTOR_CONTROLLER_CONSTANTS.pidConstants,
@@ -275,12 +277,12 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0, 0.0025, 0);
+        public FFConstants ffConstants = new FFConstants(0, 0.00132, 0.2);
 
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.0125, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.045, 0, 0);
     }
 
     public static class HardwareConstants {

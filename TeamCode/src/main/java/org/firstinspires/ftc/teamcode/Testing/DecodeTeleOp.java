@@ -83,15 +83,16 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));
             }
             // ----- TURRET -----
-            if (gamepad2.right_trigger > 0.15) {
+            if (gamepad2.left_trigger > 0.05) {
                 runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
-            }
-            if (gamepad2.dpad_up) {
+            } else if (gamepad2.dpad_up) {
                 runningActions.put("turret", turret.setTurretAngle(0));
             } else if (gamepad2.dpad_left) {
                 runningActions.put("turret", turret.setTurretAngle(90));
             } else if (gamepad2.dpad_right) {
                 runningActions.put("turret", turret.setTurretAngle(-90));
+            } else {
+                runningActions.put("turret", turret.setTurretAngle(0));
             }
 
             if (gamepad1.dpad_up) {
@@ -105,7 +106,7 @@ public class DecodeTeleOp extends LinearOpMode {
             //            if (gamepad2.right_trigger > 0.05) {
             //                runningActions.put("shooter", shooter.autoShoot());
             //            } else
-            if (gamepad2.left_trigger > 0.05) { // ----- REVERSE -----
+            if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
                                                                           / 2 * 2 * Math.PI / 60)

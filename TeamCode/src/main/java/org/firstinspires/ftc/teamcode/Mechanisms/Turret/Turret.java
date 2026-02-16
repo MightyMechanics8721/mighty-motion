@@ -22,6 +22,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
@@ -43,6 +44,9 @@ public class Turret {
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
+
+    public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
+            new Turret.ThresholdParameters();
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
@@ -102,6 +106,13 @@ public class Turret {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+
+                if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return false;
+                }
+
                 double power = computeSpinPower(clamp(desiredAngle, -90, 90));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
@@ -111,11 +122,7 @@ public class Turret {
                 packet.put("Power", power);
 
                 // Stop when within 1 degree
-                if (Math.abs(desiredAngle - getAngle()) < 1.0) {
-                    turretLeft.setPower(0);
-                    turretRight.setPower(0);
-                    return false;
-                }
+
                 return true;
             }
         };
@@ -133,6 +140,17 @@ public class Turret {
                 turretLeft.setPower(stickPower);
                 turretRight.setPower(stickPower);
                 return true; // continuous
+            }
+        };
+    }
+
+    public Action stop() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                turretLeft.setPower(0);
+                turretRight.setPower(0);
+                return false; // continuous
             }
         };
     }
@@ -186,6 +204,15 @@ public class Turret {
         double relativeAngle = fieldAngle - robotHeading;
 
         // Wrap 0–360
-        return (relativeAngle % 360 + 360) % 360;
+        //        return (relativeAngle % 360 + 360) % 360;
+        return Math.toDegrees(Utils.angleWrap(Math.toRadians(relativeAngle)));
+    }
+
+    public static class ThresholdParameters {
+
+        /**
+         * Maximum expected voltage of the battery in volts.
+         */
+        public double angleThreshold = 3.0; // (deg)
     }
 }

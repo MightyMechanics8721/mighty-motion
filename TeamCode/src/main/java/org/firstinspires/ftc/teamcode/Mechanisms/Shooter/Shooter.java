@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.c
 
 import androidx.annotation.NonNull;
 
+import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.ServoAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
@@ -112,8 +113,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 2695 + (-9.78 * distance) + 0.0811 * distance * distance
-                + 0.000264 * distance * distance * distance;
+        return 2250 - 1.47 * distance + 0.0868 * Math.pow(distance, 2);
     }
 
     public Action autoShoot() {
@@ -121,14 +121,19 @@ public class Shooter {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                //TODO: INIT DRIVETRAIN TO ACCESS STATE
-                //                double distance = calculateDistance(state.get(0, 0), state.get
-                //                (1, 0), -60, -60);
-                //                double power = calculateVelocity(distance) * 2 * Math.PI / 60;
-                //                shooterMotor1.setPower(power);
-                //                shooterMotor2.setPower(power);
-                //                telemetryPacket.put("Distance bot to goal (in) ", distance);
-                return true;
+                Drivetrain drivetrain = Drivetrain.getInstance();
+                double distance = calculateDistance(
+                        drivetrain.state.get(0, 0),
+                        drivetrain.state.get(1, 0), -60,
+                        -60
+                );
+                double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+                double power = velocityPidController.calculate(velocity, getVelocity())
+                        + velocityFeedForwardController.calculate(velocity, 0);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
+                //telemetryPacket.put("Distance bot to goal (in) ", distance);
+                return false;
             }
         };
     }

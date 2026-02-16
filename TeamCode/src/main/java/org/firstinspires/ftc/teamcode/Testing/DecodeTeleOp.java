@@ -103,10 +103,9 @@ public class DecodeTeleOp extends LinearOpMode {
             }
 
             // ----- SHOOTER -----
-            //            if (gamepad2.right_trigger > 0.05) {
-            //                runningActions.put("shooter", shooter.autoShoot());
-            //            } else
-            if (gamepad2.left_bumper) { // ----- REVERSE -----
+            if (gamepad2.right_trigger > 0.05) {
+                runningActions.put("shooter", shooter.autoShoot());
+            } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
                                                                           / 2 * 2 * Math.PI / 60)

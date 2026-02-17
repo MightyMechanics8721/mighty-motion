@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.InstantAction;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -16,10 +14,6 @@ import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
-import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
-import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
-import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
-import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 
 @Config
 @Autonomous(name = "Blue Near Pursuit", group = "Competition")

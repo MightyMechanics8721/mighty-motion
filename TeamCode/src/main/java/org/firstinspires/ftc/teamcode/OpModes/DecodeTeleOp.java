@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
+import org.firstinspires.ftc.teamcode.Testing.DistanceSensor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +29,9 @@ public class DecodeTeleOp extends LinearOpMode {
     Battery battery;
     Turret turret;
     Indexer indexer;
-    Shooter shooter;
     Intake intake;
+    Shooter shooter;
+    DistanceSensor distanceSensor;
     Drivetrain drivetrain;
     FtcDashboard dashboard;
 
@@ -43,14 +45,16 @@ public class DecodeTeleOp extends LinearOpMode {
         Battery.initialize(hardwareMap);
         Turret.initialize(hardwareMap);
         Indexer.initialize(hardwareMap);
-        Shooter.initialize(hardwareMap);
         Intake.initialize(hardwareMap);
+        Shooter.initialize(hardwareMap);
+        DistanceSensor.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         // Hardware
         turret = Turret.getInstance();
         intake = Intake.getInstance();
         indexer = Indexer.getInstance();
         shooter = Shooter.getInstance();
+        distanceSensor = DistanceSensor.getInstance();
         drivetrain = Drivetrain.getInstance();
         battery = Battery.getInstance();
 
@@ -68,7 +72,10 @@ public class DecodeTeleOp extends LinearOpMode {
                             gamepad1.right_stick_x
                     )
             );
-            // ----- INTAKE && INDEXER -----
+//            if (gamepad1.dpad_up) {
+//                runningActions.put("DistanceSensor", distanceSensor.ballDetection());
+//            }
+//             ----- INTAKE && INDEXER -----
             if (gamepad1.right_trigger > 0.1) {
                 runningActions.put("intake", intake.setIntakePower(-1));
                 runningActions.put("indexer", indexer.setIndexerPower(1));
@@ -108,7 +115,7 @@ public class DecodeTeleOp extends LinearOpMode {
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -132,6 +139,8 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("shooter", shooter.setShooterVelocityLoop(0));
                 runningActions.put("stopper", shooter.hardStopClose());
             }
+
+            // ----- DISTANCE SENSOR -----
 
             // ----- INDEXER -----
             //

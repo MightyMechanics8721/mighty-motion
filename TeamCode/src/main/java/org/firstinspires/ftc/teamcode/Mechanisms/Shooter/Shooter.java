@@ -51,8 +51,8 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    public static double openPos = 1;
-    public static double closePos = 0.69;
+    public static double openPos = 0.55;
+    public static double closePos = 1.0;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -88,7 +88,7 @@ public class Shooter {
                 = new FeedForward(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
         this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        encoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rfm"), 28);
+        encoder = new Encoder(hardwareMap.get(DcMotorEx.class, "indexer"), 28);
 
     }
 

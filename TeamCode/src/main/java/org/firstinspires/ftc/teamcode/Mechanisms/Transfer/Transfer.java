@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.Mechanisms.Transfer;
 
-import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 
 import androidx.annotation.NonNull;
 
@@ -8,17 +7,13 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
-import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
-import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 
-public class DistanceSensor {
+public class Transfer {
 
-    private static DistanceSensor instance;
+    private static Transfer instance;
     // Distance Sensors
     private final DigitalChannel laserInput1;
     private final DigitalChannel laserInput2;
@@ -28,7 +23,7 @@ public class DistanceSensor {
     boolean[] balls = new boolean[3];
     int ballCount = 0;
 
-    private DistanceSensor(HardwareMap hardwareMap) {
+    private Transfer(HardwareMap hardwareMap) {
         // Initialize digital laser sensors
         laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1"); // BOTTOM
         laserInput2 = hardwareMap.get(DigitalChannel.class, "bb2"); // MIDDLE
@@ -44,10 +39,10 @@ public class DistanceSensor {
     }
 
     public static void initialize(HardwareMap hardwareMap) {
-        instance = new DistanceSensor(hardwareMap);
+        instance = new Transfer(hardwareMap);
     }
 
-    public static DistanceSensor getInstance() {
+    public static Transfer getInstance() {
         if (instance == null) {
             throw new IllegalStateException("DistanceSensor not initialized!");
         }
@@ -120,5 +115,21 @@ public class DistanceSensor {
     public void setIntakeSystemPower(double intakePower, double indexerPower) {
         intake.setIntakePowerFunction(intakePower);
         indexer.setIndexerPowerFunction(indexerPower);
+    }
+
+    public Action runIntakeAndIndexer(double intakePower, double indexerPower) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (intake == null || indexer == null) {
+                    throw new IllegalStateException("Subsystem not initialized");
+                }
+                updateBallCount();
+                intake.setIntakePowerFunction(intakePower);
+                indexer.setIndexerPowerFunction(indexerPower);
+                
+                return false;
+            }
+        };
     }
 }

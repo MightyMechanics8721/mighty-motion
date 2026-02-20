@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -16,7 +15,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.Testing.DistanceSensor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,20 +82,20 @@ public class DecodeTeleOp extends LinearOpMode {
             //             ----- INTAKE && INDEXER -----
             if (gamepad1.right_trigger > 0.1) {
                 runningActions.put(
-                        "transfer", transfer.runIntakeAndIndexer(1, 1));
+                        "transfer", transfer.setIntakeIndexerPower(1, 1));
 
             } else if (gamepad1.left_trigger > 0.1) {
                 runningActions.put(
-                        "transfer", transfer.runIntakeAndIndexer(-1, 0));
+                        "transfer", transfer.setIntakeIndexerPower(-1, 0));
             } else if (gamepad1.left_bumper) {
                 runningActions.put(
-                        "transfer", transfer.runIntakeAndIndexer(0, -1));
+                        "transfer", transfer.setIntakeIndexerPower(0, -1));
             } else if (gamepad1.right_bumper) {
                 runningActions.put(
                         "transfer", transfer.ballDetection());
             } else {
                 runningActions.put(
-                        "transfer", transfer.runIntakeAndIndexer(0, 0));
+                        "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
             if (gamepad2.left_trigger > 0.05) {
@@ -126,7 +124,7 @@ public class DecodeTeleOp extends LinearOpMode {
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

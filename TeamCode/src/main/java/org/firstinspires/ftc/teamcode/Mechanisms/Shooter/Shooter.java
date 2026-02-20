@@ -116,27 +116,57 @@ public class Shooter {
         return 2250 - 1.47 * distance + 0.0868 * Math.pow(distance, 2);
     }
 
+    /**
+     * Automatically calculates shooter power based on distance from robot coordinates to goal coordinate
+     * INSTANT action
+     */
     public Action autoShoot() {
         return new Action() {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                Drivetrain drivetrain = Drivetrain.getInstance();
-                double distance = calculateDistance(
-                        drivetrain.state.get(0, 0),
-                        drivetrain.state.get(1, 0), -60,
-                        -60
-                );
-                double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
-                double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 0);
-                shooterMotor1.setPower(power);
-                shooterMotor2.setPower(power);
+                autoShootFunction();
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to goal coordinate
+     * INSTANT action
+     */
+    public Action autoShootMoving() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                autoShootMovingFunction();
                 //telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return false;
             }
         };
     }
+
+    /**
+     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to goal coordinate
+     * Timed action
+     */
+    public Action autoShootMovingTimed(double seconds) {
+        return new Action() {
+            double time = -1;
+            ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                autoShootMovingFunction();
+                return time <= seconds || autoShootThresholdCheck();
+            }
+        };
+    }
+
 
     /**
      * Sets the desired shooter wheel velocity.
@@ -159,6 +189,11 @@ public class Shooter {
         };
     }
 
+    /**
+     * Sets Shooter velocity until within threshold (currently 2.0 rad/s)
+     *
+     * @param velocity desired velocity
+     */
     public Action setShooterVelocityInstant(double velocity) {
         Shooter shooter = this;
         return new Action() {
@@ -238,6 +273,51 @@ public class Shooter {
         };
     }
 
+    /**
+     * Automatically calculates shooter power based on distance from robot coordinates to goal coordinate
+     */
+    public void autoShootFunction() {
+        Drivetrain drivetrain = Drivetrain.getInstance();
+        double distance = calculateDistance(
+                drivetrain.state.get(0, 0),
+                drivetrain.state.get(1, 0), -60,
+                -60
+        );
+        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double power = velocityPidController.calculate(velocity, getVelocity())
+                + velocityFeedForwardController.calculate(velocity, 0);
+        shooterMotor1.setPower(power);
+        shooterMotor2.setPower(power);
+    }
+
+    /**
+     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to goal coordinate
+     */
+    public void autoShootMovingFunction() {
+        Drivetrain drivetrain = Drivetrain.getInstance();
+        double distance = calculateDistance(
+                drivetrain.driftedPose.get(0, 0),
+                drivetrain.driftedPose.get(1, 0), -60,
+                -60
+        );
+        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double power = velocityPidController.calculate(velocity, getVelocity())
+                + velocityFeedForwardController.calculate(velocity, 0);
+        shooterMotor1.setPower(power);
+        shooterMotor2.setPower(power);
+    }
+
+    public boolean autoShootThresholdCheck() {
+        Drivetrain drivetrain = Drivetrain.getInstance();
+        double distance = calculateDistance(
+                drivetrain.driftedPose.get(0, 0),
+                drivetrain.driftedPose.get(1, 0), -60,
+                -60
+        );
+        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        return Math.abs(shooterMotor1.getVelocity() - velocity)
+                >= SHOOTER_CONSTANTS.velocityTolerance;
+    }
 
     /**
      * Holds configuration names for the shooter hardware. These correspond to names in the robot

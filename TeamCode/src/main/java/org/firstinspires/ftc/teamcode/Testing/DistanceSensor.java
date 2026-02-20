@@ -67,7 +67,6 @@ public class DistanceSensor {
                 packet.put("Ball 1", balls[1]);
                 packet.put("Ball 2", balls[2]);
                 packet.put("Ball Count", ballCount);
-
                 return true;
             }
         };
@@ -89,11 +88,6 @@ public class DistanceSensor {
         } else {
             setIntakeSystemPower(0.3, 0.3);
         }
-        //        // Telemetry for debugging
-        //        packet.put("Ball 1 Detected", balls[0]);
-        //        packet.put("Ball 2 Detected", balls[1]);
-        //        packet.put("Ball 3 Detected", balls[2]);
-        //        packet.put("Ball Count", ballCount);
     }
 
     /**
@@ -114,7 +108,7 @@ public class DistanceSensor {
     /**
      * Sets power of intake and indexer motor
      *
-     * @param intakePower motor power, [-1, 1]
+     * @param intakePower  motor power, [-1, 1]
      * @param indexerPower motor power, [-1, 1]
      */
     public void setIntakeSystemPower(double intakePower, double indexerPower) {

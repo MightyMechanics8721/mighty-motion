@@ -77,14 +77,14 @@ public class DecodeTeleOp extends LinearOpMode {
 //            }
 //             ----- INTAKE && INDEXER -----
             if (gamepad1.right_trigger > 0.1) {
-                runningActions.put("intake", intake.setIntakePower(-1));
+                runningActions.put("intake", intake.setIntakePower(1));
                 runningActions.put("indexer", indexer.setIndexerPower(1));
             } else if (gamepad1.left_trigger > 0.1) {
-                runningActions.put("intake", intake.setIntakePower(1));
+                runningActions.put("intake", intake.setIntakePower(-1));
             } else if (gamepad1.left_bumper) {
                 runningActions.put("indexer", indexer.setIndexerPower(-1));
             } else if (gamepad1.right_bumper) {
-                runningActions.put("intake", intake.setIntakePower(-1));
+                runningActions.put("intake", intake.setIntakePower(1));
             } else {
                 runningActions.put("intake", intake.setIntakePower(0.0));
                 runningActions.put("indexer", indexer.setIndexerPower(0.0));

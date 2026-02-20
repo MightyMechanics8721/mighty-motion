@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
@@ -31,7 +32,7 @@ public class Intake {
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
-
+        this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -52,11 +53,15 @@ public class Intake {
                 if (instance == null) {
                     throw new IllegalStateException("Intake not initialized!");
                 }
-                intakeMotor.setPower(power);
+                setIntakePowerFunction(power);
 
                 return false;
             }
         };
+    }
+
+    public void setIntakePowerFunction(double power) {
+        intakeMotor.setPower(power);
     }
 
     public static class ConfigurationNames {

@@ -33,6 +33,8 @@ public class Turret {
     public static double staticGain = 0.2;
     public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.00005);
     public static double angleThreshold = 1.0;
+    public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
+            new Turret.ThresholdParameters();
     private static Turret instance;
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
@@ -44,9 +46,6 @@ public class Turret {
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
-
-    public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
-            new Turret.ThresholdParameters();
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
@@ -75,29 +74,6 @@ public class Turret {
     }
 
     // --- Hardware Functions ---
-
-    /**
-     * Returns the current bot-relative turret angle in degrees
-     */
-    public double getAngle() {
-        double ticks = turretEncoder.getCurrentPosition();
-        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
-    }
-
-    /**
-     * Returns the current turret velocity in degrees/sec
-     */
-    public double getVelocity() {
-        return Math.toDegrees(turretEncoder.getVelocity());
-    }
-
-    /**
-     * Computes PID power to reach a desired angle
-     */
-    private double computeSpinPower(double desiredAngle) {
-        double pidOutput = pid.calculate(desiredAngle, getAngle(), getVelocity());
-        return staticGain * Math.signum(pidOutput) + pidOutput;
-    }
 
     /**
      * Rotates the turret to a specific angle using PID as a Roadrunner Action
@@ -153,6 +129,32 @@ public class Turret {
                 return false; // continuous
             }
         };
+    }
+
+
+    /**
+     * Computes PID power to reach a desired angle
+     */
+    private double computeSpinPower(double desiredAngle) {
+        double pidOutput = pid.calculate(desiredAngle, getAngle(), getVelocity());
+        return staticGain * Math.signum(pidOutput) + pidOutput;
+    }
+
+    //  --- Getter Functions ---
+
+    /**
+     * Returns the current bot-relative turret angle in degrees
+     */
+    public double getAngle() {
+        double ticks = turretEncoder.getCurrentPosition();
+        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
+    }
+
+    /**
+     * Returns the current turret velocity in degrees/sec
+     */
+    public double getVelocity() {
+        return Math.toDegrees(turretEncoder.getVelocity());
     }
 
     // --- Auto-Aim Functions ---

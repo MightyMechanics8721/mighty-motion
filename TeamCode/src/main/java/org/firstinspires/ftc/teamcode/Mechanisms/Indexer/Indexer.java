@@ -9,6 +9,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
@@ -30,7 +31,7 @@ public class Indexer {
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
-
+        this.indexMotor.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -49,10 +50,14 @@ public class Indexer {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                indexMotor.setPower(power);
+                setIndexerPowerFunction(power);
                 return false;
             }
         };
+    }
+
+    public void setIndexerPowerFunction(double power) {
+        indexMotor.setPower(power);
     }
 
     public static class BatteryParameters {

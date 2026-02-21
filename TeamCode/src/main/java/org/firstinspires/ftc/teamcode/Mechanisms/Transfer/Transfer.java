@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
@@ -72,6 +73,29 @@ public class Transfer {
 
     /**
      * Powers Intake and Indexer based on balls detected in Intake System
+     * ----- INITIALIZE Intake AND Indexer -----
+     */
+    public Action ballDetectionTimed(double seconds) {
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+
+                updateBallCount();
+                ballDetectionFunction();
+                return !(time >= seconds || ballCount == 3);
+            }
+        };
+    }
+
+    /**
+     * Powers Intake and Indexer based on balls detected in Intake System
      */
     public void ballDetectionFunction() {
         if (ballCount == 3) {
@@ -125,6 +149,7 @@ public class Transfer {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                packet.addLine("kevin");
                 setIntakeIndexerPowerFunction(intakePower, indexerPower);
                 return false;
             }

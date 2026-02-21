@@ -16,32 +16,23 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
 
 
 public class GeometricController {
-    private double lookAheadXY;
-    private double lookAheadTheta;
-
     // TODO: remove!!!
     public static double geoPosPointX = 0.0;
     public static double geoPosPointY = 0.0;
     public static double geoThetaX = 0.0;
     public static double geoThetaY = 0.0;
-
     public int lastIndexXY = 0;
-
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;
     int lastLookaheadTheta = 0;
-
+    private double lookAheadXY;
+    private double lookAheadTheta;
     private TelemetryPacket packet = new TelemetryPacket();
 
     public GeometricController(double positionLookahead, double headingLookahead) {
         this.lookAheadXY = positionLookahead;
         this.lookAheadTheta = headingLookahead;
     }
-
-    public void setTelemetry(TelemetryPacket packet) {
-        this.packet = packet;
-    }
-
 
     private static double[] closestPointOnSegment(
             double px, double py,
@@ -150,6 +141,10 @@ public class GeometricController {
         return new double[]{pX, pY};
     }
 
+    public void setTelemetry(TelemetryPacket packet) {
+        this.packet = packet;
+    }
+
     public SimpleMatrix calculate(SimpleMatrix pose, Path path) {
         double x = pose.get(0, 0);
         double y = pose.get(1, 0);
@@ -229,8 +224,8 @@ public class GeometricController {
         //        }
 
         // TODO: REMOVE THIS
-        this.packet.put("heading point x (in)", thetaPoint[0] - y);
-        this.packet.put("heading point y (in)", thetaPoint[1] - x);
+//        this.packet.put("heading point x (in)", thetaPoint[0] - y);
+//        this.packet.put("heading point y (in)", thetaPoint[1] - x);
 
         double desiredTheta;
         if (path.useStaticHeading) {
@@ -270,9 +265,9 @@ public class GeometricController {
         Drawing.drawPoint(positionPoint, canvas, "purple");
         Drawing.drawPoint(thetaPoint, canvas, "orange");
 
-        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
-        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
-        this.packet.put("target heading GEO (deg)", Math.toDegrees(desiredPose.get(2, 0)));
+//        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
+//        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
+//        this.packet.put("target heading GEO (deg)", Math.toDegrees(desiredPose.get(2, 0)));
 
         //        geoPosPointX = positionPoint[0];
         //        geoPosPointY = positionPoint[1];

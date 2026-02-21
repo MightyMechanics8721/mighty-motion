@@ -89,20 +89,44 @@ public class Turret {
                     return false;
                 }
 
-                double power = computeSpinPower(clamp(desiredAngle, -90, 90));
+                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+                turretLeft.setPower(power);
+                turretRight.setPower(power);
+
+//                packet.put("Target Angle", desiredAngle);
+//                packet.put("Current Angle", getAngle());
+//                packet.put("Power", power);
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Rotates the turret to a specific angle using PID as a Roadrunner Action
+     */
+    public Action setTurretAngleInfinite(double desiredAngle) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return true;
+                }
+
+
+                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
                 packet.put("Target Angle", desiredAngle);
                 packet.put("Current Angle", getAngle());
                 packet.put("Power", power);
-
-                // Stop when within 1 degree
-
                 return true;
             }
         };
     }
+
 
     /**
      * Manual turret control using gamepad stick
@@ -172,6 +196,25 @@ public class Turret {
 
         double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
         return setTurretAngle(angleToGoal);
+    }
+
+    /**
+     * Loop to Auto-aim at a field goal using robot pose
+     */
+    public Action autoAimInfinite(Vector2d goalPos) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                Pose2d robotPose = new Pose2d(
+                        robotState.get(0, 0),
+                        robotState.get(1, 0),
+                        robotState.get(2, 0)
+                );
+                double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+                return setTurretAngleInfinite(angleToGoal).run(packet);
+            }
+        };
     }
 
     /**

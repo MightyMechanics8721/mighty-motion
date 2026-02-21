@@ -7,20 +7,15 @@ import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.c
 
 import androidx.annotation.NonNull;
 
-import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.Hardware.Actuators.ServoAdvanced;
-import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -29,7 +24,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.FeedForward;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.MotorController;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
@@ -60,6 +54,7 @@ public class Shooter {
     public final PID velocityPidController;
     public final FeedForward velocityFeedForwardController;
     private final Encoder encoder;
+    private double autonVelocity = 2500;
 
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
@@ -135,15 +130,39 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to goal coordinate
      * INSTANT action
      */
-    public Action autoShootMoving() {
+    public Action autoShootMovingInfinite() {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 autoShootMovingFunction();
                 //telemetryPacket.put("Distance bot to goal (in) ", distance);
+                return true;
+            }
+        };
+    }
+
+    public Action autonomousVelocityInfinite() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double power = velocityPidController.calculate(autonVelocity * Math.PI / 30, getVelocity())
+                        + velocityFeedForwardController.calculate(autonVelocity * Math.PI / 30, 0);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
+                return true;
+            }
+        };
+    }
+
+    public Action autonomousSetVelocity(double velocity) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                autonVelocity = velocity;
                 return false;
             }
         };
+
     }
 
     /**
@@ -152,8 +171,8 @@ public class Shooter {
      */
     public Action autoShootMovingTimed(double seconds) {
         return new Action() {
-            double time = -1;
-            ElapsedTime timer = new ElapsedTime();
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
@@ -161,8 +180,13 @@ public class Shooter {
                     timer.reset();
                 }
                 time = timer.seconds();
+                packet.put("shooter time:", time);
                 autoShootMovingFunction();
-                return time <= seconds || autoShootThresholdCheck();
+                if (time > seconds) {
+                    packet.put("timer", "complete");
+                    return false;
+                }
+                return true;
             }
         };
     }
@@ -192,19 +216,24 @@ public class Shooter {
     /**
      * Sets Shooter velocity until within threshold (currently 2.0 rad/s)
      *
-     * @param velocity desired velocity
+     * @param velocity desired velocity rad/sec
      */
-    public Action setShooterVelocityInstant(double velocity) {
+    public Action revShooter(double velocity) {
         Shooter shooter = this;
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                if (Math.abs(encoder.getVelocity() - velocity)
+                        < SHOOTER_CONSTANTS.velocityTolerance) {
+                    packet.addLine("67");
+                    return false;
+                }
+                packet.addLine("bruh");
                 double power = velocityPidController.calculate(velocity, getVelocity())
                         + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
-                return Math.abs(shooterMotor1.getVelocity() - velocity)
-                        >= SHOOTER_CONSTANTS.velocityTolerance;
+                return true;
             }
         };
     }
@@ -224,6 +253,7 @@ public class Shooter {
                         + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
+
                 return time <= seconds;
             }
         };
@@ -257,7 +287,7 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 hardStop.setPosition(closePos);
-                return true;
+                return false;
             }
         };
     }
@@ -268,7 +298,7 @@ public class Shooter {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 hardStop.setPosition(openPos);
-                return true;
+                return false;
             }
         };
     }
@@ -297,10 +327,12 @@ public class Shooter {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.driftedPose.get(0, 0),
-                drivetrain.driftedPose.get(1, 0), -60,
-                -60
+                drivetrain.driftedPose.get(1, 0), -57,
+                -57
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        //TODO TUNE THIS CONSTANT VALUE
+//        double velocity = 2750 * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -315,7 +347,7 @@ public class Shooter {
                 -60
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
-        return Math.abs(shooterMotor1.getVelocity() - velocity)
+        return Math.abs(encoder.getVelocity() - velocity)
                 >= SHOOTER_CONSTANTS.velocityTolerance;
     }
 

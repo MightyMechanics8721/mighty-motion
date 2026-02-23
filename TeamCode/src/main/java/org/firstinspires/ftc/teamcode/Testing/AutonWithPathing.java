@@ -27,7 +27,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 public class AutonWithPathing extends LinearOpMode {
     public static double xOffset = 0;
     public static double yOffset = 0;
-    private double SHOOTER_VELOCITY_NORMAL = 2500;
 
     @Override
     public void runOpMode() {
@@ -58,7 +57,7 @@ public class AutonWithPathing extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         double[][] firstStep = {{-51, -51}, {-12, -12}, {12, -12}, {12, -36}, {12, -59}};
         double[][] secondRowToShoot = {{12, -55}, {12, -46}, {9, -36}, {-8, -14}};
-        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {14, -59.24}};
+        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {15, -59.24}};
         double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
         double[][] thirdRowStep = {{-8, -14}, {12, -20}, {36, -20}, {36, -30}, {36, -36}, {36, -59}};
         double[][] firstRowStep = {{-8, -14}, {-12, -34}, {-12, -36}, {-12, -54}};
@@ -79,7 +78,7 @@ public class AutonWithPathing extends LinearOpMode {
                         new ParallelAction( //init
                                 shooter.revShooter(2000 * 2 * Math.PI / 60),
                                 shooter.hardStopOpen(),
-                                turret.setTurretAngleTimed(-179, 1)),
+                                turret.setTurretAngleTimed(179, 1)),
 
                         new ParallelAction( //main loop
                                 shooter.autoShootMovingInfinite(),
@@ -138,21 +137,21 @@ public class AutonWithPathing extends LinearOpMode {
                                                                 drivetrain.followPath(shoot, 150, 2,
                                                                         Math.toRadians(2.5), true),
                                                                 robot.shoot()
+                                                        ),
+                                                        new ParallelAction( //GO TO FIRST ROW
+                                                                drivetrain.followPath(
+                                                                        firstRow, 150, 3, Math
+                                                                                .toRadians(2.5), true
+                                                                ),
+                                                                transfer.ballDetectionTimed(2) // GATHER FIRST ROW
+                                                        ),
+                                                        new SequentialAction( // SHOOT FIRST ROW
+                                                                drivetrain.goToPose(Utils.makePoseVector(
+                                                                                -8, -14, -90),
+                                                                        3, Math.toRadians(2.5), true
+                                                                ), // GO TO SHOOTING POS
+                                                                robot.shoot() // SHOOT FIRST ROW
                                                         )
-//                                                        new ParallelAction( //GO TO FIRST ROW
-//                                                                drivetrain.followPath(
-//                                                                        firstRow, 150, 3, Math
-//                                                                                .toRadians(2.5), true
-//                                                                ),
-//                                                                transfer.ballDetectionTimed(2) // GATHER FIRST ROW
-//                                                        ),
-//                                                        new SequentialAction( // SHOOT FIRST ROW
-//                                                                drivetrain.goToPose(Utils.makePoseVector(
-//                                                                                -8, -14, -90),
-//                                                                        3, Math.toRadians(2.5), true
-//                                                                ), // GO TO SHOOTING POS
-//                                                                robot.shoot() // SHOOT FIRST ROW
-//                                                        )
                                                 )
                                         )
 

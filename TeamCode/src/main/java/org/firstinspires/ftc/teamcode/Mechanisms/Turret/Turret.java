@@ -206,11 +206,11 @@ public class Turret {
     //  --- Getter Functions ---
 
     /**
-     * Returns the current bot-relative turret angle in degrees
+     * Returns the current bot-relative turret angle in degrees -360 - 360
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
+        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
     }
 
     /**
@@ -238,7 +238,7 @@ public class Turret {
     }
 
     /**
-     * Loop to Auto-aim at a field goal using robot pose
+     * Loop to Auto-aim at a goal pose using robot pose
      */
     public Action autoAimInfinite(Vector2d goalPos) {
         return new Action() {
@@ -250,7 +250,7 @@ public class Turret {
                         robotState.get(1, 0),
                         robotState.get(2, 0)
                 );
-                double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+                double angleToGoal = -computeRobotRelativeAngle(robotPose, goalPos);
                 return setTurretAngleInfinite(angleToGoal).run(packet);
             }
         };

@@ -149,7 +149,6 @@ public class Transfer {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                packet.addLine("kevin");
                 setIntakeIndexerPowerFunction(intakePower, indexerPower);
                 return false;
             }

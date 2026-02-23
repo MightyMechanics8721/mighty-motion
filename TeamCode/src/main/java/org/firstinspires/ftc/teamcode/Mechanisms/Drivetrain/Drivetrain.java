@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -490,6 +491,55 @@ public class Drivetrain {
                         angleThreshold,
                         useStoppingDistance
                 );
+            }
+        };
+
+    }
+
+    /**
+     * @param path
+     * @param maxSpeed            ~120
+     * @param distanceThreshold   INCHES
+     * @param angleThreshold      RADIANS
+     * @param useStoppingDistance
+     * @return
+     */
+    public Action followPathTimed(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            boolean useStoppingDistance, double seconds
+    ) {
+        Drivetrain drivetrain = this;
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                drivetrain.setTelemetry(packet);
+                drivetrain.localize();
+                drivetrain.updateTelemetry();
+
+                //t ,  t
+
+                //f, f
+                //  t t
+                //f t
+                //t
+                
+                return (!(drivetrain.followPathFunction(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        angleThreshold,
+                        useStoppingDistance
+                ) || (time <= seconds)));
             }
         };
 

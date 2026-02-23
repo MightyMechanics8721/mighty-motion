@@ -14,6 +14,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 @Config
 @Autonomous(name = "Tune Turret", group = "Tuning")
 public class TuneTurret extends LinearOpMode {
+    public static double desiredAngle = 170;
+    public static double time = 10;
     Turret turret;
     FtcDashboard dashboard;
 
@@ -23,13 +25,15 @@ public class TuneTurret extends LinearOpMode {
         Turret.initialize(hardwareMap);
         turret = Turret.getInstance();
         dashboard = FtcDashboard.getInstance();
-
-
+        packet.put("angle", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
+        while (!opModeIsActive()) {
+            packet.put("angle", turret.getAngle());
+            dashboard.sendTelemetryPacket(packet);
+        }
         waitForStart();
-
         while (opModeIsActive()) {
-            turret.manualControl(gamepad1.left_stick_y).run(packet);
-            packet.put("power", gamepad1.left_stick_y);
+            turret.setTurretAngle(desiredAngle).run(packet);
             packet.put("angle", turret.getAngle());
             dashboard.sendTelemetryPacket(packet);
         }

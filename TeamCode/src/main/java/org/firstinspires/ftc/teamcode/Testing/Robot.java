@@ -8,7 +8,6 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -64,10 +63,12 @@ public class Robot {
     /**
      * ----- Wrap in parallel action with path -----
      */
-    public SequentialAction moveShoot() {
+    public SequentialAction shoot() {
         return new SequentialAction(
+                shooter.hardStopOpen(),
+                new SleepAction(0.05),
                 transfer.setIntakeIndexerPower(1, 1),
-                new SleepAction(0.6),
+                new SleepAction(0.5),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()

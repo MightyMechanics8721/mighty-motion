@@ -58,13 +58,13 @@ public class AutonWithPathing extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         double[][] firstStep = {{-51, -51}, {-12, -12}, {12, -12}, {12, -36}, {12, -59}};
         double[][] secondRowToShoot = {{12, -55}, {12, -46}, {9, -36}, {-8, -14}};
-        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {13.5, -59}};
+        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {14, -59.24}};
         double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
-        double[][] thirdRowStep = {{-8, -14}, {12, -20}, {36, -20}, {36, -30}, {36, -36}, {36, -57}};
+        double[][] thirdRowStep = {{-8, -14}, {12, -20}, {36, -20}, {36, -30}, {36, -36}, {36, -59}};
         double[][] firstRowStep = {{-8, -14}, {-12, -34}, {-12, -36}, {-12, -54}};
         Path path = new Path(firstStep, Math.toRadians(-90), false, false);
         Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(-50), true, false);
-        Path gate = new Path(shootToGate, Math.toRadians(-145), false, false);
+        Path gate = new Path(shootToGate, Math.toRadians(-130), false, false);
         Path shoot = new Path(gateToShoot, Math.toRadians(-50), true, false);
         Path thirdRow = new Path(thirdRowStep, Math.toRadians(-90), false, false);
         Path firstRow = new Path(firstRowStep, Math.toRadians(-90), false, false);
@@ -78,84 +78,82 @@ public class AutonWithPathing extends LinearOpMode {
                 new SequentialAction(
                         new ParallelAction( //init
                                 shooter.revShooter(2000 * 2 * Math.PI / 60),
-                                shooter.hardStopOpen()),
+                                shooter.hardStopOpen(),
+                                turret.setTurretAngleTimed(-179, 1)),
+
                         new ParallelAction( //main loop
                                 shooter.autoShootMovingInfinite(),
-                                turret.autoAimInfinite(new Vector2d(-68, -68)),
-
                                 new SequentialAction(
                                         new ParallelAction(
                                                 drivetrain.followPath(path, 150, 2,
                                                         Math.toRadians(2.5), true),
                                                 new SequentialAction(
                                                         new SleepAction(0.4),
-                                                        robot.moveShoot(), // SHOOT PRELOAD
+                                                        robot.shoot(), // SHOOT PRELOAD
                                                         transfer.ballDetectionTimed(2) // GATHER SECOND ROW
                                                 )
                                         ),
-                                        new SequentialAction( // SHOOT SECOND ROW
-                                                shooter.hardStopOpen(),
-                                                drivetrain.followPath(secondToShoot, 150, 2,
-                                                        Math.toRadians(2.5), true),
-                                                robot.moveShoot()
-                                        ),
-                                        new ParallelAction( // GATHER GATE
-                                                shooter.hardStopClose(),
-                                                drivetrain.followPath(gate, 150, 1, Math.toRadians(2.5), true),
+                                        new ParallelAction(
+                                                turret.autoAimInfinite(new Vector2d(-68, -68)), // infinite loop
                                                 new SequentialAction(
-                                                        new SleepAction(0.4),
-                                                        transfer.ballDetectionTimed(2.5) // GATHER SECOND ROW
+                                                        new SequentialAction( // SHOOT SECOND ROW
+                                                                drivetrain.followPath(secondToShoot, 150, 2,
+                                                                        Math.toRadians(2.5), true),
+                                                                robot.shoot()
+                                                        ),
+                                                        new ParallelAction( // GATHER GATE
+                                                                drivetrain.followPath(gate, 150, 1, Math.toRadians(2.5), true),
+                                                                new SequentialAction(
+                                                                        new SleepAction(0.4),
+                                                                        transfer.ballDetectionTimed(2.5) // GATHER GATE
+                                                                )
+                                                        ),
+                                                        new SequentialAction( // SHOOT GATE COLLECT
+                                                                drivetrain.followPath(shoot, 150, 2,
+                                                                        Math.toRadians(2.5), true),
+                                                                robot.shoot()
+                                                        ),
+                                                        new ParallelAction( //GO TO THIRD ROW
+                                                                drivetrain.followPath(
+                                                                        thirdRow, 150, 3, Math
+                                                                                .toRadians(2.5), true
+                                                                ),
+                                                                transfer.ballDetectionTimed(2) // GATHER THIRD ROW
+                                                        ),
+                                                        new SequentialAction( // SHOOT THIRD ROW
+                                                                drivetrain.goToPose(Utils.makePoseVector(
+                                                                                -8, -14, -90),
+                                                                        3, Math.toRadians(2.5), true
+                                                                ), // GO TO SHOOTING POS
+                                                                robot.shoot() // SHOOT THIRD ROW
+                                                        ),
+                                                        new ParallelAction( // GATHER GATE 2
+                                                                drivetrain.followPath(gate, 150, 1, Math.toRadians(2.5), true),
+                                                                new SequentialAction(
+                                                                        new SleepAction(0.4),
+                                                                        transfer.ballDetectionTimed(2.5) // GATHER GATE
+                                                                )
+                                                        ),
+                                                        new SequentialAction( // SHOOT GATE COLLECT 2
+                                                                drivetrain.followPath(shoot, 150, 2,
+                                                                        Math.toRadians(2.5), true),
+                                                                robot.shoot()
+                                                        )
+//                                                        new ParallelAction( //GO TO FIRST ROW
+//                                                                drivetrain.followPath(
+//                                                                        firstRow, 150, 3, Math
+//                                                                                .toRadians(2.5), true
+//                                                                ),
+//                                                                transfer.ballDetectionTimed(2) // GATHER FIRST ROW
+//                                                        ),
+//                                                        new SequentialAction( // SHOOT FIRST ROW
+//                                                                drivetrain.goToPose(Utils.makePoseVector(
+//                                                                                -8, -14, -90),
+//                                                                        3, Math.toRadians(2.5), true
+//                                                                ), // GO TO SHOOTING POS
+//                                                                robot.shoot() // SHOOT FIRST ROW
+//                                                        )
                                                 )
-                                        ),
-                                        new SequentialAction( // SHOOT GATE COLLECT
-                                                shooter.hardStopOpen(),
-                                                drivetrain.followPath(shoot, 150, 2,
-                                                        Math.toRadians(2.5), true),
-                                                robot.moveShoot()
-                                        ),
-                                        new ParallelAction( // GATHER GATE 2
-                                                shooter.hardStopClose(),
-                                                drivetrain.followPath(gate, 150, 1, Math.toRadians(2.5), true),
-                                                new SequentialAction(
-                                                        new SleepAction(0.4),
-                                                        transfer.ballDetectionTimed(2.5) // GATHER SECOND ROW
-                                                )
-                                        ),
-                                        new SequentialAction( // SHOOT GATE COLLECT 2
-                                                shooter.hardStopOpen(),
-                                                drivetrain.followPath(shoot, 150, 2,
-                                                        Math.toRadians(2.5), true),
-                                                robot.moveShoot()
-                                        ),
-                                        new ParallelAction( //GO TO THIRD ROW
-                                                drivetrain.followPath(
-                                                        thirdRow, 150, 3, Math
-                                                                .toRadians(2.5), true
-                                                ),
-                                                transfer.ballDetectionTimed(2) // GATHER THIRD ROW
-                                        ),
-                                        new SequentialAction( // SHOOT THIRD ROW
-                                                shooter.hardStopOpen(),
-                                                drivetrain.goToPose(Utils.makePoseVector(
-                                                                -8, -14, -90),
-                                                        3, Math.toRadians(2.5), true
-                                                ), // GO TO SHOOTING POS
-                                                robot.moveShoot() // SHOOT THIRD ROW
-                                        ),
-                                        new ParallelAction( //GO TO FIRST ROW
-                                                drivetrain.followPath(
-                                                        firstRow, 150, 3, Math
-                                                                .toRadians(2.5), true
-                                                ),
-                                                transfer.ballDetectionTimed(2) // GATHER FIRST ROW
-                                        ),
-                                        new SequentialAction( // SHOOT FIRST ROW
-                                                shooter.hardStopOpen(),
-                                                drivetrain.goToPose(Utils.makePoseVector(
-                                                                -8, -14, -90),
-                                                        3, Math.toRadians(2.5), true
-                                                ), // GO TO SHOOTING POS
-                                                robot.moveShoot() // SHOOT FIRST ROW
                                         )
 
                                 )

@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFC
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -83,6 +84,8 @@ public class Shooter {
                 = new FeedForward(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
         this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        this.shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         encoder = new Encoder(hardwareMap.get(DcMotorEx.class, "indexer"), 28);
 
     }
@@ -120,7 +123,7 @@ public class Shooter {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                autoShootFunction();
+                autoShootFunction(packet);
                 return false;
             }
         };
@@ -225,10 +228,8 @@ public class Shooter {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (Math.abs(encoder.getVelocity() - velocity)
                         < SHOOTER_CONSTANTS.velocityTolerance) {
-                    packet.addLine("67");
                     return false;
                 }
-                packet.addLine("bruh");
                 double power = velocityPidController.calculate(velocity, getVelocity())
                         + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
@@ -303,10 +304,14 @@ public class Shooter {
         };
     }
 
+    public void updateTelemetry(TelemetryPacket packet, double power) {
+        packet.put("power", power);
+    }
+
     /**
      * Automatically calculates shooter power based on distance from robot coordinates to goal coordinate
      */
-    public void autoShootFunction() {
+    public void autoShootFunction(TelemetryPacket packet) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.state.get(0, 0),
@@ -318,6 +323,7 @@ public class Shooter {
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
         shooterMotor2.setPower(power);
+        updateTelemetry(packet, power);
     }
 
     /**

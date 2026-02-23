@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -102,6 +103,44 @@ public class Turret {
     }
 
     /**
+     * Rotates the turret to a specific angle using PID as a Roadrunner Action, TIMED
+     */
+    public Action setTurretAngleTimed(double desiredAngle, double seconds) {
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                if (timer.seconds() > seconds) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return false;
+                }
+
+                // Stop if angle reached
+                if (Math.abs(desiredAngle - getAngle())
+                        < THRESHOLD_PARAMETERS.angleThreshold) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return false;
+                }
+
+                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+
+                turretLeft.setPower(power);
+                turretRight.setPower(power);
+
+                return true;
+            }
+        };
+    }
+
+    /**
      * Rotates the turret to a specific angle using PID as a Roadrunner Action
      */
     public Action setTurretAngleInfinite(double desiredAngle) {
@@ -171,7 +210,7 @@ public class Turret {
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
+        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
     }
 
     /**
@@ -258,6 +297,6 @@ public class Turret {
         /**
          * Maximum expected voltage of the battery in volts.
          */
-        public double angleThreshold = 3.0; // (deg)
+        public double angleThreshold = 2.0; // (deg)
     }
 }

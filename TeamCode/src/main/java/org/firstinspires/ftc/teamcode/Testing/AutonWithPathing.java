@@ -101,14 +101,14 @@ public class AutonWithPathing extends LinearOpMode {
                                             new SequentialAction(
                                                     new ParallelAction(
                                                             drivetrain.followPath(
-                                                                    path, 150, 2,
+                                                                    path, 100, 2,
                                                                     Math.toRadians(2.5), true
                                                             ),
                                                             new SequentialAction(
                                                                     turret.cutoffTurret(),
                                                                     new ParallelAction(
                                                                             turret.setTurretAngleTimed(
-                                                                                    180,
+                                                                                    -180,
                                                                                     1
                                                                             ),
                                                                             new SequentialAction(
@@ -139,7 +139,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                         drivetrain.followPath(
                                                                                 gate,
                                                                                 150,
-                                                                                0.25,
+                                                                                0.4,
                                                                                 Math.toRadians(2.5),
                                                                                 true
                                                                         ),
@@ -196,7 +196,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                         drivetrain.followPath(
                                                                                 gate,
                                                                                 150,
-                                                                                0.25,
+                                                                                0.4,
                                                                                 Math.toRadians(2.5),
                                                                                 true
                                                                         ),
@@ -247,6 +247,33 @@ public class AutonWithPathing extends LinearOpMode {
                                                                           // GO TO SHOOTING POS
                                                                           robot.moveShoot()
                                                                           // SHOOT FIRST ROW
+                                                    ),
+                                                    new ParallelAction( // GATHER GATE 3
+                                                                        shooter.hardStopClose(),
+                                                                        drivetrain.followPath(
+                                                                                gate,
+                                                                                150,
+                                                                                0.4,
+                                                                                Math.toRadians(2.5),
+                                                                                true
+                                                                        ),
+                                                                        new SequentialAction(
+                                                                                new SleepAction(0.4),
+                                                                                transfer.ballDetectionTimed(
+                                                                                        2.5)
+                                                                                // GATHER SECOND ROW
+                                                                        )
+                                                    ),
+                                                    new SequentialAction( // SHOOT GATE COLLECT 3
+                                                                          shooter.hardStopOpen(),
+                                                                          drivetrain.followPath(
+                                                                                  shoot,
+                                                                                  150,
+                                                                                  2,
+                                                                                  Math.toRadians(2.5),
+                                                                                  true
+                                                                          ),
+                                                                          robot.moveShoot()
                                                     )
 
                                             )

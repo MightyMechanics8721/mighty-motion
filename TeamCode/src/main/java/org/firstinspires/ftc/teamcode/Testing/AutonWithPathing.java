@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.Testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.InstantFunction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -27,7 +29,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 public class AutonWithPathing extends LinearOpMode {
     public static double xOffset = 0;
     public static double yOffset = 0;
-    public static double thetaOffset = 10;
+    public static double thetaOffset = 0;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
     @Override
@@ -63,7 +65,7 @@ public class AutonWithPathing extends LinearOpMode {
                 {-8, -14},
                 {13.5, -30},
                 {13.5, -48},
-                {13.5 + xOffset, -57.5 + yOffset}
+                {13.5 + xOffset, -58.5 + yOffset}
         };
         double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
         double[][] thirdRowStep = {
@@ -96,7 +98,6 @@ public class AutonWithPathing extends LinearOpMode {
                         new ParallelAction( //main loop
                                             shooter.autoShootMovingInfinite(),
                                             turret.autoAimInfinite(new Vector2d(-68, -68)),
-
                                             new SequentialAction(
                                                     new ParallelAction(
                                                             drivetrain.followPath(
@@ -104,11 +105,22 @@ public class AutonWithPathing extends LinearOpMode {
                                                                     Math.toRadians(2.5), true
                                                             ),
                                                             new SequentialAction(
-                                                                    new SleepAction(0.4),
-                                                                    robot.moveShoot(),
+                                                                    turret.cutoffTurret(),
+                                                                    new ParallelAction(
+                                                                            turret.setTurretAngleTimed(
+                                                                                    180,
+                                                                                    1
+                                                                            ),
+                                                                            new SequentialAction(
+                                                                                    new SleepAction(
+                                                                                            0.3),
+                                                                                    robot.moveShoot()
+                                                                            )
+                                                                    ),
                                                                     // SHOOT PRELOAD
-                                                                    transfer.ballDetectionTimed(2)
+                                                                    transfer.ballDetectionTimed(2),
                                                                     // GATHER SECOND ROW
+                                                                    turret.resumeTurret()
                                                             )
                                                     ),
                                                     new SequentialAction( // SHOOT SECOND ROW
@@ -127,7 +139,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                         drivetrain.followPath(
                                                                                 gate,
                                                                                 150,
-                                                                                1,
+                                                                                0.25,
                                                                                 Math.toRadians(2.5),
                                                                                 true
                                                                         ),
@@ -184,7 +196,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                         drivetrain.followPath(
                                                                                 gate,
                                                                                 150,
-                                                                                1,
+                                                                                0.25,
                                                                                 Math.toRadians(2.5),
                                                                                 true
                                                                         ),

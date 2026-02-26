@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -46,6 +47,7 @@ public class Turret {
     // --- Utilities ---
     private final PID pid;
     private final FtcDashboard dashboard;
+    public boolean cutoff = false;
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
@@ -93,9 +95,9 @@ public class Turret {
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
-//                packet.put("Target Angle", desiredAngle);
-//                packet.put("Current Angle", getAngle());
-//                packet.put("Power", power);
+                //                packet.put("Target Angle", desiredAngle);
+                //                packet.put("Current Angle", getAngle());
+                //                packet.put("Power", power);
                 return true;
             }
         };
@@ -108,25 +110,84 @@ public class Turret {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
-                    turretLeft.setPower(0);
-                    turretRight.setPower(0);
-                    return true;
+                if (!cutoff) {
+                    if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
+                        turretLeft.setPower(0);
+                        turretRight.setPower(0);
+                        return true;
+                    }
+
+
+                    double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+                    turretLeft.setPower(power);
+                    turretRight.setPower(power);
+                    packet.put("Power", power);
                 }
-
-
-                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
-                turretLeft.setPower(power);
-                turretRight.setPower(power);
 
                 packet.put("Target Angle", desiredAngle);
                 packet.put("Current Angle", getAngle());
-                packet.put("Power", power);
                 return true;
             }
         };
     }
 
+    public Action cutoffTurret() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                cutoff = true;
+                return false;
+            }
+        };
+    }
+
+    public Action resumeTurret() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                cutoff = false;
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Rotates the turret to a specific angle using PID as a Roadrunner Action, TIMED
+     */
+    public Action setTurretAngleTimed(double desiredAngle, double seconds) {
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                if (timer.seconds() > seconds) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return false;
+                }
+
+                // Stop if angle reached
+                if (Math.abs(desiredAngle - getAngle())
+                        < THRESHOLD_PARAMETERS.angleThreshold) {
+                    turretLeft.setPower(0);
+                    turretRight.setPower(0);
+                    return true;
+                }
+
+                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+
+                turretLeft.setPower(power);
+                turretRight.setPower(power);
+
+                return true;
+            }
+        };
+    }
 
     /**
      * Manual turret control using gamepad stick

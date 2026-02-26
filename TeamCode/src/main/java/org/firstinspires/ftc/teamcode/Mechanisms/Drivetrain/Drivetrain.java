@@ -51,6 +51,7 @@ public class Drivetrain {
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
+    public static double scale = 1;
     private static Drivetrain instance;
     public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
@@ -64,6 +65,7 @@ public class Drivetrain {
     private final PoseController followController;
     private final MecanumKinematicModel mecanumKinematicModel;
     public SimpleMatrix driftedPose;
+    public SimpleMatrix preloadPose;
     public SimpleMatrix state;
     private TelemetryPacket packet;
 
@@ -71,7 +73,7 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
+     * to which name
      */
     private Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -142,6 +144,7 @@ public class Drivetrain {
 
         this.state = new SimpleMatrix(6, 1);
         this.driftedPose = new SimpleMatrix(3, 1);
+        this.preloadPose = new SimpleMatrix(3, 1);
 
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
@@ -165,7 +168,7 @@ public class Drivetrain {
      *
      * @param xPosition Initial X position (inches)
      * @param yPosition Initial Y position (inches)
-     * @param heading   Initial heading (degrees)
+     * @param heading Initial heading (degrees)
      */
     public void setInitialPose(double xPosition, double yPosition, double heading) {
         this.twoWheelOdo.odo.setPosX(xPosition, DistanceUnit.INCH);
@@ -180,6 +183,8 @@ public class Drivetrain {
         this.state = this.twoWheelOdo.calculate();
         this.driftedPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
+        this.preloadPose =
+                this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
 
     }
 
@@ -234,9 +239,44 @@ public class Drivetrain {
                 )
         );
 
-//        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
-//        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
-//        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2, 0)));
+        //        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
+        //        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
+        //        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2,
+        //        0)));
+
+        return stopDistanceGlobal;
+    }
+
+    private SimpleMatrix computePreloadDistance() {
+        SimpleMatrix stopDistance = new SimpleMatrix(
+                new double[][]{
+                        new double[]{
+                                Math.signum(this.state.get(3, 0)) * this.stoppingDistanceX(
+                                        scale * Math.abs(this.state.get(3, 0)))
+                        },
+                        new double[]{
+                                Math.signum(this.state.get(4, 0)) * this.stoppingDistanceY(
+                                        scale * Math.abs(this.state.get(4, 0)))
+                        },
+                        new double[]{
+                                Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
+                                        scale * Math.abs(this.state.get(5, 0))
+                                )
+                        }
+                }
+        );
+
+        SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
+                stopDistance, this.state.get(
+                        2,
+                        0
+                )
+        );
+
+        //        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
+        //        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
+        //        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2,
+        //        0)));
 
         return stopDistanceGlobal;
     }
@@ -253,10 +293,10 @@ public class Drivetrain {
         double powerRightBack = powers.get(2, 0);
         double powerRightFront = powers.get(3, 0);
 
-//        this.packet.put("front-left pow.", powerLeftFront);
-//        this.packet.put("front-right pow.", powerRightFront);
-//        this.packet.put("back-left pow.", powerLeftBack);
-//        this.packet.put("back-right pow.", powerRightBack);
+        //        this.packet.put("front-left pow.", powerLeftFront);
+        //        this.packet.put("front-right pow.", powerRightFront);
+        //        this.packet.put("back-left pow.", powerLeftBack);
+        //        this.packet.put("back-right pow.", powerRightBack);
 
         motorLeftFront.setPower(powerLeftFront);
         motorLeftBack.setPower(powerLeftBack);
@@ -268,7 +308,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -289,15 +329,15 @@ public class Drivetrain {
                 desiredPos[0],
                 desiredPos[1]
         );
-//        this.packet.put("dist. to goal/final point (in)", distanceToGoal);
-//        this.packet.put("dist. thresh (in)", distanceThreshold);
+        //        this.packet.put("dist. to goal/final point (in)", distanceToGoal);
+        //        this.packet.put("dist. thresh (in)", distanceThreshold);
         return Math.abs(distanceToGoal) <= Math.abs(distanceThreshold);
     }
 
     private boolean inHeadingThreshold(double heading, double angleThreshold) {
         double headingError = Utils.angleWrap(heading - this.state.get(2, 0));
-//        this.packet.put("heading error (deg)", Math.toDegrees(headingError));
-//        this.packet.put("angle thresh (deg)", Math.toDegrees(angleThreshold));
+        //        this.packet.put("heading error (deg)", Math.toDegrees(headingError));
+        //        this.packet.put("angle thresh (deg)", Math.toDegrees(angleThreshold));
         return Math.abs(headingError) <= Math.abs(angleThreshold);
     }
 
@@ -325,35 +365,35 @@ public class Drivetrain {
         );
         if (readyToStop) {
             setPower(this.stopMatrix);
-//            this.packet.addLine("pose control: robot within thresh.");
+            //            this.packet.addLine("pose control: robot within thresh.");
             return false;
         }
 
         Canvas canvas = this.packet.fieldOverlay();
 
         double[] desiredPosition = {desiredPose.get(0, 0), desiredPose.get(1, 0)};
-//        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
-//        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
-//        this.packet.put("target heading (deg)", Math.toDegrees(desiredPose.get(2, 0)));
+        //        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
+        //        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
+        //        this.packet.put("target heading (deg)", Math.toDegrees(desiredPose.get(2, 0)));
         Drawing.drawCircle(desiredPosition, canvas, distanceThreshold, "green", false);
 
         SimpleMatrix pose = state.extractMatrix(0, 3, 0, 1);
         if (useStoppingDistance) {
             pose = this.driftedPose;
-//            this.packet.addLine("pose control: drift used");
+            //            this.packet.addLine("pose control: drift used");
             Drawing.drawRobot(this.driftedPose, canvas, "blue");
         }
 
         SimpleMatrix targetTwist = this.poseController.calculate(pose, desiredPose);
-//        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
-//        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
-//        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
+        //        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
+        //        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
+        //        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
 
         SimpleMatrix wheelSpeeds = this.mecanumKinematicModel.inverseKinematics(targetTwist);
 
-//        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
-//        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
-//        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
+        //        packet.put("target long. vel. (in/s)", targetTwist.get(0, 0));
+        //        packet.put("target lat. vel. (in/s)", targetTwist.get(1, 0));
+        //        packet.put("target yaw rate (deg/s)", Math.toDegrees(targetTwist.get(2, 0)));
 
         SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
 
@@ -397,7 +437,7 @@ public class Drivetrain {
         Drawing.drawPath(path.getWaypoints(), canvas, "red");
 
         if (this.inPositionThreshold(path.getFinalPoint(), FOLLOWER_CONSTANTS.headingLookahead)) {
-//            packet.addLine("follower: pose control");
+            //            packet.addLine("follower: pose control");
 
             SimpleMatrix desiredPose = makePoseVector(
                     path.getFinalPoint()[0], path.getFinalPoint()[1],
@@ -422,10 +462,10 @@ public class Drivetrain {
         Drawing.drawCircle(position, canvas, FOLLOWER_CONSTANTS.positionLookahead, "purple", false);
         Drawing.drawCircle(position, canvas, FOLLOWER_CONSTANTS.headingLookahead, "orange", false);
 
-//        packet.addLine("follower: pure pursuit");
+        //        packet.addLine("follower: pure pursuit");
         if (useStoppingDistance) {
             pose = this.driftedPose;
-//            packet.addLine("follower: drift used");
+            //            packet.addLine("follower: drift used");
             Drawing.drawRobot(this.driftedPose, canvas, "blue");
         }
 
@@ -461,10 +501,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPath(
@@ -512,6 +553,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -537,11 +579,11 @@ public class Drivetrain {
                                                         + MECHANICAL_PARAMETERS.latDistToAxles))
                                                 * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 return false;
             }
         };

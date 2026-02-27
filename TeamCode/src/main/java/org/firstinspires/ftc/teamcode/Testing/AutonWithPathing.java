@@ -57,7 +57,7 @@ public class AutonWithPathing extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         double[][] firstStep = {{-51, -51}, {-12, -12}, {12, -12}, {12, -36}, {12, -59}};
         double[][] secondRowToShoot = {{12, -55}, {12, -46}, {9, -36}, {-8, -14}};
-        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {15, -59.24}};
+        double[][] shootToGate = {{-8, -14}, {13.5, -48}, {14.5, -59.24}};
         double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
         double[][] thirdRowStep = {{-8, -14}, {12, -20}, {36, -20}, {36, -30}, {36, -36}, {36, -59}};
         double[][] firstRowStep = {{-8, -14}, {-12, -34}, {-12, -36}, {-12, -54}};

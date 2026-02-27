@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.2;
-    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.00005);
+    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.000095);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
@@ -250,7 +250,7 @@ public class Turret {
                         robotState.get(1, 0),
                         robotState.get(2, 0)
                 );
-                double angleToGoal = -computeRobotRelativeAngle(robotPose, goalPos);
+                double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
                 return setTurretAngleInfinite(angleToGoal).run(packet);
             }
         };

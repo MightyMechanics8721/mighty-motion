@@ -560,6 +560,10 @@ public class Drivetrain {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                if (time >= seconds) {
+                    drivetrain.setPower(stopMatrix);
+                    return false;
+                }
                 if (time < 0) {
                     timer.reset();
                 }
@@ -581,7 +585,7 @@ public class Drivetrain {
                         distanceThreshold,
                         angleThreshold,
                         useStoppingDistance
-                ) && (time <= seconds));
+                ));
             }
         };
 

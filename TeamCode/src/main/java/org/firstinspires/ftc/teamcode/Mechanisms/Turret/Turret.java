@@ -31,8 +31,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 @Config
 public class Turret {
     // --- Tunable ---
-    public static double staticGain = 0.2;
-    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.00005);
+    public static double staticGain = 0.17;
+    public static PIDConstants pidConstants = new PIDConstants(0.003, 0.0, 0.00006);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
@@ -319,6 +319,6 @@ public class Turret {
         /**
          * Maximum expected voltage of the battery in volts.
          */
-        public double angleThreshold = 3.0; // (deg)
+        public double angleThreshold = 1.0; // (deg)
     }
 }

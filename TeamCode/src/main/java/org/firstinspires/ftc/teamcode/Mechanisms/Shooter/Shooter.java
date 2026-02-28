@@ -28,6 +28,9 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Shooter {
+    public static double SHOOTER_SCALE_FACTOR = 1.5;
+    public static double SHOOTER_SECONDS_THRESHOLD = 2;
+
     /**
      * Configuration parameters for battery behavior.
      */
@@ -41,12 +44,14 @@ public class Shooter {
      * Constant values for Shooter Hardware
      */
     public static HardwareConstants SHOOTER_CONSTANTS = new HardwareConstants();
+
     /**
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.55;
     public static double closePos = 1.0;
+    public static double bias = 0;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -107,10 +112,6 @@ public class Shooter {
         return this.encoder.getVelocity();
     }
 
-    public double calculateVelocity(double distance) {
-        return 2250 - 1.47 * distance + 0.0868 * Math.pow(distance, 2);
-    }
-
     /**
      * Automatically calculates shooter power based on distance from robot coordinates to goal
      * coordinate INSTANT action
@@ -132,13 +133,28 @@ public class Shooter {
      */
     public Action autoShootMovingInfinite() {
         return new Action() {
+
+            double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                autoShootMovingFunction();
+
+                if (time < 0) {
+                    timer.reset();
+                }
+
+                time = timer.seconds();
+
+                autoShootMovingFunction(time);
                 //telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
         };
+    }
+
+    public double calculateVelocity(double distance) {
+        return 2250 - 1.47 * distance + 0.0868 * Math.pow(distance, 2);
     }
 
     public Action autonomousVelocityInfinite() {
@@ -183,7 +199,7 @@ public class Shooter {
                 }
                 time = timer.seconds();
                 packet.put("shooter time:", time);
-                autoShootMovingFunction();
+                autoShootMovingFunction(seconds);
                 if (time > seconds) {
                     packet.put("timer", "complete");
                     return false;
@@ -327,14 +343,19 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
      * goal coordinate
      */
-    public void autoShootMovingFunction() {
+    public void autoShootMovingFunction(double seconds) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.preloadPose.get(0, 0),
                 drivetrain.preloadPose.get(1, 0), -57,
-                -57
+                -57 - bias
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+
+        if (seconds <= SHOOTER_SECONDS_THRESHOLD) {
+            velocity *= SHOOTER_SCALE_FACTOR;
+        }
+
         //TODO TUNE THIS CONSTANT VALUE
         //        double velocity = 2750 * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())

@@ -65,9 +65,10 @@ public class AutonWithPathing extends LinearOpMode {
                 {-8, -14},
                 {13.5, -30},
                 {13.5, -48},
-                {13.5 + xOffset, -58.5 + yOffset}
+                {13 + xOffset, -58 + yOffset}
         };
         double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
+        double[][] gateToShootFinal = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}, {-36, -12}};
         double[][] thirdRowStep = {
                 {-8, -14},
                 {12, -20},
@@ -81,6 +82,7 @@ public class AutonWithPathing extends LinearOpMode {
         Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(-50), true, false);
         Path gate = new Path(shootToGate, Math.toRadians(-135 + thetaOffset), false, false);
         Path shoot = new Path(gateToShoot, Math.toRadians(-50), true, false);
+        Path shootFinal = new Path(gateToShootFinal, Math.toRadians(-50), true, false);
         Path thirdRow = new Path(thirdRowStep, Math.toRadians(-90), false, false);
         Path firstRow = new Path(firstRowStep, Math.toRadians(-90), false, false);
 
@@ -97,7 +99,10 @@ public class AutonWithPathing extends LinearOpMode {
                         ),
                         new ParallelAction( //main loop
                                             shooter.autoShootMovingInfinite(),
-                                            turret.autoAimInfinite(new Vector2d(-68, -68)),
+                                            turret.autoAimInfinite(new Vector2d(
+                                                    -68,
+                                                    -68 - Shooter.bias
+                                            )),
                                             new SequentialAction(
                                                     new ParallelAction(
                                                             drivetrain.followPath(
@@ -136,22 +141,21 @@ public class AutonWithPathing extends LinearOpMode {
                                                     ),
                                                     new ParallelAction( // GATHER GATE
                                                                         shooter.hardStopClose(),
-                                                                        drivetrain.followPath(
+                                                                        drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.4,
-                                                                                Math.toRadians(2.5),
-                                                                                true
+                                                                                0.1,
+                                                                                Math.toRadians(1),
+                                                                                true, 1.5
                                                                         ),
                                                                         new SequentialAction(
-                                                                                new SleepAction(0.4),
+                                                                                new SleepAction(1),
                                                                                 transfer.ballDetectionTimed(
                                                                                         2.5)
                                                                                 // GATHER SECOND ROW
                                                                         )
                                                     ),
                                                     new SequentialAction( // SHOOT GATE COLLECT
-                                                                          shooter.hardStopOpen(),
                                                                           drivetrain.followPath(
                                                                                   shoot,
                                                                                   150,
@@ -159,6 +163,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                   Math.toRadians(2.5),
                                                                                   true
                                                                           ),
+                                                                          shooter.hardStopOpen(),
                                                                           robot.moveShoot()
                                                     ),
                                                     new ParallelAction( //GO TO THIRD ROW
@@ -187,28 +192,28 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                   Math.toRadians(2.5),
                                                                                   true
                                                                           ),
+                                                                          new SleepAction(0.25),
                                                                           // GO TO SHOOTING POS
                                                                           robot.moveShoot()
                                                                           // SHOOT THIRD ROW
                                                     ),
                                                     new ParallelAction( // GATHER GATE 2
                                                                         shooter.hardStopClose(),
-                                                                        drivetrain.followPath(
+                                                                        drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.4,
-                                                                                Math.toRadians(2.5),
-                                                                                true
+                                                                                0.1,
+                                                                                Math.toRadians(1),
+                                                                                true, 1.5
                                                                         ),
                                                                         new SequentialAction(
-                                                                                new SleepAction(0.4),
+                                                                                new SleepAction(1),
                                                                                 transfer.ballDetectionTimed(
                                                                                         2.5)
                                                                                 // GATHER SECOND ROW
                                                                         )
                                                     ),
-                                                    new SequentialAction( // SHOOT GATE COLLECT 2
-                                                                          shooter.hardStopOpen(),
+                                                    new SequentialAction( // SHOOT GATE 2 COLLECT
                                                                           drivetrain.followPath(
                                                                                   shoot,
                                                                                   150,
@@ -216,6 +221,7 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                   Math.toRadians(2.5),
                                                                                   true
                                                                           ),
+                                                                          shooter.hardStopOpen(),
                                                                           robot.moveShoot()
                                                     ),
                                                     new ParallelAction( //GO TO FIRST ROW
@@ -250,29 +256,29 @@ public class AutonWithPathing extends LinearOpMode {
                                                     ),
                                                     new ParallelAction( // GATHER GATE 3
                                                                         shooter.hardStopClose(),
-                                                                        drivetrain.followPath(
+                                                                        drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.4,
-                                                                                Math.toRadians(2.5),
-                                                                                true
+                                                                                0.1,
+                                                                                Math.toRadians(1),
+                                                                                true, 1.5
                                                                         ),
                                                                         new SequentialAction(
-                                                                                new SleepAction(0.4),
+                                                                                new SleepAction(1),
                                                                                 transfer.ballDetectionTimed(
                                                                                         2.5)
                                                                                 // GATHER SECOND ROW
                                                                         )
                                                     ),
                                                     new SequentialAction( // SHOOT GATE COLLECT 3
-                                                                          shooter.hardStopOpen(),
                                                                           drivetrain.followPath(
-                                                                                  shoot,
+                                                                                  shootFinal,
                                                                                   150,
                                                                                   2,
                                                                                   Math.toRadians(2.5),
                                                                                   true
                                                                           ),
+                                                                          shooter.hardStopOpen(),
                                                                           robot.moveShoot()
                                                     )
 

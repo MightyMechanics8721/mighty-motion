@@ -116,12 +116,12 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot coordinates to goal
      * coordinate INSTANT action
      */
-    public Action autoShoot() {
+    public Action autoShoot(double x, double y) {
         return new Action() {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                autoShootFunction();
+                autoShootFunction(x, y);
                 return false;
             }
         };
@@ -325,12 +325,12 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot coordinates to goal
      * coordinate
      */
-    public void autoShootFunction() {
+    public void autoShootFunction(double x, double y) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.state.get(0, 0),
-                drivetrain.state.get(1, 0), -60,
-                -60
+                drivetrain.state.get(1, 0), x,
+                y
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())

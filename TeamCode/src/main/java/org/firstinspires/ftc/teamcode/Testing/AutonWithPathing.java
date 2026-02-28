@@ -27,6 +27,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 @Config
 @Autonomous(name = "TEST BLUE AUTON", group = "Testing")
 public class AutonWithPathing extends LinearOpMode {
+    public static double GATE_GATHER_TIMER = 1.75;
+
     public static double xOffset = 0;
     public static double yOffset = 0;
     public static double thetaOffset = 0;
@@ -98,7 +100,7 @@ public class AutonWithPathing extends LinearOpMode {
                                             shooter.hardStopOpen()
                         ),
                         new ParallelAction( //main loop
-                                            shooter.autoShootMovingInfinite(),
+                                            shooter.autoShootMovingInfinite(-57, -57),
                                             turret.autoAimInfinite(new Vector2d(
                                                     -68,
                                                     -68 - Shooter.bias
@@ -146,7 +148,8 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                 150,
                                                                                 0.1,
                                                                                 Math.toRadians(1),
-                                                                                true, 1.5
+                                                                                true,
+                                                                                GATE_GATHER_TIMER
                                                                         ),
                                                                         new SequentialAction(
                                                                                 new SleepAction(1),
@@ -204,7 +207,8 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                 150,
                                                                                 0.1,
                                                                                 Math.toRadians(1),
-                                                                                true, 1.5
+                                                                                true,
+                                                                                GATE_GATHER_TIMER
                                                                         ),
                                                                         new SequentialAction(
                                                                                 new SleepAction(1),
@@ -261,7 +265,8 @@ public class AutonWithPathing extends LinearOpMode {
                                                                                 150,
                                                                                 0.1,
                                                                                 Math.toRadians(1),
-                                                                                true, 1.5
+                                                                                true,
+                                                                                GATE_GATHER_TIMER
                                                                         ),
                                                                         new SequentialAction(
                                                                                 new SleepAction(1),

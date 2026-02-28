@@ -20,10 +20,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Red TeleOp", group = "ACompetition")
+@TeleOp(name = "Red TeleOp", group = "Competition")
 public class RedTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2000;
+    public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
@@ -32,7 +32,6 @@ public class RedTeleOp extends LinearOpMode {
     Indexer indexer;
     Intake intake;
     Shooter shooter;
-    //    DistanceSensor distanceSensor;
     Transfer transfer;
     Drivetrain drivetrain;
 
@@ -44,6 +43,15 @@ public class RedTeleOp extends LinearOpMode {
     public void runOpMode() {
 
         dashboard = FtcDashboard.getInstance();
+        TelemetryPacket packet = new TelemetryPacket();
+
+        Battery.initialize(hardwareMap);
+        Turret.initialize(hardwareMap);
+        Indexer.initialize(hardwareMap);
+        Intake.initialize(hardwareMap);
+        Shooter.initialize(hardwareMap);
+        Transfer.initialize(hardwareMap);
+        Drivetrain.initialize(hardwareMap);
         // Hardware
         turret = Turret.getInstance();
         intake = Intake.getInstance();
@@ -53,12 +61,32 @@ public class RedTeleOp extends LinearOpMode {
         drivetrain = Drivetrain.getInstance();
         battery = Battery.getInstance();
 
+        drivetrain.setTelemetry(packet);
+
+        drivetrain.setInitialPose(
+                Drivetrain.staticState.get(0, 0),
+                Drivetrain.staticState.get(1, 0),
+                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+        );
+
+        //        turret.setTurretAngle()
+
+        turret.initAngle();
+        packet.put("turret", turret.getAngle());
         waitForStart();
+        turret.getAngle();
+        packet.put("turret", turret.getAngle());
+        drivetrain.setInitialPose(
+                Drivetrain.staticState.get(0, 0),
+                Drivetrain.staticState.get(1, 0),
+                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+        );
 
         while (opModeIsActive()) {
 
-            TelemetryPacket packet = new TelemetryPacket();
-
+            //            TelemetryPacket packet = new TelemetryPacket();
+            //If we have another stopper action already, this won't fire
+            runningActions.put("stopper", shooter.hardStopClose());
             // ----- DRIVETRAIN -----
             runningActions.put(
                     "manualDrive", drivetrain.manualControl(
@@ -111,9 +139,10 @@ public class RedTeleOp extends LinearOpMode {
                 runningActions.put("shooter", shooter.autoShoot(-60, 60));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
+                runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -141,7 +170,6 @@ public class RedTeleOp extends LinearOpMode {
             }
 
             // ----- DISTANCE SENSOR -----
-
 
             // ----- INDEXER -----
             //

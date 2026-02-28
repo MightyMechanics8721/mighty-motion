@@ -131,7 +131,7 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
      * goal coordinate INSTANT action
      */
-    public Action autoShootMovingInfinite() {
+    public Action autoShootMovingInfinite(double x, double y) {
         return new Action() {
 
             double time = -1;
@@ -146,7 +146,7 @@ public class Shooter {
 
                 time = timer.seconds();
 
-                autoShootMovingFunction(time);
+                autoShootMovingFunction(time, x, y);
                 //telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
@@ -187,7 +187,7 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
      * goal coordinate Timed action
      */
-    public Action autoShootMovingTimed(double seconds) {
+    public Action autoShootMovingTimed(double seconds, double x, double y) {
         return new Action() {
             private double time = -1;
             private ElapsedTime timer = new ElapsedTime();
@@ -199,7 +199,7 @@ public class Shooter {
                 }
                 time = timer.seconds();
                 packet.put("shooter time:", time);
-                autoShootMovingFunction(seconds);
+                autoShootMovingFunction(seconds, x, y);
                 if (time > seconds) {
                     packet.put("timer", "complete");
                     return false;
@@ -343,12 +343,12 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
      * goal coordinate
      */
-    public void autoShootMovingFunction(double seconds) {
+    public void autoShootMovingFunction(double seconds, double x, double y) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.preloadPose.get(0, 0),
-                drivetrain.preloadPose.get(1, 0), -57,
-                -57 - bias
+                drivetrain.preloadPose.get(1, 0), x,
+                y - bias
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
 

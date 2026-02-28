@@ -15,7 +15,6 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -68,7 +67,11 @@ public class Drivetrain {
     public SimpleMatrix driftedPose;
     public SimpleMatrix preloadPose;
     public SimpleMatrix state;
+
+    public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
+
     private TelemetryPacket packet;
+
 
     /**
      * Initializes the Drivetrain (Wheels of the Robot)
@@ -187,6 +190,7 @@ public class Drivetrain {
         this.preloadPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
 
+        Drivetrain.staticState = state;
     }
 
     private void updateTelemetry() {

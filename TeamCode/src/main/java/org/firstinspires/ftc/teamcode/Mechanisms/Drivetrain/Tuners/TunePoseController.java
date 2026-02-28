@@ -18,8 +18,8 @@ public class TunePoseController extends LinearOpMode {
     public static double targetYPosition = 0;
     public static double targetZPosition = 0;
 
-    public static double positionThreshold = 2.0;
-    public static double angleThreshold = Math.toRadians(2.5);
+    public static double positionThreshold = 0.0;
+    public static double angleThreshold = Math.toRadians(0.0);
 
     public static boolean useStoppingDistance = true;
 

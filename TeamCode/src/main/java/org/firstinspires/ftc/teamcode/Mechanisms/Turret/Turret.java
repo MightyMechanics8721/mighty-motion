@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.17;
-    public static PIDConstants pidConstants = new PIDConstants(0.003, 0.0, 0.00006);
+    public static PIDConstants pidConstants = new PIDConstants(0.006, 0.0, 0.00008);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
@@ -48,6 +48,9 @@ public class Turret {
     private final PID pid;
     private final FtcDashboard dashboard;
     public boolean cutoff = false;
+    public static double turretAngle = 0;
+
+    private double prevAngle = 0.0;
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
@@ -61,7 +64,9 @@ public class Turret {
         turretLeft.setDirection(CRServo.Direction.REVERSE);
         turretRight.setDirection(CRServo.Direction.REVERSE);
         turretEncoder.reset();
+        //        turretAngle = 0;
 
+        prevAngle = 0;
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -232,8 +237,21 @@ public class Turret {
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        return ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
+        turretAngle = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
+        prevAngle = turretAngle;
+        return turretAngle;
     }
+
+    public void initAngle() {
+        double ticks = turretEncoder.getCurrentPosition();
+        double currentAngle = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
+        double changeInAngle = currentAngle - prevAngle;
+        turretAngle += changeInAngle;
+        turretAngle = turretAngle % 360;
+        prevAngle = currentAngle;
+        //        return turretAngle;
+    }
+
 
     /**
      * Returns the current turret velocity in degrees/sec

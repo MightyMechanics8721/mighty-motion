@@ -23,7 +23,7 @@ import java.util.Map;
 @TeleOp(name = "TeleOp", group = "Competition")
 public class DecodeTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2000;
+    public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
@@ -127,7 +127,7 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

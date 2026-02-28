@@ -23,7 +23,7 @@ import java.util.Map;
 @TeleOp(name = "Blue TeleOp", group = "ACompetition")
 public class BlueTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2000;
+    public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
@@ -32,10 +32,8 @@ public class BlueTeleOp extends LinearOpMode {
     Indexer indexer;
     Intake intake;
     Shooter shooter;
-    //    DistanceSensor distanceSensor;
     Transfer transfer;
     Drivetrain drivetrain;
-
     FtcDashboard dashboard;
 
     private Map<String, Action> runningActions = new HashMap<>();
@@ -58,7 +56,8 @@ public class BlueTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
 
             TelemetryPacket packet = new TelemetryPacket();
-
+            //If we have another stopper action already, this won't fire
+            runningActions.put("stopper", shooter.hardStopClose());
             // ----- DRIVETRAIN -----
             runningActions.put(
                     "manualDrive", drivetrain.manualControl(
@@ -111,9 +110,10 @@ public class BlueTeleOp extends LinearOpMode {
                 runningActions.put("shooter", shooter.autoShoot(-60, -60));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
+                runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -141,7 +141,6 @@ public class BlueTeleOp extends LinearOpMode {
             }
 
             // ----- DISTANCE SENSOR -----
-
 
             // ----- INDEXER -----
             //

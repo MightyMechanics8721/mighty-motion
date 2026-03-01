@@ -147,7 +147,6 @@ public class Shooter {
                 time = timer.seconds();
 
                 autoShootMovingFunction(time, x, y);
-                //telemetryPacket.put("Distance bot to goal (in) ", distance);
                 return true;
             }
         };

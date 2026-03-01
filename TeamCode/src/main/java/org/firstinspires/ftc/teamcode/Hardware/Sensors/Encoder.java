@@ -17,6 +17,14 @@ public class Encoder {
         this.TICKS_PER_RADIAN = ticksPerRevolution / (2 * Math.PI);
     }
 
+    //    public Encoder(DcMotorEx encoder, double ticksPerRevolution, boolean resetEncoder) {
+    //        this.encoder = encoder;
+    //        this.encoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    //        storedPos = this.encoder.getCurrentPosition();
+    //        this.encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    //        this.TICKS_PER_RADIAN = ticksPerRevolution / (2 * Math.PI);
+    //    }
+
 
     public void reset() {
         storedPos = encoder.getCurrentPosition();

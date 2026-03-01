@@ -51,6 +51,7 @@ public class BlueNearAutonomous extends LinearOpMode {
         Transfer transfer = Transfer.getInstance();
         Drivetrain drivetrain = Drivetrain.getInstance();
         Robot robot = Robot.getInstance();
+        turret.reset();
         ElapsedTime looptime = new ElapsedTime();
         SleepAction sleepAction;
         // todo ---- INIT ----- FIX ODO,UPDATE

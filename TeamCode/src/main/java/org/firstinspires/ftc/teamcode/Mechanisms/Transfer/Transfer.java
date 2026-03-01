@@ -50,8 +50,8 @@ public class Transfer {
     }
 
     /**
-     * Powers Intake and Indexer based on balls detected in Intake System
-     * ----- INITIALIZE Intake AND Indexer -----
+     * Powers Intake and Indexer based on balls detected in Intake System ----- INITIALIZE Intake
+     * AND Indexer -----
      */
     public Action ballDetection() {
         return new Action() {
@@ -62,18 +62,18 @@ public class Transfer {
                 }
                 updateBallCount();
                 ballDetectionFunction();
-//                packet.put("Ball 0", balls[0]);
-//                packet.put("Ball 1", balls[1]);
-//                packet.put("Ball 2", balls[2]);
-//                packet.put("Ball Count", ballCount);
+                //                packet.put("Ball 0", balls[0]);
+                //                packet.put("Ball 1", balls[1]);
+                //                packet.put("Ball 2", balls[2]);
+                //                packet.put("Ball Count", ballCount);
                 return true;
             }
         };
     }
 
     /**
-     * Powers Intake and Indexer based on balls detected in Intake System
-     * ----- INITIALIZE Intake AND Indexer -----
+     * Powers Intake and Indexer based on balls detected in Intake System ----- INITIALIZE Intake
+     * AND Indexer -----
      */
     public Action ballDetectionTimed(double seconds) {
         return new Action() {
@@ -133,7 +133,7 @@ public class Transfer {
     /**
      * Sets power of intake and indexer motor
      *
-     * @param intakePower  motor power, [-1, 1]
+     * @param intakePower motor power, [-1, 1]
      * @param indexerPower motor power, [-1, 1]
      */
     public void setIntakeIndexerPowerFunction(double intakePower, double indexerPower) {
@@ -142,14 +142,14 @@ public class Transfer {
     }
 
     /**
-     * Sets power of  Intake and Indexer using Inputted values
-     * ----- INITIALIZE Intake AND Indexer -----
+     * Sets power of  Intake and Indexer using Inputted values ----- INITIALIZE Intake AND Indexer
+     * -----
      */
     public Action setIntakeIndexerPower(double intakePower, double indexerPower) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                packet.addLine("kevin");
+                //packet.addLine("kevin");
                 setIntakeIndexerPowerFunction(intakePower, indexerPower);
                 return false;
             }

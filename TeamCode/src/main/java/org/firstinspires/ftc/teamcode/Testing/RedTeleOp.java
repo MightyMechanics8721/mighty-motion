@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Red TeleOp", group = "Competition")
+@TeleOp(name = "Red TeleOp", group = "123Competition")
 public class RedTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
@@ -69,13 +69,19 @@ public class RedTeleOp extends LinearOpMode {
                 Math.toDegrees(Drivetrain.staticState.get(2, 0))
         );
 
+        turret.setInitialAngle(Turret.staticTheta);
+
         //        turret.setTurretAngle()
 
-        turret.initAngle();
-        packet.put("turret", turret.getAngle());
+        //        turret.initAngle();
+        packet.put("turret 123", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
         waitForStart();
+
+        //        turret.initAngle();
         turret.getAngle();
-        packet.put("turret", turret.getAngle());
+        packet.put("turret 456", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
         drivetrain.setInitialPose(
                 Drivetrain.staticState.get(0, 0),
                 Drivetrain.staticState.get(1, 0),
@@ -83,7 +89,10 @@ public class RedTeleOp extends LinearOpMode {
         );
 
         while (opModeIsActive()) {
-
+            //turret.initAngle();
+            //turret.getAngle();
+            packet.put("turret 789", turret.getAngle());
+            dashboard.sendTelemetryPacket(packet);
             //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
             runningActions.put("stopper", shooter.hardStopClose());

@@ -32,11 +32,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.17;
-    public static PIDConstants pidConstants = new PIDConstants(0.006, 0.0, 0.00008);
+    public static PIDConstants pidConstants = new PIDConstants(0.00605, 0.0, 0.00013);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
+    public static double turretAngle = 0;
+    public static double staticTheta = 0.0;
     private static Turret instance;
+    private static double prevAngle = 0.0;
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0;
     private final double GEAR_RATIO = 140.0 / 30;
@@ -48,15 +51,15 @@ public class Turret {
     private final PID pid;
     private final FtcDashboard dashboard;
     public boolean cutoff = false;
-    public static double turretAngle = 0;
-
-    private double prevAngle = 0.0;
+    private double thetaConstant = 0.0;
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
         turretLeft = hardwareMap.get(CRServo.class, "turretLeft");
         turretRight = hardwareMap.get(CRServo.class, "turretRight");
-        turretEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV);
+        turretEncoder = new Encoder(
+                hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV
+        );
         // <-- use Encoder wrapper
 
         dashboard = FtcDashboard.getInstance();
@@ -65,8 +68,6 @@ public class Turret {
         turretRight.setDirection(CRServo.Direction.REVERSE);
         turretEncoder.reset();
         //        turretAngle = 0;
-
-        prevAngle = 0;
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -78,6 +79,10 @@ public class Turret {
             throw new IllegalStateException("Shooter not initialized!");
         }
         return instance;
+    }
+
+    public void setInitialAngle(double angle) {
+        thetaConstant = angle;
     }
 
     // --- Hardware Functions ---
@@ -237,19 +242,17 @@ public class Turret {
      */
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
-        turretAngle = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO) % 360;
-        prevAngle = turretAngle;
-        return turretAngle;
+        double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
+        staticTheta = (angleDeg + thetaConstant) % 360;
+        return staticTheta;
     }
 
     public void initAngle() {
-        double ticks = turretEncoder.getCurrentPosition();
-        double currentAngle = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
-        double changeInAngle = currentAngle - prevAngle;
-        turretAngle += changeInAngle;
-        turretAngle = turretAngle % 360;
-        prevAngle = currentAngle;
-        //        return turretAngle;
+        thetaConstant = prevAngle;
+    }
+
+    public void reset() {
+        turretEncoder.reset();
     }
 
 
@@ -291,6 +294,7 @@ public class Turret {
                         robotState.get(2, 0)
                 );
                 double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+                packet.put("angle to goal", angleToGoal);
                 return setTurretAngleInfinite(angleToGoal).run(packet);
             }
         };
@@ -337,6 +341,6 @@ public class Turret {
         /**
          * Maximum expected voltage of the battery in volts.
          */
-        public double angleThreshold = 1.0; // (deg)
+        public double angleThreshold = 2.0; // (deg)
     }
 }

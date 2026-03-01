@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Blue TeleOp", group = "ACompetition")
+@TeleOp(name = "Blue TeleOp", group = "123Competition")
 public class BlueTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
@@ -34,6 +34,7 @@ public class BlueTeleOp extends LinearOpMode {
     Shooter shooter;
     Transfer transfer;
     Drivetrain drivetrain;
+
     FtcDashboard dashboard;
 
     private Map<String, Action> runningActions = new HashMap<>();
@@ -42,6 +43,15 @@ public class BlueTeleOp extends LinearOpMode {
     public void runOpMode() {
 
         dashboard = FtcDashboard.getInstance();
+        TelemetryPacket packet = new TelemetryPacket();
+
+        Battery.initialize(hardwareMap);
+        Turret.initialize(hardwareMap);
+        Indexer.initialize(hardwareMap);
+        Intake.initialize(hardwareMap);
+        Shooter.initialize(hardwareMap);
+        Transfer.initialize(hardwareMap);
+        Drivetrain.initialize(hardwareMap);
         // Hardware
         turret = Turret.getInstance();
         intake = Intake.getInstance();
@@ -51,11 +61,37 @@ public class BlueTeleOp extends LinearOpMode {
         drivetrain = Drivetrain.getInstance();
         battery = Battery.getInstance();
 
+        drivetrain.setTelemetry(packet);
+
+        drivetrain.setInitialPose(
+                Drivetrain.staticState.get(0, 0),
+                Drivetrain.staticState.get(1, 0),
+                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+        );
+
+        //        turret.setTurretAngle()
+
+        //        turret.initAngle();
+        packet.put("turret 123", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
-        while (opModeIsActive()) {
+        //        turret.initAngle();
+        turret.getAngle();
+        packet.put("turret 456", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
+        drivetrain.setInitialPose(
+                Drivetrain.staticState.get(0, 0),
+                Drivetrain.staticState.get(1, 0),
+                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+        );
 
-            TelemetryPacket packet = new TelemetryPacket();
+        while (opModeIsActive()) {
+            turret.initAngle();
+            turret.getAngle();
+            packet.put("turret 789", turret.getAngle());
+            dashboard.sendTelemetryPacket(packet);
+            //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
             runningActions.put("stopper", shooter.hardStopClose());
             // ----- DRIVETRAIN -----

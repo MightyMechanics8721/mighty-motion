@@ -52,6 +52,7 @@ public class RedNearAutonomous extends LinearOpMode {
         Drivetrain drivetrain = Drivetrain.getInstance();
         Robot robot = Robot.getInstance();
         ElapsedTime looptime = new ElapsedTime();
+        turret.reset();
         SleepAction sleepAction;
         // todo ---- INIT ----- FIX ODO,UPDATE
         TelemetryPacket packet = new TelemetryPacket();
@@ -89,6 +90,7 @@ public class RedNearAutonomous extends LinearOpMode {
 
         looptime.reset();
         drivetrain.setInitialPose(-51, 51, -45);
+        turret.setInitialAngle(-180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(

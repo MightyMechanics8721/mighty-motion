@@ -51,8 +51,8 @@ public class BlueNearAutonomous extends LinearOpMode {
         Transfer transfer = Transfer.getInstance();
         Drivetrain drivetrain = Drivetrain.getInstance();
         Robot robot = Robot.getInstance();
-        turret.reset();
         ElapsedTime looptime = new ElapsedTime();
+        turret.reset();
         SleepAction sleepAction;
         // todo ---- INIT ----- FIX ODO,UPDATE
         TelemetryPacket packet = new TelemetryPacket();
@@ -117,12 +117,12 @@ public class BlueNearAutonomous extends LinearOpMode {
                                                                     turret.cutoffTurret(),
                                                                     new ParallelAction(
                                                                             turret.setTurretAngleTimed(
-                                                                                    -180,
+                                                                                    180,
                                                                                     1
                                                                             ),
                                                                             new SequentialAction(
                                                                                     new SleepAction(
-                                                                                            0.5),
+                                                                                            0.3),
                                                                                     robot.moveShoot()
                                                                             )
                                                                     ),
@@ -148,8 +148,8 @@ public class BlueNearAutonomous extends LinearOpMode {
                                                                         drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.1,
-                                                                                Math.toRadians(1),
+                                                                                0.0,
+                                                                                Math.toRadians(0.0),
                                                                                 true,
                                                                                 FOLLOW_PATH_TIME
                                                                         ),
@@ -207,8 +207,8 @@ public class BlueNearAutonomous extends LinearOpMode {
                                                                         drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.1,
-                                                                                Math.toRadians(1),
+                                                                                0.0,
+                                                                                Math.toRadians(0.0),
                                                                                 true,
                                                                                 FOLLOW_PATH_TIME
                                                                         ),
@@ -265,8 +265,8 @@ public class BlueNearAutonomous extends LinearOpMode {
                                                                         drivetrain.followPathTimed(
                                                                                 gate,
                                                                                 150,
-                                                                                0.1,
-                                                                                Math.toRadians(1),
+                                                                                0.0,
+                                                                                Math.toRadians(0.0),
                                                                                 true,
                                                                                 FOLLOW_PATH_TIME
                                                                         ),

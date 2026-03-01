@@ -41,7 +41,7 @@ public class Turret {
     public static double turretAngle = 0;
     public static double staticTheta = 0.0;
     public static long staticThetaUpdateCounter = 0;
-
+    public static double bias = 0;
     private static Turret instance;
     private static double prevAngle = 0.0;
     // --- Hardware constants ---

@@ -27,6 +27,8 @@ public class RedTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
+    public static double robotLength = 0;
+    public static double robotWidth = 0;
     Battery battery;
     Turret turret;
     Indexer indexer;
@@ -139,7 +141,11 @@ public class RedTeleOp extends LinearOpMode {
                         "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
-            if (gamepad2.left_trigger > 0.05) {
+            if (gamepad2.circle && gamepad2.dpad_left) {
+                Turret.bias += 1;
+            } else if (gamepad2.circle && gamepad2.dpad_right) {
+                Turret.bias -= 1;
+            } else if (gamepad2.left_trigger > 0.05) {
                 runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60)));
             } else if (gamepad2.dpad_up) {
                 runningActions.put("turret", turret.setTurretAngle(0));
@@ -192,6 +198,14 @@ public class RedTeleOp extends LinearOpMode {
                         shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE * 2 * Math.PI / 60)
                 );
             }
+
+            if (gamepad1.dpad_left) {
+                drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
+            }
+            if (gamepad1.dpad_right) {
+                drivetrain.setInitialPose(72 - robotLength / 2, -72 + robotWidth / 2, 180);
+            }
+
 
             // ----- DISTANCE SENSOR -----
 

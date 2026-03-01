@@ -196,8 +196,9 @@ public class Drivetrain {
             @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (isOpModeActive) {
                     if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
-                        Drivetrain.staticState = latestState;
-                        latestState = state;
+                        //Drivetrain.staticState = latestState;
+                        //latestState = state;
+                        Drivetrain.staticState = state;
                     }
                 }
                 packet.put("cached x", Drivetrain.staticState.get(0, 0));

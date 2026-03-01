@@ -91,7 +91,7 @@ public class BlueNearAutonomous extends LinearOpMode {
         looptime.reset();
         Turret.staticTheta = 0;
         drivetrain.setInitialPose(-51, -51, 45);
-        turret.setInitialAngle(-180);
+        turret.setInitialAngle(180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
@@ -103,7 +103,7 @@ public class BlueNearAutonomous extends LinearOpMode {
                                             shooter.autoShootMovingInfinite(-57, -57),
                                             turret.autoAimInfinite(new Vector2d(
                                                     -68,
-                                                    -68 - Shooter.bias
+                                                    -68
                                             )),
                                             turret.saveAngleAndCount(this),
                                             drivetrain.updateStaticState(opModeIsActive()),

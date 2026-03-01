@@ -103,7 +103,7 @@ public class RedNearAutonomous extends LinearOpMode {
                                             shooter.autoShootMovingInfinite(-57, 57),
                                             turret.autoAimInfinite(new Vector2d(
                                                     -68,
-                                                    68 + Shooter.bias
+                                                    68
                                             )),
                                             turret.saveAngleAndCount(this),
                                             drivetrain.updateStaticState(opModeIsActive()),

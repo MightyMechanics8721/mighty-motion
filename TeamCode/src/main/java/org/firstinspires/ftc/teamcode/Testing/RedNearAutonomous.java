@@ -89,8 +89,9 @@ public class RedNearAutonomous extends LinearOpMode {
         waitForStart();
 
         looptime.reset();
+        Turret.staticTheta = 0;
         drivetrain.setInitialPose(-51, 51, -45);
-        turret.setInitialAngle(-180);
+        turret.setInitialAngle(180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
@@ -104,6 +105,8 @@ public class RedNearAutonomous extends LinearOpMode {
                                                     -68,
                                                     68 + Shooter.bias
                                             )),
+                                            turret.saveAngleAndCount(this),
+                                            drivetrain.updateStaticState(opModeIsActive()),
                                             new SequentialAction(
                                                     new ParallelAction(
                                                             drivetrain.followPath(

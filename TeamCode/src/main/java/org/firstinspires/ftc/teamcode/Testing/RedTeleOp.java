@@ -37,10 +37,16 @@ public class RedTeleOp extends LinearOpMode {
 
     FtcDashboard dashboard;
 
+    private double myCacheAngle = 0.0;
+    private double myCacheCount = 0.0;
+
     private Map<String, Action> runningActions = new HashMap<>();
 
     @Override
     public void runOpMode() {
+
+        myCacheAngle = Turret.staticTheta;
+        myCacheCount = Turret.staticThetaUpdateCounter;
 
         dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
@@ -69,19 +75,26 @@ public class RedTeleOp extends LinearOpMode {
                 Math.toDegrees(Drivetrain.staticState.get(2, 0))
         );
 
+
+        packet.put("turret angle (deg)", Turret.staticTheta);
+        packet.put("count", Turret.staticThetaUpdateCounter);
+        packet.put("cached turret angle (deg)", myCacheAngle);
+        packet.put("cached count", myCacheCount);
         turret.setInitialAngle(Turret.staticTheta);
+        packet.put("turret angle (deg)", turret.getAngle());
 
         //        turret.setTurretAngle()
 
         //        turret.initAngle();
-        packet.put("turret 123", turret.getAngle());
+
         dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
+
         //        turret.initAngle();
-        turret.getAngle();
-        packet.put("turret 456", turret.getAngle());
-        dashboard.sendTelemetryPacket(packet);
+        //        turret.getAngle();
+        //        packet.put("turret 456", turret.getAngle());
+        //        dashboard.sendTelemetryPacket(packet);
         drivetrain.setInitialPose(
                 Drivetrain.staticState.get(0, 0),
                 Drivetrain.staticState.get(1, 0),
@@ -89,6 +102,8 @@ public class RedTeleOp extends LinearOpMode {
         );
 
         while (opModeIsActive()) {
+
+            packet.put("main loop turret angle (deg)", turret.getAngle());
             //turret.initAngle();
             //turret.getAngle();
             packet.put("turret 789", turret.getAngle());

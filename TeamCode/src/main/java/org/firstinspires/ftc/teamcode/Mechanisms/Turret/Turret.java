@@ -12,6 +12,8 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -38,6 +40,8 @@ public class Turret {
             new Turret.ThresholdParameters();
     public static double turretAngle = 0;
     public static double staticTheta = 0.0;
+    public static long staticThetaUpdateCounter = 0;
+
     private static Turret instance;
     private static double prevAngle = 0.0;
     // --- Hardware constants ---
@@ -243,13 +247,41 @@ public class Turret {
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
         double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
-        staticTheta = (angleDeg + thetaConstant) % 360;
-        return staticTheta;
+        return (angleDeg + thetaConstant) % 360;
     }
 
-    public void initAngle() {
-        thetaConstant = prevAngle;
+    public void saveTheta(LinearOpMode op) {
+        if (op.opModeIsActive()) {
+            if (Math.abs(getAngle()) != 180) {
+                staticTheta = getAngle();
+                ++staticThetaUpdateCounter;
+            }
+        }
     }
+
+    public Action saveAngle(LinearOpMode op) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                saveTheta(op);
+                return true;
+            }
+        };
+    }
+
+    public Action saveAngleAndCount(LinearOpMode op) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                packet.put("count", staticThetaUpdateCounter);
+                return saveAngle(op).run(packet);
+            }
+        };
+    }
+
+    //    public void initAngle() {
+    //        thetaConstant = prevAngle;
+    //    }
 
     public void reset() {
         turretEncoder.reset();
@@ -295,6 +327,7 @@ public class Turret {
                 );
                 double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
                 packet.put("angle to goal", angleToGoal);
+                packet.put("angle", getAngle());
                 return setTurretAngleInfinite(angleToGoal).run(packet);
             }
         };

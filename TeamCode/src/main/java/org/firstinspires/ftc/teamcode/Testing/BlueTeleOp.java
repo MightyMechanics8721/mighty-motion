@@ -37,10 +37,16 @@ public class BlueTeleOp extends LinearOpMode {
 
     FtcDashboard dashboard;
 
+    private double myCacheAngle = 0.0;
+    private double myCacheCount = 0.0;
+
     private Map<String, Action> runningActions = new HashMap<>();
 
     @Override
     public void runOpMode() {
+
+        myCacheAngle = Turret.staticTheta;
+        myCacheCount = Turret.staticThetaUpdateCounter;
 
         dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
@@ -63,16 +69,30 @@ public class BlueTeleOp extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
+        packet.put("cached x", Drivetrain.staticState.get(0, 0));
+        packet.put("cached y", Drivetrain.staticState.get(1, 0));
+        packet.put("cached theta", Drivetrain.staticState.get(2, 0));
+
         drivetrain.setInitialPose(
                 Drivetrain.staticState.get(0, 0),
                 Drivetrain.staticState.get(1, 0),
                 Math.toDegrees(Drivetrain.staticState.get(2, 0))
         );
 
+
+        packet.put("turret angle (deg)", Turret.staticTheta);
+        packet.put("count", Turret.staticThetaUpdateCounter);
+        packet.put("cached turret angle (deg)", myCacheAngle);
+        packet.put("cached count", myCacheCount);
+        turret.setInitialAngle(Turret.staticTheta);
+        packet.put("turret angle (deg)", turret.getAngle());
+
         //        turret.setTurretAngle()
 
         //        turret.initAngle();
         packet.put("turret 123", turret.getAngle());
+
+
         dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
@@ -87,8 +107,12 @@ public class BlueTeleOp extends LinearOpMode {
         );
 
         while (opModeIsActive()) {
-            turret.initAngle();
-            turret.getAngle();
+
+            packet.put("cached x", Drivetrain.staticState.get(0, 0));
+            packet.put("cached y", Drivetrain.staticState.get(1, 0));
+            packet.put("cached theta", Drivetrain.staticState.get(2, 0));
+
+
             packet.put("turret 789", turret.getAngle());
             dashboard.sendTelemetryPacket(packet);
             //            TelemetryPacket packet = new TelemetryPacket();

@@ -52,6 +52,7 @@ public class Drivetrain {
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
     public static double scale = 2;
+    public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
     private static Drivetrain instance;
     public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
@@ -67,9 +68,6 @@ public class Drivetrain {
     public SimpleMatrix driftedPose;
     public SimpleMatrix preloadPose;
     public SimpleMatrix state;
-
-    public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
-
     private TelemetryPacket packet;
 
 
@@ -185,12 +183,32 @@ public class Drivetrain {
 
     public void localize() {
         this.state = this.twoWheelOdo.calculate();
+
         this.driftedPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
         this.preloadPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
+    }
 
-        Drivetrain.staticState = state;
+    public Action updateStaticState(boolean isOpModeActive) {
+        return new Action() {
+            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (isOpModeActive) {
+                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
+                        Drivetrain.staticState = state;
+                    }
+                }
+                packet.put("cached x", Drivetrain.staticState.get(0, 0));
+                packet.put("cached y", Drivetrain.staticState.get(1, 0));
+                packet.put("cached theta", Drivetrain.staticState.get(2, 0));
+
+                packet.put("real x", state.get(0, 0));
+                packet.put("real y", state.get(1, 0));
+                packet.put("real theta", state.get(2, 0));
+
+                return true;
+            }
+        };
     }
 
     private void updateTelemetry() {

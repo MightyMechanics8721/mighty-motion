@@ -214,6 +214,38 @@ public class Drivetrain {
         };
     }
 
+    public Action updateStaticStateTimed(boolean isOpModeActive, double seconds) {
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                packet.put("autoShootMoving Done", true);
+                if (isOpModeActive && timer.seconds() < seconds) {
+                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
+                        //Drivetrain.staticState = latestState;
+                        //latestState = state;
+                        Drivetrain.staticState = state;
+                    }
+
+                    packet.put("cached x", Drivetrain.staticState.get(0, 0));
+                    packet.put("cached y", Drivetrain.staticState.get(1, 0));
+                    packet.put("cached theta", Drivetrain.staticState.get(2, 0));
+
+                    packet.put("real x", state.get(0, 0));
+                    packet.put("real y", state.get(1, 0));
+                    packet.put("real theta", state.get(2, 0));
+                    return true;
+                }
+
+                return false;
+            }
+        };
+    }
+
     private void updateTelemetry() {
         Canvas canvas = packet.fieldOverlay();
         Drawing.drawRobot(state, canvas, "black");

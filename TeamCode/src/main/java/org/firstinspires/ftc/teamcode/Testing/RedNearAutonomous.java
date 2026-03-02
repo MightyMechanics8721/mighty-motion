@@ -20,14 +20,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
-import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
+import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;;
 
 @Config
 @Autonomous(name = "Red Near Autonomous", group = "ACompetition")
 public class RedNearAutonomous extends LinearOpMode {
     public static double xGate = 12;
     public static double yGate = 57.5;
-    public static double thetaGate = 128.5;
+    public static double thetaGate = 120;
     public static double FOLLOW_PATH_TIME = 2;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 

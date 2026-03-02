@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;;
 public class BlueNearAutonomous extends LinearOpMode {
     public static double xGate = 12;
     public static double yGate = -57.5;
-    public static double thetaGate = -128.5;
+    public static double thetaGate = -120;
     public double FOLLOW_PATH_TIME = 2;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
@@ -91,7 +91,7 @@ public class BlueNearAutonomous extends LinearOpMode {
         looptime.reset();
         Turret.staticTheta = 0;
         drivetrain.setInitialPose(-51, -51, 45);
-        turret.setInitialAngle(180);
+        turret.setInitialAngle(-180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
@@ -117,7 +117,7 @@ public class BlueNearAutonomous extends LinearOpMode {
                                                                     turret.cutoffTurret(),
                                                                     new ParallelAction(
                                                                             turret.setTurretAngleTimed(
-                                                                                    180,
+                                                                                    -180,
                                                                                     1
                                                                             ),
                                                                             new SequentialAction(

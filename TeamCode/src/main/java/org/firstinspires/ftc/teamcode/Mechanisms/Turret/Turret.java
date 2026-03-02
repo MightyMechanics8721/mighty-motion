@@ -279,6 +279,27 @@ public class Turret {
         };
     }
 
+    public Action saveAngleAndCountTimed(LinearOpMode op, double seconds) {
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                packet.put("count", staticThetaUpdateCounter);
+                if (timer.seconds() < seconds) {
+                    saveAngle(op).run(packet);
+                    return true;
+                }
+                packet.put("autoShootMoving Done", true);
+                return false;
+            }
+        };
+    }
+
     //    public void initAngle() {
     //        thetaConstant = prevAngle;
     //    }
@@ -317,6 +338,9 @@ public class Turret {
      */
     public Action autoAimInfinite(Vector2d goalPos) {
         return new Action() {
+            double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
@@ -329,6 +353,37 @@ public class Turret {
                 packet.put("angle to goal", angleToGoal);
                 packet.put("angle", getAngle());
                 return setTurretAngleInfinite(angleToGoal).run(packet);
+            }
+        };
+    }
+
+    /**
+     * Loop to Auto-aim at a field goal using robot pose
+     */
+    public Action autoAimTimed(Vector2d goalPos, double seconds) {
+        return new Action() {
+            double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time < 0) {
+                    timer.reset();
+                }
+                if (timer.seconds() < seconds) {
+                    SimpleMatrix robotState = Drivetrain.getInstance().state;
+                    Pose2d robotPose = new Pose2d(
+                            robotState.get(0, 0),
+                            robotState.get(1, 0),
+                            robotState.get(2, 0)
+                    );
+                    double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+                    packet.put("angle to goal", angleToGoal);
+                    packet.put("angle", getAngle());
+                    packet.put("autoShootMoving Done", true);
+                    return setTurretAngleInfinite(angleToGoal).run(packet);
+                }
+                return false;
             }
         };
     }

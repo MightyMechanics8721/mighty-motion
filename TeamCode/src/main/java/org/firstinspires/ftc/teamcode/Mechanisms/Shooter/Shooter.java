@@ -50,7 +50,7 @@ public class Shooter {
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.55;
-    public static double closePos = 1.0;
+    public static double closePos = 0.85;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -147,6 +147,34 @@ public class Shooter {
 
                 autoShootMovingFunction(time, x, y);
                 return true;
+            }
+        };
+    }
+
+    /**
+     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
+     * goal coordinate INSTANT action
+     */
+    public Action autoShootMovingGame(double x, double y, double cutoff) {
+        return new Action() {
+
+            double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+
+                if (time < 0) {
+                    timer.reset();
+                }
+
+                packet.put("autoShootMoving Timer", time);
+                if (timer.seconds() < cutoff) {
+                    autoShootMovingFunction(time, x, y);
+                    packet.put("autoShootMoving Done", true);
+                    return true;
+                }
+                return false;
             }
         };
     }

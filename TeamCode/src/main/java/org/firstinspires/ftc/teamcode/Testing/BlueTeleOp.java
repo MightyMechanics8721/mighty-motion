@@ -27,8 +27,8 @@ public class BlueTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
-    public static double robotLength = 0;
-    public static double robotWidth = 0;
+    public static double robotLength = 14.25; //in
+    public static double robotWidth = 16.75; //in
     Battery battery;
     Turret turret;
     Indexer indexer;

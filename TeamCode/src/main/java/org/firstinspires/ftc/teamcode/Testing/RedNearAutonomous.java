@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -12,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
@@ -30,6 +34,37 @@ public class RedNearAutonomous extends LinearOpMode {
     public static double thetaGate = 120;
     public static double FOLLOW_PATH_TIME = 2;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
+
+    public static double staticTurretAngle;
+    public static SimpleMatrix staticRobotState;
+
+    public Action updateTurretAngle() {
+        return new Action() {
+            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                double turretAngle = Turret.getInstance().getAngle();
+
+
+                if (opModeIsActive() && !isStopRequested()) {
+                    RedNearAutonomous.staticTurretAngle = turretAngle;
+                }
+                return true;
+            }
+        };
+    }
+
+    public Action updateRobotState() {
+        return new Action() {
+            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                if (opModeIsActive() && !isStopRequested()) {
+                    staticRobotState = robotState;
+                }
+                return true;
+            }
+        };
+    }
 
     @Override
     public void runOpMode() {
@@ -105,8 +140,10 @@ public class RedNearAutonomous extends LinearOpMode {
                                                     -68,
                                                     68
                                             )),
-                                            turret.saveAngleAndCount(this),
-                                            drivetrain.updateStaticState(opModeIsActive()),
+                                //                                            turret.saveAngleAndCount(this),
+                                //                                            drivetrain.updateStaticState(opModeIsActive()),
+                                            updateTurretAngle(),
+                                            updateRobotState(),
                                             new SequentialAction(
                                                     new ParallelAction(
                                                             drivetrain.followPath(

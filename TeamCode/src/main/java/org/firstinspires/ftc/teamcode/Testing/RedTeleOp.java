@@ -72,36 +72,22 @@ public class RedTeleOp extends LinearOpMode {
         drivetrain.setTelemetry(packet);
 
         drivetrain.setInitialPose(
-                Drivetrain.staticState.get(0, 0),
-                Drivetrain.staticState.get(1, 0),
-                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+                RedNearAutonomous.staticRobotState.get(0, 0),
+                RedNearAutonomous.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearAutonomous.staticRobotState.get(2, 0))
         );
+        turret.setInitialAngle(RedNearAutonomous.staticTurretAngle);
 
-
-        packet.put("turret angle (deg)", Turret.staticTheta);
-        packet.put("count", Turret.staticThetaUpdateCounter);
-        packet.put("cached turret angle (deg)", myCacheAngle);
-        packet.put("cached count", myCacheCount);
-        turret.setInitialAngle(Turret.staticTheta);
-        packet.put("turret angle (deg)", turret.getAngle());
-
-        //        turret.setTurretAngle()
-
-        //        turret.initAngle();
-
-        dashboard.sendTelemetryPacket(packet);
+        //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
 
-        //        turret.initAngle();
-        //        turret.getAngle();
-        //        packet.put("turret 456", turret.getAngle());
-        //        dashboard.sendTelemetryPacket(packet);
         drivetrain.setInitialPose(
-                Drivetrain.staticState.get(0, 0),
-                Drivetrain.staticState.get(1, 0),
-                Math.toDegrees(Drivetrain.staticState.get(2, 0))
+                RedNearAutonomous.staticRobotState.get(0, 0),
+                RedNearAutonomous.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearAutonomous.staticRobotState.get(2, 0))
         );
+        turret.setInitialAngle(RedNearAutonomous.staticTurretAngle);
 
         while (opModeIsActive()) {
 

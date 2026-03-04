@@ -86,10 +86,14 @@ public class Transfer {
                     timer.reset();
                 }
                 time = timer.seconds();
-
-                updateBallCount();
-                ballDetectionFunction();
-                return !(time >= seconds || ballCount == 3);
+                if (time < seconds) {
+                    updateBallCount();
+                    ballDetectionFunction();
+                } else {
+                    setIntakeIndexerPowerFunction(0, 0);
+                    return false;
+                }
+                return ballCount != 3;
             }
         };
     }
@@ -102,7 +106,7 @@ public class Transfer {
             setIntakeIndexerPowerFunction(0, 0);
         } else if (ballCount == 0) {
             setIntakeIndexerPowerFunction(1, 0);
-        } else if (balls[0] & balls[1]) {
+        } else if (balls[0] && balls[1]) {
             setIntakeIndexerPowerFunction(1, 0.7);
         } else if (ballCount == 1) {
             setIntakeIndexerPowerFunction(1, 0);
@@ -149,7 +153,6 @@ public class Transfer {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                //packet.addLine("kevin");
                 setIntakeIndexerPowerFunction(intakePower, indexerPower);
                 return false;
             }

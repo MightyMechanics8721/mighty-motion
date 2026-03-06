@@ -27,12 +27,17 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;;
 
 @Config
-@Autonomous(name = "Red Near Autonomous", group = "ACompetition")
-public class RedNearAutonomous extends LinearOpMode {
+@Autonomous(name = "Red Near BACKUP GATE", group = "TESTING")
+public class RedNearNoGate extends LinearOpMode {
+    public static double xGateBackup = 20;
+    public static double yGateBackup = 55.5;
+    public static double thetaGateBackup = 120;
     public static double xGate = 12;
     public static double yGate = 57.5;
     public static double thetaGate = 120;
-    public static double FOLLOW_PATH_TIME = 2;
+    public static double FOLLOW_PATH_TIME = 1.75;
+    public static double GATE_TRANSFER_TIME = 2;
+    public static double ROW_TRANSFER_TIME = 1.75;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
@@ -46,7 +51,7 @@ public class RedNearAutonomous extends LinearOpMode {
 
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    RedNearAutonomous.staticTurretAngle = turretAngle;
+                    staticTurretAngle = turretAngle;
                 }
                 return true;
             }
@@ -111,8 +116,9 @@ public class RedNearAutonomous extends LinearOpMode {
                 {36, 20},
                 {36, 30},
                 {36, 36},
-                {36, 57}
+                {36, 60}
         };
+        double[][] thirdRowToShoot = {{36, 60}, {-8, 14}};
         double[][] firstRowStep = {{-8, 14}, {-12, 34}, {-12, 36}, {-12, 54}};
         Path path = new Path(firstStep, Math.toRadians(90), false, false);
         Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(50), true, false);
@@ -120,6 +126,7 @@ public class RedNearAutonomous extends LinearOpMode {
         Path shoot = new Path(gateToShoot, Math.toRadians(50), true, false);
         Path shootFinal = new Path(gateToShootFinal, Math.toRadians(50), true, false);
         Path thirdRow = new Path(thirdRowStep, Math.toRadians(90), false, false);
+        Path thirdToShoot = new Path(thirdRowToShoot, Math.toRadians(45), true, false);
         Path firstRow = new Path(firstRowStep, Math.toRadians(90), false, false);
 
         waitForStart();
@@ -165,13 +172,12 @@ public class RedNearAutonomous extends LinearOpMode {
                                                                 )
                                                         ),
                                                         // SHOOT PRELOAD
-                                                        transfer.ballDetectionTimed(2),
+                                                        transfer.ballDetectionTimed(ROW_TRANSFER_TIME),
                                                         // GATHER SECOND ROW
                                                         turret.resumeTurret()
                                                 )
                                         ),
                                         new SequentialAction( // SHOOT SECOND ROW
-                                                shooter.hardStopOpen(),
                                                 drivetrain.followPath(
                                                         secondToShoot,
                                                         150,
@@ -179,22 +185,40 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         Math.toRadians(2.5),
                                                         true
                                                 ),
+                                                shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                         ),
                                         new ParallelAction( // GO TO GATE
                                                 shooter.hardStopClose(),
-                                                drivetrain.followPathTimed(
-                                                        gate,
-                                                        150,
-                                                        0.0,
-                                                        Math.toRadians(0.0),
-                                                        true,
-                                                        FOLLOW_PATH_TIME
+                                                new SequentialAction(
+                                                        drivetrain
+                                                                .followPathTimed(
+                                                                        gate,
+                                                                        150,
+                                                                        0.0,
+                                                                        Math.toRadians
+                                                                                (0.0),
+                                                                        true,
+                                                                        FOLLOW_PATH_TIME
+                                                                ),
+                                                        drivetrain.goToPose(
+                                                                Utils
+                                                                        .makePoseVector(
+                                                                                xGateBackup,
+                                                                                yGateBackup,
+                                                                                thetaGateBackup
+                                                                        ),
+                                                                0.5,
+                                                                Math.toRadians(
+                                                                        2.5),
+                                                                true
+                                                        )
                                                 ),
                                                 new SequentialAction(
                                                         new SleepAction(1),
                                                         transfer.ballDetectionTimed(
-                                                                2.5)
+                                                                GATE_TRANSFER_TIME)
                                                         // COLLECT GATE
                                                 )
                                         ),
@@ -207,6 +231,7 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         true
                                                 ),
                                                 shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                         ),
                                         new ParallelAction( //GO TO THIRD ROW
@@ -220,40 +245,51 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         true
                                                 ),
                                                 transfer.ballDetectionTimed(
-                                                        2)
+                                                        ROW_TRANSFER_TIME)
                                                 // GATHER THIRD ROW
                                         ),
                                         new SequentialAction( // SHOOT THIRD ROW
-                                                shooter.hardStopOpen(),
-                                                drivetrain.goToPose(
-                                                        Utils.makePoseVector(
-                                                                -8,
-                                                                14,
-                                                                90
-                                                        ),
-                                                        3,
+                                                drivetrain.followPath(
+                                                        thirdToShoot,
+                                                        150,
+                                                        2,
                                                         Math.toRadians(2.5),
                                                         true
                                                 ),
-                                                new SleepAction(0.25),
-                                                // GO TO SHOOTING POS
+                                                shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                                 // SHOOT THIRD ROW
                                         ),
                                         new ParallelAction( // GO TO GATE 2
                                                 shooter.hardStopClose(),
-                                                drivetrain.followPathTimed(
-                                                        gate,
-                                                        150,
-                                                        0.0,
-                                                        Math.toRadians(0.0),
-                                                        true,
-                                                        FOLLOW_PATH_TIME
+                                                new SequentialAction(
+                                                        drivetrain
+                                                                .followPathTimed(
+                                                                        gate,
+                                                                        150,
+                                                                        0.0,
+                                                                        Math.toRadians
+                                                                                (0.0),
+                                                                        true,
+                                                                        FOLLOW_PATH_TIME
+                                                                ),
+                                                        drivetrain.goToPose(
+                                                                Utils
+                                                                        .makePoseVector(
+                                                                                xGateBackup,
+                                                                                yGateBackup,
+                                                                                thetaGateBackup
+                                                                        ),
+                                                                0.5,
+                                                                Math.toRadians(
+                                                                        2.5),
+                                                                true
+                                                        )
                                                 ),
                                                 new SequentialAction(
                                                         new SleepAction(1),
-                                                        transfer.ballDetectionTimed(
-                                                                2.5)
+                                                        transfer.ballDetectionTimed(GATE_TRANSFER_TIME)
                                                         // COLLECT GATE 2
                                                 )
                                         ),
@@ -266,6 +302,7 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         true
                                                 ),
                                                 shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                         ),
                                         new ParallelAction( //GO TO FIRST ROW
@@ -279,11 +316,10 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         true
                                                 ),
                                                 transfer.ballDetectionTimed(
-                                                        2)
+                                                        ROW_TRANSFER_TIME)
                                                 // GATHER FIRST ROW
                                         ),
                                         new SequentialAction( // SHOOT FIRST ROW
-                                                shooter.hardStopOpen(),
                                                 drivetrain.goToPose(
                                                         Utils.makePoseVector(
                                                                 -8,
@@ -294,24 +330,41 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         Math.toRadians(2.5),
                                                         true
                                                 ),
-                                                // GO TO SHOOTING POS
+                                                shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                                 // SHOOT FIRST ROW
                                         ),
                                         new ParallelAction( // GO TO GATE 3
                                                 shooter.hardStopClose(),
-                                                drivetrain.followPathTimed(
-                                                        gate,
-                                                        150,
-                                                        0.0,
-                                                        Math.toRadians(0.0),
-                                                        true,
-                                                        FOLLOW_PATH_TIME
+                                                new SequentialAction(
+                                                        drivetrain
+                                                                .followPathTimed(
+                                                                        gate,
+                                                                        150,
+                                                                        0.0,
+                                                                        Math.toRadians
+                                                                                (0.0),
+                                                                        true,
+                                                                        FOLLOW_PATH_TIME
+                                                                ),
+                                                        drivetrain.goToPose(
+                                                                Utils
+                                                                        .makePoseVector(
+                                                                                xGateBackup,
+                                                                                yGateBackup,
+                                                                                thetaGateBackup
+                                                                        ),
+                                                                0.5,
+                                                                Math.toRadians(
+                                                                        2.5),
+                                                                true
+                                                        )
                                                 ),
                                                 new SequentialAction(
                                                         new SleepAction(1),
                                                         transfer.ballDetectionTimed(
-                                                                2.5)
+                                                                GATE_TRANSFER_TIME)
                                                         // COLLECT GATE 3
                                                 )
                                         ),
@@ -324,6 +377,7 @@ public class RedNearAutonomous extends LinearOpMode {
                                                         true
                                                 ),
                                                 shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
                                                 robot.moveShoot()
                                         )
 

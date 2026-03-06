@@ -75,6 +75,20 @@ public class Robot {
         );
     }
 
+    /**
+     * ----- Wrap in parallel action with path -----
+     */
+    public SequentialAction moveShootFAR() {
+        return new SequentialAction(
+                transfer.setIntakeIndexerPower(0.3, 0.3),
+                new SleepAction(0.6),
+                new ParallelAction(
+                        transfer.setIntakeIndexerPower(0, 0),
+                        shooter.hardStopClose()
+                )
+        );
+    }
+
     public Action shootAtPose(
             SimpleMatrix desiredPose,
             double distanceThreshold,

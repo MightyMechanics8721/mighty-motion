@@ -203,11 +203,8 @@ public class BlueTeleOp extends LinearOpMode {
                 drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
             }
             if (transfer.ballCount == 3) {
-                gamepad1.rumble(Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                gamepad2.rumble(Gamepad.RUMBLE_DURATION_CONTINUOUS);
-            } else {
-                gamepad1.stopRumble();
-                gamepad2.stopRumble();
+                gamepad1.rumble(500);
+                gamepad1.rumble(500);
             }
 
 

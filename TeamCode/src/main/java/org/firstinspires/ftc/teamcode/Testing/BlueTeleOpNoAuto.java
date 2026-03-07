@@ -124,20 +124,15 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
                         "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
-            if (gamepad2.circle && gamepad2.dpad_left) {
+            if (gamepad2.dpad_left) {
                 Turret.bias += 1;
-            } else if (gamepad2.circle && gamepad2.dpad_right) {
-                Turret.bias -= 1;
-            } else if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
-            } else if (gamepad2.dpad_up) {
-                runningActions.put("turret", turret.setTurretAngle(0));
-            } else if (gamepad2.dpad_left) {
-                runningActions.put("turret", turret.setTurretAngle(90));
             } else if (gamepad2.dpad_right) {
-                runningActions.put("turret", turret.setTurretAngle(-90));
+                Turret.bias -= 1;
+            }
+            if (gamepad2.left_trigger > 0.05) {
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60)));
             } else {
-                runningActions.put("turret", turret.setTurretAngle(0));
+                runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }
 
             if (gamepad1.dpad_up) {
@@ -190,14 +185,13 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
             }
             if (transfer.ballCount == 3) {
                 if (!rumbleStop) {
-                    gamepad1.rumble(5000);
-                    gamepad1.rumble(5000);
+                    gamepad1.rumble(1000);
+                    gamepad1.rumble(1000);
                     rumbleStop = true;
                 }
             } else {
                 rumbleStop = false;
             }
-
             // ----- DISTANCE SENSOR -----
 
             // ----- INDEXER -----

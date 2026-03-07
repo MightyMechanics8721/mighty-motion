@@ -76,7 +76,7 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
+     * to which name
      */
     private Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -171,7 +171,7 @@ public class Drivetrain {
      *
      * @param xPosition Initial X position (inches)
      * @param yPosition Initial Y position (inches)
-     * @param heading   Initial heading (degrees)
+     * @param heading Initial heading (degrees)
      */
     public void setInitialPose(double xPosition, double yPosition, double heading) {
         this.twoWheelOdo.odo.setPosX(xPosition, DistanceUnit.INCH);
@@ -249,8 +249,8 @@ public class Drivetrain {
     }
 
     private void updateTelemetry() {
-        //Canvas canvas = packet.fieldOverlay();
-        //Drawing.drawRobot(state, canvas, "black");
+        Canvas canvas = packet.fieldOverlay();
+        Drawing.drawRobot(state, canvas, "black");
         if (!DEBUGGING_PARAMETERS.printTelemetry) return;
 
         this.packet.put("x pos (in)", this.state.get(0, 0));
@@ -368,7 +368,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -596,10 +596,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPath(
@@ -632,10 +633,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPathTimed(
@@ -692,6 +694,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -717,11 +720,11 @@ public class Drivetrain {
                                                         + MECHANICAL_PARAMETERS.latDistToAxles))
                                                 * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 return false;
             }
         };

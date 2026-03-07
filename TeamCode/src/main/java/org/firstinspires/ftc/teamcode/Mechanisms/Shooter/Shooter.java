@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Shooter {
-    public static double SHOOTER_SCALE_FACTOR = 1.5;
+    public static double SHOOTER_SCALE_FACTOR = 1;
     public static double SHOOTER_SECONDS_THRESHOLD = 2;
 
     /**

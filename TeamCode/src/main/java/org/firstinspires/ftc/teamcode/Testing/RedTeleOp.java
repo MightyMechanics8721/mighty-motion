@@ -72,22 +72,22 @@ public class RedTeleOp extends LinearOpMode {
         drivetrain.setTelemetry(packet);
 
         drivetrain.setInitialPose(
-                RedNearNoGate.staticRobotState.get(0, 0),
-                RedNearNoGate.staticRobotState.get(1, 0),
-                Math.toDegrees(RedNearNoGate.staticRobotState.get(2, 0))
+                RedNearGate.staticRobotState.get(0, 0),
+                RedNearGate.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearGate.staticRobotState.get(2, 0))
         );
-        turret.setInitialAngle(RedNearNoGate.staticTurretAngle);
+        turret.setInitialAngle(RedNearGate.staticTurretAngle);
 
         //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
 
         drivetrain.setInitialPose(
-                RedNearNoGate.staticRobotState.get(0, 0),
-                RedNearNoGate.staticRobotState.get(1, 0),
-                Math.toDegrees(RedNearNoGate.staticRobotState.get(2, 0))
+                RedNearGate.staticRobotState.get(0, 0),
+                RedNearGate.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearGate.staticRobotState.get(2, 0))
         );
-        turret.setInitialAngle(RedNearNoGate.staticTurretAngle);
+        turret.setInitialAngle(RedNearGate.staticTurretAngle);
 
         while (opModeIsActive()) {
 
@@ -158,7 +158,7 @@ public class RedTeleOp extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

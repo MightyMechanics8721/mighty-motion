@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Blue TeleOp", group = "123Competition")
-public class BlueTeleOp extends LinearOpMode {
+@TeleOp(name = "Blue TeleOp No Auto", group = "123Competition")
+public class BlueTeleOpNoAuto extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
@@ -72,23 +72,8 @@ public class BlueTeleOp extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
-        drivetrain.setInitialPose(
-                BlueNearGate.staticRobotState.get(0, 0),
-                BlueNearGate.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearGate.staticRobotState.get(2, 0))
-        );
-        turret.setInitialAngle(BlueNearGate.staticTurretAngle);
-
         //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
-
-
-        drivetrain.setInitialPose(
-                BlueNearGate.staticRobotState.get(0, 0),
-                BlueNearGate.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearGate.staticRobotState.get(2, 0))
-        );
-        turret.setInitialAngle(BlueNearGate.staticTurretAngle);
 
         while (opModeIsActive()) {
 

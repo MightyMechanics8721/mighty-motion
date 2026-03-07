@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Blue TeleOp", group = "123Competition")
-public class BlueTeleOp extends LinearOpMode {
+@TeleOp(name = "Red TeleOp No Auto", group = "123Competition")
+public class RedTeleOpNoAuto extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
@@ -31,6 +31,7 @@ public class BlueTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_FAR = 3200;
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
+    public static double dist = 80;
     Battery battery;
     Turret turret;
     Indexer indexer;
@@ -72,23 +73,9 @@ public class BlueTeleOp extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
-        drivetrain.setInitialPose(
-                BlueNearGate.staticRobotState.get(0, 0),
-                BlueNearGate.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearGate.staticRobotState.get(2, 0))
-        );
-        turret.setInitialAngle(BlueNearGate.staticTurretAngle);
-
         //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
 
-
-        drivetrain.setInitialPose(
-                BlueNearGate.staticRobotState.get(0, 0),
-                BlueNearGate.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearGate.staticRobotState.get(2, 0))
-        );
-        turret.setInitialAngle(BlueNearGate.staticTurretAngle);
 
         while (opModeIsActive()) {
 
@@ -113,8 +100,8 @@ public class BlueTeleOp extends LinearOpMode {
             if (calculateDistance(
                     drivetrain.state.get(0, 0),
                     drivetrain.state.get(1, 0), -60,
-                    -60
-            ) > 60) {
+                    60
+            ) > dist) {
                 mult = 0.75;
             } else {
                 mult = 1;
@@ -142,7 +129,7 @@ public class BlueTeleOp extends LinearOpMode {
             } else if (gamepad2.circle && gamepad2.dpad_right) {
                 Turret.bias -= 1;
             } else if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60)));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60)));
             } else if (gamepad2.dpad_up) {
                 runningActions.put("turret", turret.setTurretAngle(0));
             } else if (gamepad2.dpad_left) {
@@ -162,7 +149,7 @@ public class BlueTeleOp extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-60, -60));
+                runningActions.put("shooter", shooter.autoShoot(-60, 60));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

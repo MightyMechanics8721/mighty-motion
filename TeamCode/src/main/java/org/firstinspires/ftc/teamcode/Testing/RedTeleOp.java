@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -26,9 +28,10 @@ public class RedTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
-    public static double SHOOTER_VELOCITY_FAR = 3500;
+    public static double SHOOTER_VELOCITY_FAR = 3200;
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
+    public static double dist = 80;
     Battery battery;
     Turret turret;
     Indexer indexer;
@@ -36,9 +39,8 @@ public class RedTeleOp extends LinearOpMode {
     Shooter shooter;
     Transfer transfer;
     Drivetrain drivetrain;
-
     FtcDashboard dashboard;
-
+    private double mult = 1;
     private double myCacheAngle = 0.0;
     private double myCacheCount = 0.0;
 
@@ -109,16 +111,25 @@ public class RedTeleOp extends LinearOpMode {
             );
 
             //             ----- INTAKE && INDEXER -----
+            if (calculateDistance(
+                    drivetrain.state.get(0, 0),
+                    drivetrain.state.get(1, 0), -60,
+                    60
+            ) > dist) {
+                mult = 0.75;
+            } else {
+                mult = 1;
+            }
             if (gamepad1.right_trigger > 0.1) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(1, 1));
+                        "transfer", transfer.setIntakeIndexerPower(mult, mult));
 
             } else if (gamepad1.left_trigger > 0.1) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(-1, 0));
+                        "transfer", transfer.setIntakeIndexerPower(-mult, 0));
             } else if (gamepad1.left_bumper) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(0, -1));
+                        "transfer", transfer.setIntakeIndexerPower(0, -mult));
             } else if (gamepad1.right_bumper) {
                 runningActions.put(
                         "transfer", transfer.ballDetection());
@@ -186,10 +197,10 @@ public class RedTeleOp extends LinearOpMode {
             }
 
             if (gamepad1.dpad_left) {
-                drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
+                drivetrain.setInitialPose(72 - robotLength / 2, -72 + robotWidth / 2, 180);
             }
             if (gamepad1.dpad_right) {
-                drivetrain.setInitialPose(72 - robotLength / 2, -72 + robotWidth / 2, 180);
+                drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
             }
 
 

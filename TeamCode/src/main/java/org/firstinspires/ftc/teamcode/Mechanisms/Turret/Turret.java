@@ -135,11 +135,11 @@ public class Turret {
                     double power = computeSpinPower(clamp(desiredAngle, -180, 180));
                     turretLeft.setPower(power);
                     turretRight.setPower(power);
-                    packet.put("Power", power);
+                    //packet.put("Power", power);
                 }
 
-                packet.put("Target Angle", desiredAngle);
-                packet.put("Current Angle", getAngle());
+                //                packet.put("Target Angle", desiredAngle);
+                //                packet.put("Current Angle", getAngle());
                 return true;
             }
         };
@@ -273,7 +273,7 @@ public class Turret {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                packet.put("count", staticThetaUpdateCounter);
+                //packet.put("count", staticThetaUpdateCounter);
                 return saveAngle(op).run(packet);
             }
         };
@@ -289,12 +289,12 @@ public class Turret {
                 if (time < 0) {
                     timer.reset();
                 }
-                packet.put("count", staticThetaUpdateCounter);
+                //packet.put("count", staticThetaUpdateCounter);
                 if (timer.seconds() < seconds) {
                     saveAngle(op).run(packet);
                     return true;
                 }
-                packet.put("autoShootMoving Done", true);
+                //packet.put("autoShootMoving Done", true);
                 return false;
             }
         };
@@ -350,8 +350,8 @@ public class Turret {
                         robotState.get(2, 0)
                 );
                 double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
-                packet.put("angle to goal", angleToGoal);
-                packet.put("angle", getAngle());
+                //                packet.put("angle to goal", angleToGoal);
+                //                packet.put("angle", getAngle());
                 return setTurretAngleInfinite(angleToGoal).run(packet);
             }
         };
@@ -378,9 +378,9 @@ public class Turret {
                             robotState.get(2, 0)
                     );
                     double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
-                    packet.put("angle to goal", angleToGoal);
-                    packet.put("angle", getAngle());
-                    packet.put("autoShootMoving Done", true);
+                    //                    packet.put("angle to goal", angleToGoal);
+                    //                    packet.put("angle", getAngle());
+                    //                    packet.put("autoShootMoving Done", true);
                     return setTurretAngleInfinite(angleToGoal).run(packet);
                 }
                 return false;

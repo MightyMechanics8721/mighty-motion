@@ -247,8 +247,8 @@ public class Drivetrain {
     }
 
     private void updateTelemetry() {
-        Canvas canvas = packet.fieldOverlay();
-        Drawing.drawRobot(state, canvas, "black");
+        //Canvas canvas = packet.fieldOverlay();
+        //Drawing.drawRobot(state, canvas, "black");
         if (!DEBUGGING_PARAMETERS.printTelemetry) return;
 
         this.packet.put("x pos (in)", this.state.get(0, 0));

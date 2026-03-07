@@ -168,10 +168,10 @@ public class Shooter {
                     timer.reset();
                 }
 
-                packet.put("autoShootMoving Timer", time);
+                //packet.put("autoShootMoving Timer", time);
                 if (timer.seconds() < cutoff) {
                     autoShootMovingFunction(time, x, y);
-                    packet.put("autoShootMoving Done", true);
+                    //packet.put("autoShootMoving Done", true);
                     return true;
                 }
                 return false;
@@ -224,10 +224,10 @@ public class Shooter {
                     timer.reset();
                 }
                 time = timer.seconds();
-                packet.put("shooter time:", time);
+                //packet.put("shooter time:", time);
                 autoShootMovingFunction(seconds, x, y);
                 if (time > seconds) {
-                    packet.put("timer", "complete");
+                    //packet.put("timer", "complete");
                     return false;
                 }
                 return true;

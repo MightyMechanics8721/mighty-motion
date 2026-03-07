@@ -33,6 +33,7 @@ public class RedTeleOpNoAuto extends LinearOpMode {
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;
+    double autoAimBias = 0.0;
     boolean rumbleStop = false;
     Battery battery;
     Turret turret;
@@ -75,8 +76,12 @@ public class RedTeleOpNoAuto extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
+        drivetrain.setInitialPose(0, -24, 90);
+
         //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
+
+        drivetrain.setInitialPose(0, -24, 90);
 
 
         while (opModeIsActive()) {
@@ -131,8 +136,14 @@ public class RedTeleOpNoAuto extends LinearOpMode {
             } else if (gamepad2.dpad_right) {
                 Turret.bias -= 1;
             }
+
+            if (gamepad2.dpad_up) {
+                Turret.bias += 0.5;
+            } else if (gamepad2.dpad_down) {
+                Turret.bias -= 0.5;
+            }
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60)));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }

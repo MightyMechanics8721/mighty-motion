@@ -32,6 +32,8 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
     public static double SHOOTER_VELOCITY_FAR = 3200;
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
+    public static double dist = 80;
+    double autoAimBias = 0.0;
     boolean rumbleStop = false;
     Battery battery;
     Turret turret;
@@ -74,8 +76,13 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
+        drivetrain.setInitialPose(0, 24, -90);
+
         //        dashboard.sendTelemetryPacket(packet);
         waitForStart();
+
+        drivetrain.setInitialPose(0, 24, -90);
+
 
         while (opModeIsActive()) {
 
@@ -100,8 +107,8 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
             if (calculateDistance(
                     drivetrain.state.get(0, 0),
                     drivetrain.state.get(1, 0), -60,
-                    -60
-            ) > 60) {
+                    60
+            ) > dist) {
                 mult = 0.75;
             } else {
                 mult = 1;
@@ -129,8 +136,14 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
             } else if (gamepad2.dpad_right) {
                 Turret.bias -= 1;
             }
+
+            if (gamepad2.dpad_up) {
+                Turret.bias += 0.5;
+            } else if (gamepad2.dpad_down) {
+                Turret.bias -= 0.5;
+            }
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60)));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }
@@ -144,7 +157,7 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-60, -60));
+                runningActions.put("shooter", shooter.autoShoot(-60, 60));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());
@@ -192,6 +205,7 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
             } else {
                 rumbleStop = false;
             }
+
             // ----- DISTANCE SENSOR -----
 
             // ----- INDEXER -----

@@ -321,7 +321,7 @@ public class Turret {
     /**
      * Auto-aim at a field goal using robot pose
      */
-    public Action autoAim(Vector2d goalPos) {
+    public Action autoAim(Vector2d goalPos, double autoAimBias) {
         SimpleMatrix robotState = Drivetrain.getInstance().state;
         Pose2d robotPose = new Pose2d(
                 robotState.get(0, 0),
@@ -330,7 +330,9 @@ public class Turret {
         );
 
         double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
-        return setTurretAngle(angleToGoal);
+
+
+        return setTurretAngle(angleToGoal + autoAimBias);
     }
 
     /**

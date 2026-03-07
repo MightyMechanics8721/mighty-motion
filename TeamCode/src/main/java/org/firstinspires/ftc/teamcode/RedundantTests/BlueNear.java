@@ -28,14 +28,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 import org.firstinspires.ftc.teamcode.Testing.Robot;
 
 @Config
-@Autonomous(name = "Red Near 21", group = "1Comp")
-public class RedNear extends LinearOpMode {
+@Autonomous(name = "Blue Near 21", group = "1Comp")
+public class BlueNear extends LinearOpMode {
     public static double xGateBackup = 17;
-    public static double yGateBackup = 56.5;
-    public static double thetaGateBackup = 120;
+    public static double yGateBackup = -56.5;
+    public static double thetaGateBackup = -120;
     public static double xGate = 12;
-    public static double yGate = 57.5;
-    public static double thetaGate = 120;
+    public static double yGate = -57.5;
+    public static double thetaGate = -120;
     public static double FOLLOW_PATH_TIME = 1.5; // OPENS GATE
     public static double GATE_TRANSFER_TIME = 1.75; // COLLECTS FROM GATE
     public static double ROW_TRANSFER_TIME = 1.75; // GATHERS GATE
@@ -74,56 +74,56 @@ public class RedNear extends LinearOpMode {
         // todo ---- INIT ----- FIX ODO,UPDATE
         TelemetryPacket packet = new TelemetryPacket();
         drivetrain.setTelemetry(packet);
-        drivetrain.setInitialPose(-51, 51, -45);
+        drivetrain.setInitialPose(-51, -51, 45);
         dashboard.sendTelemetryPacket(packet);
-        double[][] firstStep = {{-51, 51}, {-12, 12}};
-        double[][] firstHalfStep = {{-12, 12}, {12, 36}, {12, 59}};
+        double[][] firstStep = {{-51, -51}, {-12, -12}};
+        double[][] firstHalfStep = {{-12, -12}, {12, -36}, {12, -59}};
 
-        double[][] secondRowToShoot = {{12, 55}, {12, 46}, {9, 36}, {-8, 14}};
+        double[][] secondRowToShoot = {{12, -55}, {12, -46}, {9, -36}, {-8, -14}};
         double[][] shootToGate = {
-                {-8, 14},
-                {13.5, 30},
-                {13.5, 48},
+                {-8, -14},
+                {13.5, -30},
+                {13.5, -48},
                 {xGate, yGate}
         };
-        double[][] gateToShoot = {{13.5, 59}, {12, 46}, {9, 36}, {-8, 14}};
+        double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
         double[][] thirdRowStep = {
-                {-8, 14},
-                {12, 20},
-                {36, 20},
-                {36, 30},
-                {36, 36},
-                {36, 62}
+                {-8, -14},
+                {12, -20},
+                {36, -20},
+                {36, -30},
+                {36, -36},
+                {36, -62}
         };
-        double[][] thirdRowToShoot = {{36, 62}, {-8, 14}};
-        double[][] firstRowStep = {{-8, 14}, {-12, 34}, {-12, 36}, {-12, 52}};
-        double[][] firstRowToShoot = {{-12, 52}, {-12, 36}, {-12, 34}, {-8, 14}};
-        Path preload = new Path(firstStep, Math.toRadians(-45), false, false);
-        Path firstHalf = new Path(firstHalfStep, Math.toRadians(90), false, false);
-        Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(50), true, false);
+        double[][] thirdRowToShoot = {{36, -62}, {-8, -14}};
+        double[][] firstRowStep = {{-8, 14}, {-12, -34}, {-12, -36}, {-12, -52}};
+        double[][] firstRowToShoot = {{-12, -52}, {-12, -36}, {-12, -34}, {-8, -14}};
+        Path preload = new Path(firstStep, Math.toRadians(45), false, false);
+        Path firstHalf = new Path(firstHalfStep, Math.toRadians(-90), false, false);
+        Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(-50), true, false);
         Path gate = new Path(shootToGate, Math.toRadians(thetaGate), false, false);
-        Path shoot = new Path(gateToShoot, Math.toRadians(50), true, false);
+        Path shoot = new Path(gateToShoot, Math.toRadians(-50), true, false);
         //      Path shootFinal = new Path(gateToShootFinal, Math.toRadians(50), true, false);
-        Path thirdRow = new Path(thirdRowStep, Math.toRadians(90), false, false);
-        Path thirdToShoot = new Path(thirdRowToShoot, Math.toRadians(45), true, false);
-        Path firstRow = new Path(firstRowStep, Math.toRadians(90), false, false);
-        Path firstToShoot = new Path(firstRowToShoot, Math.toRadians(90), true, false);
+        Path thirdRow = new Path(thirdRowStep, Math.toRadians(-90), false, false);
+        Path thirdToShoot = new Path(thirdRowToShoot, Math.toRadians(-45), true, false);
+        Path firstRow = new Path(firstRowStep, Math.toRadians(-90), false, false);
+        Path firstToShoot = new Path(firstRowToShoot, Math.toRadians(-90), true, false);
 
         waitForStart();
 
         looptime.reset();
         Turret.staticTheta = 0;
-        drivetrain.setInitialPose(-51, 51, -45);
-        turret.setInitialAngle(180);
+        drivetrain.setInitialPose(-51, -51, 45);
+        turret.setInitialAngle(-180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
                         shooter.hardStopClose(),
                         new ParallelAction( //main loop
-                                            shooter.autoShootMovingInfinite(-57, 57),
+                                            shooter.autoShootMovingInfinite(-57, -57),
                                             turret.autoAimInfinite(new Vector2d(
                                                     -68,
-                                                    68
+                                                    -68
                                             )),
                                             updateTurretAngle(),
                                             updateRobotState(),
@@ -132,7 +132,7 @@ public class RedNear extends LinearOpMode {
                                                     new ParallelAction(
                                                             // TODO ----- SHOOT PRELOAD ROW ------
                                                             turret.setTurretAngleTimed(
-                                                                    180,
+                                                                    -180,
                                                                     1
                                                             ),
                                                             robot.shoot(
@@ -282,7 +282,7 @@ public class RedNear extends LinearOpMode {
                                                             ),
                                                             drivetrain.goToPoseTimed(
                                                                     Utils.makePoseVector
-                                                                                 (0, 24, 90),
+                                                                                 (0, -24, -90),
                                                                     0.25,
                                                                     Math.toRadians(0.25),
                                                                     true,

@@ -33,6 +33,7 @@ public class RedTeleOpNoAuto extends LinearOpMode {
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;
+    boolean rumbleStop = false;
     Battery battery;
     Turret turret;
     Indexer indexer;
@@ -190,8 +191,13 @@ public class RedTeleOpNoAuto extends LinearOpMode {
                 drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
             }
             if (transfer.ballCount == 3) {
-                gamepad1.rumble(500);
-                gamepad1.rumble(500);
+                if (!rumbleStop) {
+                    gamepad1.rumble(5000);
+                    gamepad1.rumble(5000);
+                    rumbleStop = true;
+                }
+            } else {
+                rumbleStop = false;
             }
 
             // ----- DISTANCE SENSOR -----

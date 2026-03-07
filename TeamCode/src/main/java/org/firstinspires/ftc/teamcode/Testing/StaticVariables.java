@@ -23,7 +23,7 @@ public class StaticVariables {
 
 
                 if (end1 && !end2) {
-                    RedNearGate.staticTurretAngle = turretAngle;
+                    staticTurretAngle = turretAngle;
                 }
                 return true;
             }
@@ -37,7 +37,7 @@ public class StaticVariables {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (end1 && !end2) {
-                    RedNearGate.staticRobotState = robotState;
+                    staticRobotState = robotState;
                 }
                 return true;
             }

@@ -66,10 +66,10 @@ public class Robot {
     /**
      * ----- Wrap in parallel action with path -----
      */
-    public SequentialAction moveShoot() {
+    public SequentialAction moveShoot(double shootTime) {
         return new SequentialAction(
                 transfer.setIntakeIndexerPower(1, 1),
-                new SleepAction(0.6),
+                new SleepAction(shootTime),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()
@@ -77,7 +77,21 @@ public class Robot {
         );
     }
 
-    public SequentialAction shoot(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime) {
+    /**
+     * ----- Wrap in parallel action with path -----
+     */
+    public SequentialAction moveShoot() {
+        return new SequentialAction(
+                transfer.setIntakeIndexerPower(1, 1),
+                new SleepAction(0.5),
+                new ParallelAction(
+                        transfer.setIntakeIndexerPower(0, 0),
+                        shooter.hardStopClose()
+                )
+        );
+    }
+
+    public SequentialAction shoot(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double shootTime) {
         return new SequentialAction(
                 shooter.hardStopClose(),
                 drivetrain.followPathTimed(
@@ -87,13 +101,14 @@ public class Robot {
                         Math.toRadians(angleThreshold),
                         true, pathTime
                 ),
+                new SleepAction(0.05),
                 shooter.hardStopOpen(),
                 new SleepAction(0.1),
-                moveShoot()
+                moveShoot(shootTime)
         );
     }
 
-    public ParallelAction shootIntake(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double extraTime) {
+    public ParallelAction shootIntake(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double extraTime, double shootTime) {
         return new ParallelAction(
                 transfer.ballDetectionTimed(extraTime),
                 new SequentialAction(
@@ -107,7 +122,7 @@ public class Robot {
                         ),
                         shooter.hardStopOpen(),
                         new SleepAction(0.1),
-                        moveShoot()
+                        moveShoot(shootTime)
                 )
         );
     }
@@ -151,22 +166,22 @@ public class Robot {
                                         Math.toRadians
                                                 (0.0),
                                         true,
-                                        pathTime)
-                ),
-                new ParallelAction(
-                        drivetrain.goToPoseTimed(
-                                Utils
-                                        .makePoseVector(
-                                                xGateBackup,
-                                                yGateBackup,
-                                                thetaGateBackup),
-                                distanceThreshold,
-                                Math.toRadians(
-                                        angleThreshold),
-                                true, backUpTime
-                        ),
-                        transfer.ballDetectionTimed(
-                                backUpTime))
+                                        pathTime),
+                        new ParallelAction(
+                                drivetrain.goToPoseTimed(
+                                        Utils
+                                                .makePoseVector(
+                                                        xGateBackup,
+                                                        yGateBackup,
+                                                        thetaGateBackup),
+                                        distanceThreshold,
+                                        Math.toRadians(
+                                                angleThreshold),
+                                        true, backUpTime
+                                ),
+                                transfer.ballDetectionTimed(
+                                        backUpTime))
+                )
         );
     }
 

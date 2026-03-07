@@ -40,8 +40,6 @@ public class RedNearGate extends LinearOpMode {
     public static double ROW_TRANSFER_TIME = 1.75;
     public static double EXTRA_TRANSFER_TIME = 0.5;
     public static double preloadTime = 0.45;
-    public static double staticTurretAngle;
-    public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
 

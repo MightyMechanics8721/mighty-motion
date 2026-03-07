@@ -38,11 +38,12 @@ public class RedNear extends LinearOpMode {
     public static double xGate = 12;
     public static double yGate = 57.5;
     public static double thetaGate = 120;
-    public static double FOLLOW_PATH_TIME = 2; // OPENS GATE
+    public static double FOLLOW_PATH_TIME = 1.5; // OPENS GATE
     public static double GATE_TRANSFER_TIME = 2.5; // COLLECTS FROM GATE
     public static double ROW_TRANSFER_TIME = 1.75; // GATHERS GATE
     public static double EXTRA_TRANSFER_TIME = 0.5; // GATHER WHILE MOVING
     public static double ALL_PATH_TIME = 6;
+    public static double SHOOT_TIME = 0.4;
     //    public static double preloadTime = 0.45;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
@@ -119,7 +120,7 @@ public class RedNear extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
-                        shooter.hardStopOpen(),
+                        shooter.hardStopClose(),
                         new ParallelAction( //main loop
                                 shooter.autoShootMovingInfinite(-57, 57),
                                 turret.autoAimInfinite(new Vector2d(
@@ -135,7 +136,7 @@ public class RedNear extends LinearOpMode {
                                                         180,
                                                         1
                                                 ),
-                                                robot.shoot(preload, 150, 2, 2.5, ALL_PATH_TIME)),
+                                                robot.shoot(preload, 150, 2, 2.5, ALL_PATH_TIME, SHOOT_TIME)),
 
                                         turret.resumeTurret(),
 
@@ -143,43 +144,41 @@ public class RedNear extends LinearOpMode {
                                         robot.gatherRow(firstHalf, 150, 1.5, 2.5, ROW_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT SECOND ROW ------
-                                        robot.shoot(secondToShoot, 150, 2, 2.5, ALL_PATH_TIME),
+                                        robot.shoot(secondToShoot, 150, 2, 2.5, ALL_PATH_TIME, SHOOT_TIME),
 
                                         // TODO ----- GATHER GATE -----
                                         robot.gatherGate(gate, 150, 0.5, 2.5, xGateBackup, yGateBackup, thetaGateBackup, FOLLOW_PATH_TIME, GATE_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT GATE -----
-                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME),
+                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME, SHOOT_TIME),
 
                                         // TODO ----- GATHER THIRD ROW -----
                                         robot.gatherRow(thirdRow, 150, 1.5, 2.5, ROW_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT THIRD ROW ------
-                                        robot.shoot(thirdToShoot, 150, 2, 2.5, ALL_PATH_TIME),
+                                        robot.shoot(thirdToShoot, 150, 2, 2.5, ALL_PATH_TIME, SHOOT_TIME),
 
                                         // TODO ----- GATHER GATE -----
                                         robot.gatherGate(gate, 150, 0.5, 2.5, xGateBackup, yGateBackup, thetaGateBackup, FOLLOW_PATH_TIME, GATE_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT GATE -----
-                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME),
+                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME, SHOOT_TIME),
 
                                         // TODO ----- GATHER FIRST ROW -----
                                         robot.gatherRow(firstRow, 150, 1.5, 2.5, ROW_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT FIRST ROW ------
-                                        robot.shoot(firstToShoot, 150, 2, 2.5, ALL_PATH_TIME),
+                                        robot.shoot(firstToShoot, 150, 2, 2.5, ALL_PATH_TIME, SHOOT_TIME),
 
                                         // TODO ----- GATHER GATE -----
                                         robot.gatherGate(gate, 150, 0.5, 2.5, xGateBackup, yGateBackup, thetaGateBackup, FOLLOW_PATH_TIME, GATE_TRANSFER_TIME),
 
                                         // TODO ----- SHOOT GATE -----
-                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME),
-                                        new SequentialAction(
-                                                new SleepAction(0.1),
-                                                drivetrain.goToPoseTimed(Utils.makePoseVector
-                                                                (-36, 12, 0.5),
-                                                        2, Math.toRadians(2), true, ALL_PATH_TIME)
-                                        )
+                                        robot.shootIntake(shoot, 150, 2, 2.5, ALL_PATH_TIME, EXTRA_TRANSFER_TIME, SHOOT_TIME),
+
+                                        drivetrain.goToPoseTimed(Utils.makePoseVector
+                                                        (0, 24, 0.5),
+                                                2, Math.toRadians(2), true, ALL_PATH_TIME)
 
                                 )
                         )

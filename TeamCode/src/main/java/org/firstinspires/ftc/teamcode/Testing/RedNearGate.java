@@ -36,12 +36,41 @@ public class RedNearGate extends LinearOpMode {
     public static double yGate = 57.5;
     public static double thetaGate = 120;
     public static double FOLLOW_PATH_TIME = 2;
-    public static double GATE_TRANSFER_TIME = 2.5;
+    public static double GATE_TRANSFER_TIME = 2;
     public static double ROW_TRANSFER_TIME = 1.75;
     public static double EXTRA_TRANSFER_TIME = 0.5;
     public static double preloadTime = 0.45;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
+    public Action updateTurretAngle() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                double turretAngle = Turret.getInstance().getAngle();
+
+
+                if (opModeIsActive() && !isStopRequested()) {
+                    StaticVariables.staticTurretAngle = turretAngle;
+                }
+                return true;
+            }
+        };
+    }
+
+    public Action updateRobotState() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                if (opModeIsActive() && !isStopRequested()) {
+                    StaticVariables.staticRobotState = robotState;
+                }
+                return true;
+            }
+        };
+    }
 
     @Override
     public void runOpMode() {
@@ -122,8 +151,8 @@ public class RedNearGate extends LinearOpMode {
                                 //                                            turret
                                 //                                            .saveAngleAndCount(this),
                                 //                                            drivetrain.updateStaticState(opModeIsActive()),
-                                StaticVariables.updateTurretAngle(opModeIsActive(), isStopRequested()),
-                                StaticVariables.updateRobotState(opModeIsActive(), isStopRequested()),
+                                updateTurretAngle(),
+                                updateRobotState(),
                                 new SequentialAction(
                                         new ParallelAction(
                                                 drivetrain.followPath(

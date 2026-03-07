@@ -33,16 +33,16 @@ import org.firstinspires.ftc.teamcode.Testing.StaticVariables;;
 @Autonomous(name = "****** DONT RUN ****** ", group = "TESTING")
 public class RedNear extends LinearOpMode {
     public static double xGateBackup = 17;
-    public static double yGateBackup = 55.5;
-    public static double thetaGateBackup = 135;
+    public static double yGateBackup = 56.5;
+    public static double thetaGateBackup = 120;
     public static double xGate = 12;
     public static double yGate = 57.5;
     public static double thetaGate = 120;
     public static double FOLLOW_PATH_TIME = 1.5; // OPENS GATE
-    public static double GATE_TRANSFER_TIME = 2.5; // COLLECTS FROM GATE
+    public static double GATE_TRANSFER_TIME = 1.75; // COLLECTS FROM GATE
     public static double ROW_TRANSFER_TIME = 1.75; // GATHERS GATE
-    public static double EXTRA_TRANSFER_TIME = 0.5; // GATHER WHILE MOVING
-    public static double ALL_PATH_TIME = 6;
+    public static double EXTRA_TRANSFER_TIME = 1; // GATHER WHILE MOVING
+    public static double ALL_PATH_TIME = 5;
     public static double SHOOT_TIME = 0.4;
     //    public static double preloadTime = 0.45;
     public static double staticTurretAngle;
@@ -127,8 +127,8 @@ public class RedNear extends LinearOpMode {
                                         -68,
                                         68
                                 )),
-                                StaticVariables.updateTurretAngle(opModeIsActive(), isStopRequested()),
-                                StaticVariables.updateRobotState(opModeIsActive(), isStopRequested()),
+                                updateTurretAngle(),
+                                updateRobotState(),
                                 new SequentialAction(
                                         turret.cutoffTurret(),
                                         new ParallelAction( // TODO ----- SHOOT PRELOAD ROW ------
@@ -184,5 +184,35 @@ public class RedNear extends LinearOpMode {
                         )
                 )
         );
+    }
+
+    public Action updateTurretAngle() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                double turretAngle = Turret.getInstance().getAngle();
+
+
+                if (opModeIsActive() && !isStopRequested()) {
+                    StaticVariables.staticTurretAngle = turretAngle;
+                }
+                return true;
+            }
+        };
+    }
+
+    public Action updateRobotState() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                if (opModeIsActive() && !isStopRequested()) {
+                    StaticVariables.staticRobotState = robotState;
+                }
+                return true;
+            }
+        };
     }
 }

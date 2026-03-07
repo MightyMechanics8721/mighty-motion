@@ -20,8 +20,8 @@ public class Transfer {
     private final DigitalChannel laserInput3;
     private final Intake intake;
     private final Indexer indexer;
+    public int ballCount = 0;
     boolean[] balls = new boolean[3];
-    int ballCount = 0;
 
     private Transfer(HardwareMap hardwareMap) {
         // Initialize digital laser sensors

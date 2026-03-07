@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -169,7 +170,7 @@ public class RedTeleOp extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -202,7 +203,13 @@ public class RedTeleOp extends LinearOpMode {
             if (gamepad1.dpad_right) {
                 drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
             }
-
+            if (transfer.ballCount == 3) {
+                gamepad1.rumble(Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                gamepad2.rumble(Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            } else {
+                gamepad1.stopRumble();
+                gamepad2.stopRumble();
+            }
 
             // ----- DISTANCE SENSOR -----
 

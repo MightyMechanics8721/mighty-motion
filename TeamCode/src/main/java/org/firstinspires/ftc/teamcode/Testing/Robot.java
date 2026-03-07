@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Geometry.Path;
+import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
@@ -72,6 +74,99 @@ public class Robot {
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()
                 )
+        );
+    }
+
+    public SequentialAction shoot(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime) {
+        return new SequentialAction(
+                shooter.hardStopClose(),
+                drivetrain.followPathTimed(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        Math.toRadians(angleThreshold),
+                        true, pathTime
+                ),
+                shooter.hardStopOpen(),
+                new SleepAction(0.1),
+                moveShoot()
+        );
+    }
+
+    public ParallelAction shootIntake(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double extraTime) {
+        return new ParallelAction(
+                transfer.ballDetectionTimed(extraTime),
+                new SequentialAction(
+                        shooter.hardStopClose(),
+                        drivetrain.followPathTimed(
+                                path,
+                                maxSpeed,
+                                distanceThreshold,
+                                Math.toRadians(angleThreshold),
+                                true, pathTime
+                        ),
+                        shooter.hardStopOpen(),
+                        new SleepAction(0.1),
+                        moveShoot()
+                )
+        );
+    }
+
+    /**
+     * @param path              PATH
+     * @param maxSpeed          MAXSPEED IN/S
+     * @param distanceThreshold IN (radius)
+     * @param angleThreshold    DEGREE
+     * @param pathTime          TIMER
+     * @return
+     */
+    public ParallelAction gatherRow(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime) {
+        return new ParallelAction(
+                shooter.hardStopClose(),
+                drivetrain.followPathTimed(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        Math
+                                .toRadians(
+                                        angleThreshold),
+                        true, pathTime
+                ),
+                transfer.ballDetectionTimed(
+                        pathTime)
+        );
+    }
+
+    public ParallelAction gatherGate(Path path, double maxSpeed, double distanceThreshold,
+                                     double angleThreshold, double xGateBackup,
+                                     double yGateBackup, double thetaGateBackup, double pathTime, double backUpTime) {
+        return new ParallelAction(
+                shooter.hardStopClose(),
+                new SequentialAction(
+                        drivetrain
+                                .followPathTimed(
+                                        path,
+                                        maxSpeed,
+                                        0.0,
+                                        Math.toRadians
+                                                (0.0),
+                                        true,
+                                        pathTime)
+                ),
+                new ParallelAction(
+                        drivetrain.goToPoseTimed(
+                                Utils
+                                        .makePoseVector(
+                                                xGateBackup,
+                                                yGateBackup,
+                                                thetaGateBackup),
+                                distanceThreshold,
+                                Math.toRadians(
+                                        angleThreshold),
+                                true, backUpTime
+                        ),
+                        transfer.ballDetectionTimed(
+                                backUpTime))
         );
     }
 

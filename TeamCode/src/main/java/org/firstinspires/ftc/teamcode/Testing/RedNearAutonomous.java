@@ -37,35 +37,6 @@ public class RedNearAutonomous extends LinearOpMode {
     public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
-    public Action updateTurretAngle() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                double turretAngle = Turret.getInstance().getAngle();
-
-
-                if (opModeIsActive() && !isStopRequested()) {
-                    RedNearAutonomous.staticTurretAngle = turretAngle;
-                }
-                return true;
-            }
-        };
-    }
-
-    public Action updateRobotState() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                SimpleMatrix robotState = Drivetrain.getInstance().state;
-                if (opModeIsActive() && !isStopRequested()) {
-                    staticRobotState = robotState;
-                }
-                return true;
-            }
-        };
-    }
 
     @Override
     public void runOpMode() {
@@ -143,8 +114,8 @@ public class RedNearAutonomous extends LinearOpMode {
                                 )),
                                 //                                            turret.saveAngleAndCount(this),
                                 //                                            drivetrain.updateStaticState(opModeIsActive()),
-                                updateTurretAngle(),
-                                updateRobotState(),
+                                StaticVariables.updateTurretAngle(opModeIsActive(), isStopRequested()),
+                                StaticVariables.updateRobotState(opModeIsActive(), isStopRequested()),
                                 new SequentialAction(
                                         new ParallelAction(
                                                 drivetrain.followPath(

@@ -216,7 +216,7 @@ public class RedFar extends LinearOpMode {
 
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    staticTurretAngle = turretAngle;
+                    RedNearGate.staticTurretAngle = turretAngle;
                 }
                 return true;
             }
@@ -230,7 +230,7 @@ public class RedFar extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    staticRobotState = robotState;
+                    RedNearGate.staticRobotState = robotState;
                 }
                 return true;
             }

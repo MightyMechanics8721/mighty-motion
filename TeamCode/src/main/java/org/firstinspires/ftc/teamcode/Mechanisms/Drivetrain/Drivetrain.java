@@ -76,7 +76,7 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     * to which name
+     *                    to which name
      */
     private Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -171,7 +171,7 @@ public class Drivetrain {
      *
      * @param xPosition Initial X position (inches)
      * @param yPosition Initial Y position (inches)
-     * @param heading Initial heading (degrees)
+     * @param heading   Initial heading (degrees)
      */
     public void setInitialPose(double xPosition, double yPosition, double heading) {
         this.twoWheelOdo.odo.setPosX(xPosition, DistanceUnit.INCH);
@@ -193,7 +193,8 @@ public class Drivetrain {
 
     public Action updateStaticState(boolean isOpModeActive) {
         return new Action() {
-            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (isOpModeActive) {
                     if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
                         //Drivetrain.staticState = latestState;
@@ -219,7 +220,8 @@ public class Drivetrain {
             private double time = -1;
             private ElapsedTime timer = new ElapsedTime();
 
-            @Override public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (time < 0) {
                     timer.reset();
                 }
@@ -366,7 +368,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds Current Wheel Speed
+     * @param wheelSpeeds        Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -486,6 +488,41 @@ public class Drivetrain {
 
     }
 
+    public Action goToPoseTimed(
+            SimpleMatrix desiredPose,
+            double distanceThreshold,
+            double angleThreshold,
+            boolean useStoppingDistance, double seconds
+    ) {
+        Drivetrain drivetrain = this;
+        return new Action() {
+            private double time = -1;
+            private ElapsedTime timer = new ElapsedTime();
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                if (time >= seconds) {
+                    drivetrain.setPower(stopMatrix);
+                    return false;
+                }
+                if (time < 0) {
+                    timer.reset();
+                }
+                time = timer.seconds();
+                drivetrain.setTelemetry(packet);
+                drivetrain.localize();
+                drivetrain.updateTelemetry();
+
+                return drivetrain.goToPoseFunction(
+                        desiredPose, distanceThreshold,
+                        angleThreshold,
+                        useStoppingDistance
+                );
+            }
+        };
+
+    }
+
     private boolean followPathFunction(
             Path path, double maxSpeed, double distanceThreshold, double angleThreshold
             , boolean useStoppingDistance
@@ -559,11 +596,10 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed ~120
-     * @param distanceThreshold INCHES
-     * @param angleThreshold RADIANS
+     * @param maxSpeed            ~120
+     * @param distanceThreshold   INCHES
+     * @param angleThreshold      RADIANS
      * @param useStoppingDistance
-     *
      * @return
      */
     public Action followPath(
@@ -596,11 +632,10 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed ~120
-     * @param distanceThreshold INCHES
-     * @param angleThreshold RADIANS
+     * @param maxSpeed            ~120
+     * @param distanceThreshold   INCHES
+     * @param angleThreshold      RADIANS
      * @param useStoppingDistance
-     *
      * @return
      */
     public Action followPathTimed(
@@ -628,13 +663,6 @@ public class Drivetrain {
                 drivetrain.setTelemetry(packet);
                 drivetrain.localize();
                 drivetrain.updateTelemetry();
-
-                //t ,  t
-
-                //f, f
-                //  t t
-                //f t
-                //t
 
                 return (drivetrain.followPathFunction(
                         path,
@@ -664,7 +692,6 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
-     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -690,11 +717,11 @@ public class Drivetrain {
                                                         + MECHANICAL_PARAMETERS.latDistToAxles))
                                                 * rx
                                 },
-                                }
+                        }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                                              .scale(1 / denominator));
+                        .scale(1 / denominator));
                 return false;
             }
         };

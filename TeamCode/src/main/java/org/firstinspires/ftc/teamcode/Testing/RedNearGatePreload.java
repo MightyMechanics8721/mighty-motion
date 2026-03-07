@@ -27,23 +27,53 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;;
 
 @Config
-@Autonomous(name = "Blue Near BACKUP GATE", group = "TESTING")
-public class BlueNearGate extends LinearOpMode {
+@Autonomous(name = "Red Near BACKUP PRELOAD ", group = "TESTING")
+public class RedNearGatePreload extends LinearOpMode {
     public static double xGateBackup = 17;
-    public static double yGateBackup = -57.5;
-    public static double thetaGateBackup = -135;
-    public static double xGate = 12;
-    public static double yGate = -57.5;
-    public static double thetaGate = -120;
-    public static double FOLLOW_PATH_TIME = 2;
+    public static double yGateBackup = 55.5;
+    public static double thetaGateBackup = 135;
+    public static double xGate = 11.5;
+    public static double yGate = 57.5;
+    public static double thetaGate = 120;
+    public static double FOLLOW_PATH_TIME = 1.5;
     public static double GATE_TRANSFER_TIME = 2.5;
     public static double ROW_TRANSFER_TIME = 1.75;
     public static double EXTRA_TRANSFER_TIME = 0.5;
-    public static double preloadTime = 0.45;
+    public static double ALL_PATH_TIME = 4;
+    //        public static double preloadTime = 0.45;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
+    public Action updateTurretAngle() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                double turretAngle = Turret.getInstance().getAngle();
+
+
+                if (opModeIsActive() && !isStopRequested()) {
+                    RedNearGate.staticTurretAngle = turretAngle;
+                }
+                return true;
+            }
+        };
+    }
+
+    public Action updateRobotState() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                if (opModeIsActive() && !isStopRequested()) {
+                    RedNearGate.staticRobotState = robotState;
+                }
+                return true;
+            }
+        };
+    }
 
     @Override
     public void runOpMode() {
@@ -71,94 +101,92 @@ public class BlueNearGate extends LinearOpMode {
         // todo ---- INIT ----- FIX ODO,UPDATE
         TelemetryPacket packet = new TelemetryPacket();
         drivetrain.setTelemetry(packet);
-        drivetrain.setInitialPose(-51, -51, 45);
+        drivetrain.setInitialPose(-51, 51, -45);
         dashboard.sendTelemetryPacket(packet);
-        double[][] firstStep = {{-51, -51}, {-12, -12}, {12, -12}, {12, -36}, {12, -59}};
-        double[][] secondRowToShoot = {{12, -55}, {12, -46}, {9, -36}, {-8, -14}};
+        double[][] firstStep = {{-51, 51}, {-12, 12}, {12, 12}};
+        double[][] firstHalfStep = {{12, 12}, {12, 36}, {12, 59}};
+
+        double[][] secondRowToShoot = {{12, 55}, {12, 46}, {9, 36}, {-8, 14}};
         double[][] shootToGate = {
-                {-8, -14},
-                {13.5, -30},
-                {13.5, -48},
+                {-8, 14},
+                {13.5, 30},
+                {13.5, 48},
                 {xGate, yGate}
         };
-        double[][] gateToShoot = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}};
-        double[][] gateToShootFinal = {{13.5, -59}, {12, -46}, {9, -36}, {-8, -14}, {-36, -12}};
+        double[][] gateToShoot = {{13.5, 59}, {12, 46}, {9, 36}, {-8, 14}};
+//        double[][] gateToShootFinal = {{13.5, 59}, {12, 46}, {9, 36}, {-8, 14}, {-36, 12}};
         double[][] thirdRowStep = {
-                {-8, -14},
-                {12, -20},
-                {36, -20},
-                {36, -30},
-                {36, -36},
-                {36, -60}
+                {-8, 14},
+                {12, 20},
+                {36, 20},
+                {36, 30},
+                {36, 36},
+                {36, 60}
         };
-        double[][] thirdRowToShoot = {{36, -60}, {-8, -14}};
-        double[][] firstRowStep = {{-8, -14}, {-12, -34}, {-12, -36}, {-12, -54}};
-        Path path = new Path(firstStep, Math.toRadians(-90), false, false);
-        Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(-50), true, false);
+        double[][] thirdRowToShoot = {{36, 60}, {-8, 14}};
+        double[][] firstRowStep = {{-8, 14}, {-12, 34}, {-12, 36}, {-12, 54}};
+        Path preload = new Path(firstStep, Math.toRadians(10), false, false);
+        Path firstHalf = new Path(firstHalfStep, Math.toRadians(90), false, false);
+        Path secondToShoot = new Path(secondRowToShoot, Math.toRadians(50), true, false);
         Path gate = new Path(shootToGate, Math.toRadians(thetaGate), false, false);
-        Path shoot = new Path(gateToShoot, Math.toRadians(-50), true, false);
-        Path shootFinal = new Path(gateToShootFinal, Math.toRadians(-50), true, false);
-        Path thirdRow = new Path(thirdRowStep, Math.toRadians(-90), false, false);
-        Path thirdToShoot = new Path(thirdRowToShoot, Math.toRadians(-45), true, false);
-        Path firstRow = new Path(firstRowStep, Math.toRadians(-90), false, false);
+        Path shoot = new Path(gateToShoot, Math.toRadians(50), true, false);
+//        Path shootFinal = new Path(gateToShootFinal, Math.toRadians(50), true, false);
+        Path thirdRow = new Path(thirdRowStep, Math.toRadians(90), false, false);
+        Path thirdToShoot = new Path(thirdRowToShoot, Math.toRadians(45), true, false);
+        Path firstRow = new Path(firstRowStep, Math.toRadians(90), false, false);
 
         waitForStart();
 
         looptime.reset();
         Turret.staticTheta = 0;
-        drivetrain.setInitialPose(-51, -51, 45);
-        turret.setInitialAngle(-180);
+        drivetrain.setInitialPose(-51, 51, -45);
+        turret.setInitialAngle(180);
         //Alex Ko bless this code
         Actions.runBlocking(
                 new SequentialAction(
-                        new ParallelAction( //init
-                                shooter.revShooter(2000 * 2 * Math.PI / 60),
-                                shooter.hardStopOpen()
-                        ),
+                        shooter.hardStopOpen(),
                         new ParallelAction( //main loop
-                                shooter.autoShootMovingInfinite(-57, -57),
+                                shooter.autoShootMovingInfinite(-57, 57),
                                 turret.autoAimInfinite(new Vector2d(
                                         -68,
-                                        -68
+                                        68
                                 )),
-                                //                                            turret
-                                //                                            .saveAngleAndCount(this),
-                                //                                            drivetrain.updateStaticState(opModeIsActive()),
                                 StaticVariables.updateTurretAngle(opModeIsActive(), isStopRequested()),
                                 StaticVariables.updateRobotState(opModeIsActive(), isStopRequested()),
                                 new SequentialAction(
-                                        new ParallelAction(
-                                                drivetrain.followPath(
-                                                        path, 100, 2,
-                                                        Math.toRadians(2.5), true
+                                        new SequentialAction(
+                                                drivetrain.followPathTimed(
+                                                        preload, 150, 2,
+                                                        Math.toRadians(2.5), true, ALL_PATH_TIME
                                                 ),
-                                                new SequentialAction(
-                                                        turret.cutoffTurret(),
-                                                        new ParallelAction(
-                                                                turret.setTurretAngleTimed(
-                                                                        -180,
-                                                                        1
-                                                                ),
-                                                                new SequentialAction(
-                                                                        new SleepAction(
-                                                                                preloadTime),
-                                                                        robot.moveShoot()
-                                                                )
-                                                        ),
-                                                        // SHOOT PRELOAD
-                                                        transfer.ballDetectionTimed(
-                                                                ROW_TRANSFER_TIME),
-                                                        // GATHER SECOND ROW
-                                                        turret.resumeTurret()
-                                                )
+                                                shooter.hardStopOpen(),
+                                                new SleepAction(0.1),
+                                                robot.moveShoot()
+                                        ),
+
+
+                                        new ParallelAction( //GO TO SECOND ROW
+                                                shooter.hardStopClose(),
+                                                drivetrain.followPathTimed(
+                                                        firstHalf,
+                                                        150,
+                                                        1.5,
+                                                        Math
+                                                                .toRadians(
+                                                                        2.5),
+                                                        true, ALL_PATH_TIME
+                                                ),
+                                                transfer.ballDetectionTimed(
+                                                        ROW_TRANSFER_TIME)
+                                                // GATHER SECOND ROW
                                         ),
                                         new SequentialAction( // SHOOT SECOND ROW
-                                                drivetrain.followPath(
+                                                drivetrain.followPathTimed(
                                                         secondToShoot,
                                                         150,
                                                         2,
                                                         Math.toRadians(2.5),
-                                                        true
+                                                        true, ALL_PATH_TIME
                                                 ),
                                                 shooter.hardStopOpen(),
                                                 new SleepAction(0.1),
@@ -177,7 +205,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                         true,
                                                                         FOLLOW_PATH_TIME
                                                                 ),
-                                                        drivetrain.goToPose(
+                                                        drivetrain.goToPoseTimed(
                                                                 Utils
                                                                         .makePoseVector(
                                                                                 xGateBackup,
@@ -187,7 +215,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                 0.5,
                                                                 Math.toRadians(
                                                                         2.5),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         )
                                                 ),
                                                 new SequentialAction(
@@ -202,12 +230,12 @@ public class BlueNearGate extends LinearOpMode {
                                                         EXTRA_TRANSFER_TIME),
                                                 new SequentialAction(
                                                         // SHOOT GATE COLLECT
-                                                        drivetrain.followPath(
+                                                        drivetrain.followPathTimed(
                                                                 shoot,
                                                                 150,
                                                                 2,
                                                                 Math.toRadians(2.5),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         ),
                                                         shooter.hardStopOpen(),
                                                         new SleepAction(0.1),
@@ -215,26 +243,26 @@ public class BlueNearGate extends LinearOpMode {
                                                 )
                                         ),
                                         new ParallelAction( //GO TO THIRD ROW
-                                                drivetrain.followPath(
+                                                drivetrain.followPathTimed(
                                                         thirdRow,
                                                         150,
-                                                        3,
+                                                        1.5,
                                                         Math
                                                                 .toRadians(
                                                                         2.5),
-                                                        true
+                                                        true, ALL_PATH_TIME
                                                 ),
                                                 transfer.ballDetectionTimed(
                                                         ROW_TRANSFER_TIME)
                                                 // GATHER THIRD ROW
                                         ),
                                         new SequentialAction( // SHOOT THIRD ROW
-                                                drivetrain.followPath(
+                                                drivetrain.followPathTimed(
                                                         thirdToShoot,
                                                         150,
                                                         2,
                                                         Math.toRadians(2.5),
-                                                        true
+                                                        true, ALL_PATH_TIME
                                                 ),
                                                 shooter.hardStopOpen(),
                                                 new SleepAction(0.1),
@@ -254,7 +282,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                         true,
                                                                         FOLLOW_PATH_TIME
                                                                 ),
-                                                        drivetrain.goToPose(
+                                                        drivetrain.goToPoseTimed(
                                                                 Utils
                                                                         .makePoseVector(
                                                                                 xGateBackup,
@@ -264,7 +292,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                 0.5,
                                                                 Math.toRadians(
                                                                         2.5),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         )
                                                 ),
                                                 new SequentialAction(
@@ -279,12 +307,12 @@ public class BlueNearGate extends LinearOpMode {
                                                         EXTRA_TRANSFER_TIME),
                                                 new SequentialAction(
                                                         // SHOOT GATE 2 COLLECT
-                                                        drivetrain.followPath(
+                                                        drivetrain.followPathTimed(
                                                                 shoot,
                                                                 150,
                                                                 2,
                                                                 Math.toRadians(2.5),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         ),
                                                         shooter.hardStopOpen(),
                                                         new SleepAction(0.1),
@@ -292,29 +320,29 @@ public class BlueNearGate extends LinearOpMode {
                                                 )
                                         ),
                                         new ParallelAction( //GO TO FIRST ROW
-                                                drivetrain.followPath(
+                                                drivetrain.followPathTimed(
                                                         firstRow,
                                                         150,
-                                                        3,
+                                                        2,
                                                         Math
                                                                 .toRadians(
                                                                         2.5),
-                                                        true
+                                                        true, ALL_PATH_TIME
                                                 ),
                                                 transfer.ballDetectionTimed(
                                                         ROW_TRANSFER_TIME)
                                                 // GATHER FIRST ROW
                                         ),
                                         new SequentialAction( // SHOOT FIRST ROW
-                                                drivetrain.goToPose(
+                                                drivetrain.goToPoseTimed(
                                                         Utils.makePoseVector(
                                                                 -8,
-                                                                -14,
-                                                                -90
+                                                                14,
+                                                                90
                                                         ),
-                                                        3,
+                                                        2,
                                                         Math.toRadians(2.5),
-                                                        true
+                                                        true, ALL_PATH_TIME
                                                 ),
                                                 shooter.hardStopOpen(),
                                                 new SleepAction(0.1),
@@ -334,7 +362,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                         true,
                                                                         FOLLOW_PATH_TIME
                                                                 ),
-                                                        drivetrain.goToPose(
+                                                        drivetrain.goToPoseTimed(
                                                                 Utils
                                                                         .makePoseVector(
                                                                                 xGateBackup,
@@ -344,7 +372,7 @@ public class BlueNearGate extends LinearOpMode {
                                                                 0.5,
                                                                 Math.toRadians(
                                                                         2.5),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         )
                                                 ),
                                                 new SequentialAction(
@@ -359,16 +387,20 @@ public class BlueNearGate extends LinearOpMode {
                                                         EXTRA_TRANSFER_TIME),
                                                 new SequentialAction(
                                                         // SHOOT GATE COLLECT 3
-                                                        drivetrain.followPath(
-                                                                shootFinal,
+                                                        drivetrain.followPathTimed(
+                                                                shoot,
                                                                 150,
                                                                 1.5,
                                                                 Math.toRadians(2),
-                                                                true
+                                                                true, ALL_PATH_TIME
                                                         ),
                                                         shooter.hardStopOpen(),
                                                         new SleepAction(0.1),
-                                                        robot.moveShoot()
+                                                        robot.moveShoot(),
+                                                        new SleepAction(0.1),
+                                                        drivetrain.goToPoseTimed(Utils.makePoseVector
+                                                                        (-36, 12, 0.5),
+                                                                2, Math.toRadians(2), true, ALL_PATH_TIME)
                                                 )
                                         )
 

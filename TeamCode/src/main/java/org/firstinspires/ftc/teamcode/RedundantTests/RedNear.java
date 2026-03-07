@@ -38,12 +38,12 @@ public class RedNear extends LinearOpMode {
     public static double xGate = 12;
     public static double yGate = 57.5;
     public static double thetaGate = 120;
-    public static double FOLLOW_PATH_TIME = 2;
-    public static double GATE_TRANSFER_TIME = 2.5;
-    public static double ROW_TRANSFER_TIME = 1.75;
-    public static double EXTRA_TRANSFER_TIME = 0.5;
-    public static double ALL_PATH_TIME = 4;
-    //        public static double preloadTime = 0.45;
+    public static double FOLLOW_PATH_TIME = 2; // OPENS GATE
+    public static double GATE_TRANSFER_TIME = 2.5; // COLLECTS FROM GATE
+    public static double ROW_TRANSFER_TIME = 1.75; // GATHERS GATE
+    public static double EXTRA_TRANSFER_TIME = 0.5; // GATHER WHILE MOVING
+    public static double ALL_PATH_TIME = 6;
+    //    public static double preloadTime = 0.45;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
@@ -88,7 +88,6 @@ public class RedNear extends LinearOpMode {
                 {xGate, yGate}
         };
         double[][] gateToShoot = {{13.5, 59}, {12, 46}, {9, 36}, {-8, 14}};
-//        double[][] gateToShootFinal = {{13.5, 59}, {12, 46}, {9, 36}, {-8, 14}, {-36, 12}};
         double[][] thirdRowStep = {
                 {-8, 14},
                 {12, 20},

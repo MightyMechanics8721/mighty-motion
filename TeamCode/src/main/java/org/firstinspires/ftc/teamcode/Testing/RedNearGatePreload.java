@@ -45,35 +45,6 @@ public class RedNearGatePreload extends LinearOpMode {
     public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
-    public Action updateTurretAngle() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                double turretAngle = Turret.getInstance().getAngle();
-
-
-                if (opModeIsActive() && !isStopRequested()) {
-                    RedNearGate.staticTurretAngle = turretAngle;
-                }
-                return true;
-            }
-        };
-    }
-
-    public Action updateRobotState() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                SimpleMatrix robotState = Drivetrain.getInstance().state;
-                if (opModeIsActive() && !isStopRequested()) {
-                    RedNearGate.staticRobotState = robotState;
-                }
-                return true;
-            }
-        };
-    }
 
     @Override
     public void runOpMode() {

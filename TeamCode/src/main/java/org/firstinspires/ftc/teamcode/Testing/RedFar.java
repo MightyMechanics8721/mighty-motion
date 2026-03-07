@@ -91,8 +91,8 @@ public class RedFar extends LinearOpMode {
                                 -68,
                                 68
                         )),
-                        updateTurretAngle(),
-                        updateRobotState(),
+                        StaticVariables.updateTurretAngle(opModeIsActive(), isStopRequested()),
+                        StaticVariables.updateRobotState(opModeIsActive(), isStopRequested()),
                         new SleepAction(1),
                         new SequentialAction(
                                 robot.moveShootFAR(), // ----- SHOOT PRELOAD -----

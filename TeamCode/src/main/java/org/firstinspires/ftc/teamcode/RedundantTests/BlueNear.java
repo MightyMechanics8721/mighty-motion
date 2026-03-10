@@ -33,7 +33,7 @@ public class BlueNear extends LinearOpMode {
     public static double xGateBackup = 17;
     public static double yGateBackup = -56.5;
     public static double thetaGateBackup = -120;
-    public static double xGate = 13;
+    public static double xGate = 12;
     public static double yGate = -57.5;
     public static double thetaGate = -120;
     public static double FOLLOW_PATH_TIME = 1.5; // OPENS GATE

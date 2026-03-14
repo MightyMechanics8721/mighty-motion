@@ -49,7 +49,7 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    public static double openPos = 0.55;
+    public static double openPos = 0.6;
     public static double closePos = 0.85;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;

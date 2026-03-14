@@ -142,8 +142,13 @@ public class RedTeleOpNoAuto extends LinearOpMode {
             } else if (gamepad2.dpad_down) {
                 Turret.bias -= 0.5;
             }
+            if (gamepad2.dpad_up) {
+                autoAimBias += 0.5;
+            } else if (gamepad2.dpad_down) {
+                autoAimBias -= 0.5;
+            }
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60), autoAimBias));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-58, 58), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }

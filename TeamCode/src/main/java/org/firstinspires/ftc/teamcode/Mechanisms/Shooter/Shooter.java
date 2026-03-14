@@ -183,14 +183,14 @@ public class Shooter {
         return 2250 - 1.47 * distance + 0.0868 * Math.pow(distance, 2);
     }
 
-    public Action autonomousVelocityInfinite() {
+    public Action autonomousVelocityInfinite(double desiredVelo) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 double power =
-                        velocityPidController.calculate(autonVelocity * Math.PI / 30, getVelocity())
+                        velocityPidController.calculate(desiredVelo * Math.PI / 30, getVelocity())
                                 + velocityFeedForwardController.calculate(
-                                autonVelocity * Math.PI / 30, 0);
+                                desiredVelo * Math.PI / 30, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return true;
@@ -250,8 +250,25 @@ public class Shooter {
                         + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
-                // TODO: Returning false makes this run once but with the PID this will cause it
-                //  to overshoot greatly?
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Sets the desired shooter wheel velocity.
+     *
+     * @param velocity the target velocity to set for the shooter motors
+     */
+    public Action setShooterVelocityInfinite(double velocity) {
+        Shooter shooter = this;
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                double power = velocityPidController.calculate(velocity, getVelocity())
+                        + velocityFeedForwardController.calculate(velocity, 0);
+                shooterMotor1.setPower(power);
+                shooterMotor2.setPower(power);
                 return false;
             }
         };
@@ -269,10 +286,8 @@ public class Shooter {
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (Math.abs(encoder.getVelocity() - velocity)
                         < SHOOTER_CONSTANTS.velocityTolerance) {
-                    packet.addLine("67");
                     return false;
                 }
-                packet.addLine("bruh");
                 double power = velocityPidController.calculate(velocity, getVelocity())
                         + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);

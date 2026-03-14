@@ -108,6 +108,24 @@ public class Robot {
         );
     }
 
+    public SequentialAction shootFAR(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double shootTime) {
+        return new SequentialAction(
+                shooter.hardStopClose(),
+                drivetrain.followPathTimed(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        Math.toRadians(angleThreshold),
+                        true, pathTime
+                ),
+                new SleepAction(0.05),
+                shooter.hardStopOpen(),
+                new SleepAction(0.1),
+                moveShootFAR()
+        );
+    }
+
+
     public ParallelAction shootIntake(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double extraTime, double shootTime) {
         return new ParallelAction(
                 transfer.ballDetectionTimed(extraTime),
@@ -191,12 +209,38 @@ public class Robot {
     public SequentialAction moveShootFAR() {
         return new SequentialAction(
                 transfer.setIntakeIndexerPower(0.3, 0.3),
-                new SleepAction(0.6),
+                new SleepAction(1),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()
                 )
         );
+    }
+
+    public SequentialAction gatherLingeringBalls(Path toBalls, Path toShoot, double maxSpeed, double pathTime, double waitTime) {
+        return new SequentialAction(
+                drivetrain.followPathTimed(
+                        toBalls,
+                        150,
+                        1.5,
+                        Math
+                                .toRadians(
+                                        2.0),
+                        true, pathTime),
+                transfer.ballDetectionTimed(waitTime),
+                drivetrain.followPathTimed(
+                        toShoot,
+                        150,
+                        1.5,
+                        Math
+                                .toRadians(
+                                        2.0),
+                        true, pathTime
+                ),
+                new SleepAction(0.3),
+                moveShootFAR()
+        );
+
     }
 
     public Action shootAtPose(

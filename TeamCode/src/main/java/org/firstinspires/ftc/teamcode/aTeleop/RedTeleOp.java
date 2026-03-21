@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Testing;
+package org.firstinspires.ftc.teamcode.aTeleop;
 
 import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 
@@ -9,7 +9,6 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -18,13 +17,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
+import org.firstinspires.ftc.teamcode.Autonomous.RedNear;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "Blue TeleOp No Auto", group = "123Competition")
-public class BlueTeleOpNoAuto extends LinearOpMode {
+@TeleOp(name = "Red TeleOp", group = "123Competition")
+public class RedTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
@@ -33,8 +33,7 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;
-    double autoAimBias = 0.0;
-    boolean rumbleStop = false;
+    boolean rumbleStop;
     Battery battery;
     Turret turret;
     Indexer indexer;
@@ -51,6 +50,7 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        double autoAimBias = 0.0;
 
         myCacheAngle = Turret.staticTheta;
         myCacheCount = Turret.staticThetaUpdateCounter;
@@ -76,20 +76,39 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
-        drivetrain.setInitialPose(0, 24, -90);
-
-        //        dashboard.sendTelemetryPacket(packet);
+        drivetrain.setInitialPose(
+                RedNear.staticRobotState.get(0, 0),
+                RedNear.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNear.staticRobotState.get(2, 0))
+        );
+        turret.setInitialAngle(RedNear.staticTurretAngle);
+        packet.put("x", RedNear.staticRobotState.get(0, 0));
+        packet.put("y", RedNear.staticRobotState.get(1, 0));
+        packet.put("theta", Math.toDegrees(RedNear.staticRobotState.get(2, 0)));
+        packet.put("turret", RedNear.staticTurretAngle);
+        packet.put("x_real", drivetrain.state.get(0, 0));
+        packet.put("y_real", drivetrain.state.get(1, 0));
+        packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
+        packet.put("turret_real", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
         waitForStart();
-
-        drivetrain.setInitialPose(0, 24, -90);
-
+        drivetrain.setInitialPose(
+                RedNear.staticRobotState.get(0, 0),
+                RedNear.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNear.staticRobotState.get(2, 0))
+        );
+        turret.setInitialAngle(RedNear.staticTurretAngle);
 
         while (opModeIsActive()) {
-
+            packet.put("x", RedNear.staticRobotState.get(0, 0));
+            packet.put("y", RedNear.staticRobotState.get(1, 0));
+            packet.put("theta", Math.toDegrees(RedNear.staticRobotState.get(2, 0)));
+            packet.put("turret", RedNear.staticTurretAngle);
+            packet.put("x_real", drivetrain.state.get(0, 0));
+            packet.put("y_real", drivetrain.state.get(1, 0));
+            packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
+            packet.put("turret_real", turret.getAngle());
             packet.put("main loop turret angle (deg)", turret.getAngle());
-            //turret.initAngle();
-            //turret.getAngle();
-            packet.put("turret 789", turret.getAngle());
             dashboard.sendTelemetryPacket(packet);
             //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
@@ -138,17 +157,18 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
             }
 
             if (gamepad2.dpad_up) {
-                Turret.bias += 0.5;
+                autoAimBias += 0.5;
             } else if (gamepad2.dpad_down) {
-                Turret.bias -= 0.5;
+                autoAimBias -= 0.5;
             }
+
             if (gamepad2.dpad_up) {
                 autoAimBias += 0.5;
             } else if (gamepad2.dpad_down) {
                 autoAimBias -= 0.5;
             }
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, 60), autoAimBias));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-58, 58), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }

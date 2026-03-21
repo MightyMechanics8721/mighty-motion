@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.RedundantTests;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import androidx.annotation.NonNull;
 
@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.Testing.Robot;
-import org.firstinspires.ftc.teamcode.Testing.StaticVariables;;
+import org.firstinspires.ftc.teamcode.aTeleop.Robot;
+import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 
 @Config
 @Autonomous(name = "RED FAR Autonomous  3/7", group = "TEST")

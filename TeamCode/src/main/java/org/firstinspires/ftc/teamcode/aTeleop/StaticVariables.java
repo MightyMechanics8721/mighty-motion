@@ -1,13 +1,6 @@
-package org.firstinspires.ftc.teamcode.Testing;
-
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
+package org.firstinspires.ftc.teamcode.aTeleop;
 
 import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
-import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 
 public class StaticVariables {
     public static double staticTurretAngle;

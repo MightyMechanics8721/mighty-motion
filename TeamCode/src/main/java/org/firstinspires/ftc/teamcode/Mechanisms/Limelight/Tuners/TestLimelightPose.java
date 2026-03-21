@@ -14,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 @TeleOp(name = "Tune LL", group = "123Competition")
 public class TestLimelightPose extends LinearOpMode {
 
-    FtcDashboard dashboard;
     private Limelight3A limelight;
 
     @Override
@@ -29,18 +28,15 @@ public class TestLimelightPose extends LinearOpMode {
          * Starts polling for data.
          */
         limelight.start();
-        dashboard = FtcDashboard.getInstance();
-        TelemetryPacket packet = new TelemetryPacket();
-        waitForStart();
+
         while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
-            if (result != null && result.isValid()) {
-                Pose3D botpose = result.getBotpose();
-                if (botpose != null) {
-                    double x = botpose.getPosition().x;
-                    double y = botpose.getPosition().y;
-                    packet.put("MT1 Location", "(" + x + ", " + y + ")");
-                    dashboard.sendTelemetryPacket(packet);
+            if (result != null) {
+                if (result.isValid()) {
+                    Pose3D botpose = result.getBotpose();
+                    telemetry.addData("tx", botpose.getPosition().x);
+                    telemetry.addData("ty", botpose.getPosition().y);
+                    telemetry.addData("Botpose", botpose.getPosition().z);
                 }
             }
         }

@@ -1,15 +1,11 @@
-package org.firstinspires.ftc.teamcode.OpModes.Tuners;
+package org.firstinspires.ftc.teamcode.aTeleop.OpModes.NoColor;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
@@ -156,7 +152,7 @@ public class TuneAccel extends LinearOpMode {
 
                 } else if (gamepad1.square && !isStopped) {
                     stopPos = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit
-                                                                            .RADIANS);
+                            .RADIANS);
                     drivetrain.motorLeftFront.setPower(0);
                     drivetrain.motorRightFront.setPower(0);
                     drivetrain.motorRightBack.setPower(0);
@@ -167,7 +163,7 @@ public class TuneAccel extends LinearOpMode {
                 } else if (isStopped) {
                     presentPos
                             = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit
-                                                                            .RADIANS);
+                            .RADIANS);
 
                     telemetry.addData("Stopping distance", presentPos - stopPos);
                     telemetry.addData("Stopping time (s)", timer.seconds());

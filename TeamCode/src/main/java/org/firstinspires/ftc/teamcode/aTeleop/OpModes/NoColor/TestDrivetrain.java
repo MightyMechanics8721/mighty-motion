@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes;
+package org.firstinspires.ftc.teamcode.aTeleop.OpModes.NoColor;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Config
 @TeleOp(name = "DrivetrainTest", group = "Testing")
-public class TeleOP extends OpMode {
+public class TestDrivetrain extends OpMode {
 
     public static double slowMultiplier = 0.25;
     FtcDashboard dashboard;
@@ -48,7 +48,7 @@ public class TeleOP extends OpMode {
                 gamepad1.left_stick_y,
                 gamepad1.right_stick_x
         ).run(packet);
-        
+
         dash.sendTelemetryPacket(packet);
     }
 }

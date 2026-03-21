@@ -55,6 +55,9 @@ public class Turret {
     private final PID pid;
     private final FtcDashboard dashboard;
     public boolean cutoff = false;
+    double abcdefgh = 0;
+    boolean set = false;
+    double maxVelocity = 0;
     private double thetaConstant = 0.0;
 
     // --- Constructor ---
@@ -89,7 +92,10 @@ public class Turret {
         thetaConstant = angle;
     }
 
-    // --- Hardware Functions ---
+    public void computeStoppingDistance() {
+
+//        double driftedPosition = Math.signum(turretEncoder.getCurrentPosition()) * //drifted formula;
+    }
 
     /**
      * Rotates the turret to a specific angle using PID as a Roadrunner Action
@@ -203,6 +209,8 @@ public class Turret {
         };
     }
 
+    //  --- Getter Functions ---
+
     /**
      * Manual turret control using gamepad stick
      *
@@ -230,7 +238,6 @@ public class Turret {
         };
     }
 
-
     /**
      * Computes PID power to reach a desired angle
      */
@@ -238,8 +245,6 @@ public class Turret {
         double pidOutput = pid.calculate(desiredAngle, getAngle(), getVelocity());
         return staticGain * Math.signum(pidOutput) + pidOutput;
     }
-
-    //  --- Getter Functions ---
 
     /**
      * Returns the current bot-relative turret angle in degrees
@@ -258,6 +263,10 @@ public class Turret {
             }
         }
     }
+
+    //    public void initAngle() {
+    //        thetaConstant = prevAngle;
+    //    }
 
     public Action saveAngle(LinearOpMode op) {
         return new Action() {
@@ -278,6 +287,8 @@ public class Turret {
             }
         };
     }
+
+    // --- Auto-Aim Functions ---
 
     public Action saveAngleAndCountTimed(LinearOpMode op, double seconds) {
         return new Action() {
@@ -300,23 +311,16 @@ public class Turret {
         };
     }
 
-    //    public void initAngle() {
-    //        thetaConstant = prevAngle;
-    //    }
-
     public void reset() {
         turretEncoder.reset();
     }
-
 
     /**
      * Returns the current turret velocity in degrees/sec
      */
     public double getVelocity() {
-        return Math.toDegrees(turretEncoder.getVelocity());
+        return Math.toDegrees(turretEncoder.getVelocity()) / GEAR_RATIO;
     }
-
-    // --- Auto-Aim Functions ---
 
     /**
      * Auto-aim at a field goal using robot pose
@@ -358,6 +362,33 @@ public class Turret {
             }
         };
     }
+
+    public void setTurretPower(double power, boolean run, boolean reset, TelemetryPacket packet) {
+//        if (reset) {
+//            turretEncoder.reset();
+//        }
+        if (turretEncoder.getVelocity() > maxVelocity) {
+            maxVelocity = turretEncoder.getVelocity();
+        }
+        if (run) {
+            set = true;
+            turretLeft.setPower(power);
+            turretRight.setPower(power);
+        } else if (set) {
+            abcdefgh = getAngle();
+            set = false;
+            turretLeft.setPower(0);
+            turretRight.setPower(0);
+        } else {
+            turretLeft.setPower(0);
+            turretRight.setPower(0);
+        }
+        packet.put("max Velo", maxVelocity);
+        packet.put("Current", getAngle());
+        packet.put("Drifted", getAngle() - abcdefgh);
+        packet.put("Stopped at", abcdefgh);
+    }
+
 
     /**
      * Loop to Auto-aim at a field goal using robot pose

@@ -25,7 +25,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.aTeleop.Robot;
 
 @Config
 @Autonomous(name = "Red Near 21", group = "1Comp")
@@ -120,176 +119,176 @@ public class RedNear extends LinearOpMode {
                 new SequentialAction(
                         shooter.hardStopClose(),
                         new ParallelAction( //main loop
-                                            shooter.autoShootMovingInfinite(-57, 57),
-                                            turret.autoAimInfinite(new Vector2d(
-                                                    -68,
-                                                    68
-                                            )),
-                                            updateTurretAngle(),
-                                            updateRobotState(),
-                                            new SequentialAction(
-                                                    turret.cutoffTurret(),
-                                                    new ParallelAction(
-                                                            // TODO ----- SHOOT PRELOAD ROW ------
-                                                            turret.setTurretAngleTimed(
-                                                                    180,
-                                                                    1
-                                                            ),
-                                                            robot.shoot(
-                                                                    preload,
-                                                                    150,
-                                                                    2,
-                                                                    2.5,
-                                                                    ALL_PATH_TIME,
-                                                                    SHOOT_TIME
-                                                            )
-                                                    ),
+                                shooter.autoShootMovingInfinite(-57, 57),
+                                turret.autoAimInfinite(new Vector2d(
+                                        -68,
+                                        68
+                                )),
+                                updateTurretAngle(),
+                                updateRobotState(),
+                                new SequentialAction(
+                                        turret.cutoffTurret(),
+                                        new ParallelAction(
+                                                // TODO ----- SHOOT PRELOAD ROW ------
+                                                turret.setTurretAngleTimed(
+                                                        180,
+                                                        1
+                                                ),
+                                                robot.shoot(
+                                                        preload,
+                                                        150,
+                                                        2,
+                                                        2.5,
+                                                        ALL_PATH_TIME,
+                                                        SHOOT_TIME
+                                                )
+                                        ),
 
-                                                    turret.resumeTurret(),
+                                        turret.resumeTurret(),
 
-                                                    // TODO ----- GATHER SECOND ROW -----
-                                                    robot.gatherRow(
-                                                            firstHalf,
-                                                            150,
-                                                            1.5,
-                                                            2.5,
-                                                            ROW_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER SECOND ROW -----
+                                        robot.gatherRow(
+                                                firstHalf,
+                                                150,
+                                                1.5,
+                                                2.5,
+                                                ROW_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT SECOND ROW ------
-                                                    robot.shoot(
-                                                            secondToShoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            SHOOT_TIME
-                                                    ),
+                                        // TODO ----- SHOOT SECOND ROW ------
+                                        robot.shoot(
+                                                secondToShoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                SHOOT_TIME
+                                        ),
 
-                                                    // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
-                                                            gate,
-                                                            150,
-                                                            0.5,
-                                                            2.5,
-                                                            xGateBackup,
-                                                            yGateBackup,
-                                                            thetaGateBackup,
-                                                            FOLLOW_PATH_TIME,
-                                                            GATE_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER GATE -----
+                                        robot.gatherGate(
+                                                gate,
+                                                150,
+                                                0.5,
+                                                2.5,
+                                                xGateBackup,
+                                                yGateBackup,
+                                                thetaGateBackup,
+                                                FOLLOW_PATH_TIME,
+                                                GATE_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT GATE -----
-                                                    robot.shootIntake(
-                                                            shoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            EXTRA_TRANSFER_TIME,
-                                                            SHOOT_TIME
-                                                    ),
+                                        // TODO ----- SHOOT GATE -----
+                                        robot.shootIntake(
+                                                shoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                EXTRA_TRANSFER_TIME,
+                                                SHOOT_TIME
+                                        ),
 
-                                                    // TODO ----- GATHER THIRD ROW -----
-                                                    robot.gatherRow(
-                                                            thirdRow,
-                                                            150,
-                                                            1.5,
-                                                            2.5,
-                                                            ROW_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER THIRD ROW -----
+                                        robot.gatherRow(
+                                                thirdRow,
+                                                150,
+                                                1.5,
+                                                2.5,
+                                                ROW_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT THIRD ROW ------
-                                                    robot.shoot(
-                                                            thirdToShoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            SHOOT_TIME
-                                                    ),
+                                        // TODO ----- SHOOT THIRD ROW ------
+                                        robot.shoot(
+                                                thirdToShoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                SHOOT_TIME
+                                        ),
 
-                                                    // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
-                                                            gate,
-                                                            150,
-                                                            0.5,
-                                                            2.5,
-                                                            xGateBackup,
-                                                            yGateBackup,
-                                                            thetaGateBackup,
-                                                            FOLLOW_PATH_TIME,
-                                                            GATE_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER GATE -----
+                                        robot.gatherGate(
+                                                gate,
+                                                150,
+                                                0.5,
+                                                2.5,
+                                                xGateBackup,
+                                                yGateBackup,
+                                                thetaGateBackup,
+                                                FOLLOW_PATH_TIME,
+                                                GATE_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT GATE -----
-                                                    robot.shootIntake(
-                                                            shoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            EXTRA_TRANSFER_TIME,
-                                                            SHOOT_TIME
-                                                    ),
+                                        // TODO ----- SHOOT GATE -----
+                                        robot.shootIntake(
+                                                shoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                EXTRA_TRANSFER_TIME,
+                                                SHOOT_TIME
+                                        ),
 
-                                                    // TODO ----- GATHER FIRST ROW -----
-                                                    robot.gatherRow(
-                                                            firstRow,
-                                                            150,
-                                                            1.5,
-                                                            2.5,
-                                                            ROW_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER FIRST ROW -----
+                                        robot.gatherRow(
+                                                firstRow,
+                                                150,
+                                                1.5,
+                                                2.5,
+                                                ROW_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT FIRST ROW ------
-                                                    robot.shoot(
-                                                            firstToShoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            SHOOT_TIME
-                                                    ),
+                                        // TODO ----- SHOOT FIRST ROW ------
+                                        robot.shoot(
+                                                firstToShoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                SHOOT_TIME
+                                        ),
 
-                                                    // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
-                                                            gate,
-                                                            150,
-                                                            0.5,
-                                                            2.5,
-                                                            xGateBackup,
-                                                            yGateBackup,
-                                                            thetaGateBackup,
-                                                            FOLLOW_PATH_TIME,
-                                                            GATE_TRANSFER_TIME
-                                                    ),
+                                        // TODO ----- GATHER GATE -----
+                                        robot.gatherGate(
+                                                gate,
+                                                150,
+                                                0.5,
+                                                2.5,
+                                                xGateBackup,
+                                                yGateBackup,
+                                                thetaGateBackup,
+                                                FOLLOW_PATH_TIME,
+                                                GATE_TRANSFER_TIME
+                                        ),
 
-                                                    // TODO ----- SHOOT GATE -----
-                                                    robot.shootIntake(
-                                                            shoot,
-                                                            150,
-                                                            2,
-                                                            2.5,
-                                                            ALL_PATH_TIME,
-                                                            EXTRA_TRANSFER_TIME,
-                                                            SHOOT_TIME
-                                                    ),
-                                                    new ParallelAction(
-                                                            new SequentialAction(
-                                                                    turret.cutoffTurret(),
-                                                                    turret.setTurretAngleTimed(0, 1)
-                                                            ),
-                                                            drivetrain.goToPoseTimed(
-                                                                    Utils.makePoseVector
-                                                                                 (0, 24, 90),
-                                                                    0.25,
-                                                                    Math.toRadians(0.25),
-                                                                    true,
-                                                                    ALL_PATH_TIME
-                                                            )
-                                                    )
-                                            )
+                                        // TODO ----- SHOOT GATE -----
+                                        robot.shootIntake(
+                                                shoot,
+                                                150,
+                                                2,
+                                                2.5,
+                                                ALL_PATH_TIME,
+                                                EXTRA_TRANSFER_TIME,
+                                                SHOOT_TIME
+                                        ),
+                                        new ParallelAction(
+                                                new SequentialAction(
+                                                        turret.cutoffTurret(),
+                                                        turret.setTurretAngleTimed(0, 1)
+                                                ),
+                                                drivetrain.goToPoseTimed(
+                                                        Utils.makePoseVector
+                                                                (0, 24, 90),
+                                                        0.25,
+                                                        Math.toRadians(0.25),
+                                                        true,
+                                                        ALL_PATH_TIME
+                                                )
+                                        )
+                                )
                         )
                 )
         );

@@ -25,7 +25,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.aTeleop.Robot;
 
 @Config
 @Autonomous(name = "Red Near 18 (NO THIRD ROW)", group = "1Comp")

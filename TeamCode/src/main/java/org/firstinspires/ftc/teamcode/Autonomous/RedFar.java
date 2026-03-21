@@ -24,7 +24,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.aTeleop.Robot;
 import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 
 @Config

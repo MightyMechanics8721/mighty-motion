@@ -20,25 +20,25 @@ public class TestLimelightPose extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
-        telemetry.setMsTransmissionInterval(11);
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
-        limelight.pipelineSwitch(0);
-
+        limelight.pipelineSwitch(1);
+        waitForStart();
         /*
          * Starts polling for data.
          */
         limelight.start();
-
         while (opModeIsActive()) {
             LLResult result = limelight.getLatestResult();
             if (result != null) {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", botpose.getPosition().x);
-                    telemetry.addData("ty", botpose.getPosition().y);
-                    telemetry.addData("Botpose", botpose.getPosition().z);
+                    telemetry.addData("x", botpose.getPosition().x * 39.37);
+                    telemetry.addData("y", botpose.getPosition().y * 39.37);
                 }
             }
+            telemetry.update();
         }
     }
 }

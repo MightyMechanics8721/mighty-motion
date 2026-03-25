@@ -51,6 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.6;
     public static double closePos = 0.85;
+    public static double compensationFactor = 0.05;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -251,7 +252,7 @@ public class Shooter {
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 // TODO: Returning false makes this run once but with the PID this will cause it
-                //  to overshoot greatly?
+                // to overshoot greatly?
                 return false;
             }
         };
@@ -354,8 +355,8 @@ public class Shooter {
     public void autoShootFunction(double x, double y) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
-                drivetrain.state.get(0, 0),
-                drivetrain.state.get(1, 0), x,
+                drivetrain.shootWhileMovingPose.get(0, 0),
+                drivetrain.shootWhileMovingPose.get(1, 0), x,
                 y
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
@@ -383,7 +384,7 @@ public class Shooter {
         }
 
         //TODO TUNE THIS CONSTANT VALUE
-        //        double velocity = 2750 * 2 * Math.PI / 60;
+        // double velocity = 2750 * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -455,5 +456,8 @@ public class Shooter {
 
     public static class HardwareConstants {
         double velocityTolerance = 2.0; // (rad/s)
+
     }
+
+
 }

@@ -66,7 +66,7 @@ public class BlueTeleOp extends LinearOpMode {
         Shooter.initialize(hardwareMap);
         Transfer.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
-        // Hardware
+        //Hardware
         turret = Turret.getInstance();
         intake = Intake.getInstance();
         indexer = Indexer.getInstance();
@@ -179,13 +179,15 @@ public class BlueTeleOp extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-60, -60));
-                runningActions.put("stopper", shooter.hardStopOpen());
+                //get current robot position from driftedPose
+                runningActions.put("shooter1", shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_NORMAL * 2 * Math.PI / 60));
+                runningActions.put("stopper1", shooter.hardStopOpen());
+
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

@@ -168,7 +168,7 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                                / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -194,7 +194,6 @@ public class BlueTeleOpNoAuto extends LinearOpMode {
                         shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE * 2 * Math.PI / 60)
                 );
             }
-
             if (gamepad1.dpad_left) {
                 drivetrain.setInitialPose(72 - robotLength / 2, -72 + robotWidth / 2, 180);
             }

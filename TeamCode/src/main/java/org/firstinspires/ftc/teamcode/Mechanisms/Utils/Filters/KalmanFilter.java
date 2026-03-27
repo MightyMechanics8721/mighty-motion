@@ -32,20 +32,20 @@ public class KalmanFilter {
     // Process noise Q — how much odometry drifts per loop cycle.
     // Higher = trust odometry less = camera corrections hit harder.
     // Start here and tune empirically.
-    private static final double Q_POSITION = 2.0;   // mm² per cycle
+    private static final double Q_POSITION = 2.0;   // in² per cycle
     private static final double Q_HEADING = 0.002;  // rad² per cycle
     // Measurement noise R — how noisy the Limelight pose is.
     // Lower = trust camera more. Increase if you see jitter on corrections.
-    private static final double R_POSITION = 50.0;   // mm²
+    private static final double R_POSITION = 50.0;   // in²
     private static final double R_HEADING = 0.05;   // rad²
     // Initial covariance — set high so the first good reading dominates.
     private static final double INITIAL_P = 100.0;
     private static final double MAX_CORRECTION_MM = 500.0;  // reject if jump is unreasonably large
 
     private static final String LIMELIGHT_NAME = "limelight";
-    private static final int LL_PIPELINE = 0; // AprilTag pipeline index
+    private static final int LL_PIPELINE = 1; // AprilTag pipeline index
     private final Limelight3A limelight;
-    // ---- Kalman filters (x in mm, y in mm, heading in rad) ----
+    // ---- Kalman filters (x in in, y in in, heading in rad) ----
     private final KalmanFilter1D kfX;
     private final KalmanFilter1D kfY;
     private final KalmanFilter1D kfHeading;
@@ -118,9 +118,9 @@ public class KalmanFilter {
         if (isLimelightValid(result)) {
             Pose3D botpose = result.getBotpose_MT2();
             if (botpose != null) {
-                // Limelight returns meters → convert to mm
-                double llX = botpose.getPosition().x * 1000.0;
-                double llY = botpose.getPosition().y * 1000.0;
+                // Limelight returns meters → convert to IN
+                double llX = botpose.getPosition().x * 39.37;
+                double llY = botpose.getPosition().y * 39.37;
                 double llYawRad = Math.toRadians(
                         botpose.getOrientation().getYaw(AngleUnit.DEGREES));
 

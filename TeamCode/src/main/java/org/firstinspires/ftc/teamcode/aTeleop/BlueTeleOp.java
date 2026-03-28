@@ -135,7 +135,9 @@ public class BlueTeleOp extends LinearOpMode {
             if (gamepad1.right_trigger > 0.1) {
                 runningActions.put(
                         "transfer", transfer.setIntakeIndexerPower(mult, mult));
-
+            } else if (gamepad1.left_trigger > 0.1 && gamepad1.left_bumper) {
+                runningActions.put(
+                        "transfer", transfer.setIntakeIndexerPower(-mult, -mult));
             } else if (gamepad1.left_trigger > 0.1) {
                 runningActions.put(
                         "transfer", transfer.setIntakeIndexerPower(-mult, 0));

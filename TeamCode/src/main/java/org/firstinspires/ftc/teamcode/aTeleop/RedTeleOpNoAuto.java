@@ -115,7 +115,9 @@ public class RedTeleOpNoAuto extends LinearOpMode {
             if (gamepad1.right_trigger > 0.1) {
                 runningActions.put(
                         "transfer", transfer.setIntakeIndexerPower(mult, mult));
-
+            } else if (gamepad1.left_trigger > 0.1 && gamepad1.left_bumper) {
+                runningActions.put(
+                        "transfer", transfer.setIntakeIndexerPower(-mult, -mult));
             } else if (gamepad1.left_trigger > 0.1) {
                 runningActions.put(
                         "transfer", transfer.setIntakeIndexerPower(-mult, 0));
@@ -167,7 +169,7 @@ public class RedTeleOpNoAuto extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(

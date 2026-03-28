@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Shooter {
-    public static double SHOOTER_SCALE_FACTOR = 1;
+    public static double SHOOTER_SCALE_FACTOR = 1.17;
     public static double SHOOTER_SECONDS_THRESHOLD = 2;
 
     /**
@@ -246,8 +246,11 @@ public class Shooter {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 0);
+                double ffPower = MOTOR_CONTROLLER_CONSTANTS.ffConstants.kS * Math.signum(velocity)
+                        + MOTOR_CONTROLLER_CONSTANTS.ffConstants.kV * velocity;
+                double pidPower = MOTOR_CONTROLLER_CONSTANTS.pidConstants.kP * (velocity
+                        - getVelocity());
+                double power = ffPower + pidPower;
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return false;
@@ -460,7 +463,7 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0.005, 0.0027, 0.12);
+        public FFConstants ffConstants = new FFConstants(0, 0.00132, 0.2);
 
         /**
          * PID constants used for velocity control.

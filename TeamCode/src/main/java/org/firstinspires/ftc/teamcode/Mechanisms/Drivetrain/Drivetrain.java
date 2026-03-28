@@ -55,7 +55,6 @@ public class Drivetrain {
     public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
     public static SimpleMatrix latestState = new SimpleMatrix(6, 1);
     private static Drivetrain instance;
-    public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
     public final DcMotorAdvanced motorLeftBack;
     public final DcMotorAdvanced motorRightBack;
@@ -76,7 +75,7 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
+     * to which name
      */
     private Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -99,8 +98,6 @@ public class Drivetrain {
                 FOLLOWER_CONSTANTS.yPIDConstants,
                 FOLLOWER_CONSTANTS.headingPIDConstants
         );
-
-        this.twoWheelOdo = new TwoWheelOdometery(hardwareMap);
 
         this.mecanumKinematicModel = new MecanumKinematicModel(MECHANICAL_PARAMETERS);
 
@@ -148,8 +145,6 @@ public class Drivetrain {
         this.state = new SimpleMatrix(6, 1);
         this.driftedPose = new SimpleMatrix(3, 1);
         this.preloadPose = new SimpleMatrix(3, 1);
-
-        this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -163,33 +158,6 @@ public class Drivetrain {
         return instance;
     }
 
-
-    /**
-     * Sets the Position of the bot in its start position.
-     * <p>
-     * NOTE: Make sure 'setTelemetry' is called before this.
-     *
-     * @param xPosition Initial X position (inches)
-     * @param yPosition Initial Y position (inches)
-     * @param heading   Initial heading (degrees)
-     */
-    public void setInitialPose(double xPosition, double yPosition, double heading) {
-        this.twoWheelOdo.odo.setPosX(xPosition, DistanceUnit.INCH);
-        this.twoWheelOdo.odo.setPosY(yPosition, DistanceUnit.INCH);
-        this.twoWheelOdo.odo.setHeading(heading, AngleUnit.DEGREES);
-
-        this.localize();
-        this.updateTelemetry();
-    }
-
-    public void localize() {
-        this.state = this.twoWheelOdo.calculate();
-
-        this.driftedPose =
-                this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
-        this.preloadPose =
-                this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
-    }
 
     public Action updateStaticState(boolean isOpModeActive) {
         return new Action() {
@@ -368,7 +336,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -475,7 +443,6 @@ public class Drivetrain {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 drivetrain.setTelemetry(packet);
-                drivetrain.localize();
                 drivetrain.updateTelemetry();
 
                 return drivetrain.goToPoseFunction(
@@ -510,7 +477,6 @@ public class Drivetrain {
                 }
                 time = timer.seconds();
                 drivetrain.setTelemetry(packet);
-                drivetrain.localize();
                 drivetrain.updateTelemetry();
 
                 return drivetrain.goToPoseFunction(
@@ -596,10 +562,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPath(
@@ -615,7 +582,6 @@ public class Drivetrain {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 drivetrain.setTelemetry(packet);
-                drivetrain.localize();
                 drivetrain.updateTelemetry();
 
                 return drivetrain.followPathFunction(
@@ -632,10 +598,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPathTimed(
@@ -661,7 +628,6 @@ public class Drivetrain {
                 }
                 time = timer.seconds();
                 drivetrain.setTelemetry(packet);
-                drivetrain.localize();
                 drivetrain.updateTelemetry();
 
                 return (drivetrain.followPathFunction(
@@ -692,6 +658,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -701,7 +668,6 @@ public class Drivetrain {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 drivetrain.setTelemetry(packet);
-                drivetrain.localize();
                 drivetrain.updateTelemetry();
 
                 double y = ly;
@@ -717,11 +683,11 @@ public class Drivetrain {
                                                         + MECHANICAL_PARAMETERS.latDistToAxles))
                                                 * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 return false;
             }
         };

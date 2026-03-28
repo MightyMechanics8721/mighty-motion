@@ -34,7 +34,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.17;
-    public static PIDConstants pidConstants = new PIDConstants(0.00605, 0.0, 0.00013);
+    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.0004);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
@@ -94,7 +94,8 @@ public class Turret {
 
     public void computeStoppingDistance() {
 
-//        double driftedPosition = Math.signum(turretEncoder.getCurrentPosition()) * //drifted formula;
+        //        double driftedPosition = Math.signum(turretEncoder.getCurrentPosition()) *
+        // drifted formula;
     }
 
     /**
@@ -364,9 +365,9 @@ public class Turret {
     }
 
     public void setTurretPower(double power, boolean run, boolean reset, TelemetryPacket packet) {
-//        if (reset) {
-//            turretEncoder.reset();
-//        }
+        //        if (reset) {
+        //            turretEncoder.reset();
+        //        }
         if (turretEncoder.getVelocity() > maxVelocity) {
             maxVelocity = turretEncoder.getVelocity();
         }

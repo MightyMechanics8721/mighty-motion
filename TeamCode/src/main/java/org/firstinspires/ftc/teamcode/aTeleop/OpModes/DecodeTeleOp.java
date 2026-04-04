@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
@@ -37,6 +38,8 @@ public class DecodeTeleOp extends LinearOpMode {
     Drivetrain drivetrain;
 
     FtcDashboard dashboard;
+    ElapsedTime timer;
+    double lastTime;
 
     private Map<String, Action> runningActions = new HashMap<>();
 
@@ -64,11 +67,11 @@ public class DecodeTeleOp extends LinearOpMode {
         drivetrain = Drivetrain.getInstance();
 
         battery = Battery.getInstance();
-
+        timer = new ElapsedTime();
+        lastTime = 0;
         waitForStart();
 
         while (opModeIsActive()) {
-
             TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
             runningActions.put("stopper", shooter.hardStopClose());
@@ -127,7 +130,7 @@ public class DecodeTeleOp extends LinearOpMode {
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                / 2 * 2 * Math.PI / 60)
+                                                                          / 2 * 2 * Math.PI / 60)
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
@@ -181,9 +184,12 @@ public class DecodeTeleOp extends LinearOpMode {
             runningActions = newActions;
 
             dashboard.sendTelemetryPacket(packet);
-
+            double time = timer.seconds();
             // Dashboard telemetry
-            dashboard.getTelemetry().addData("Shooter Vel", shooter.getVelocity());
+            dashboard.getTelemetry()
+                     .addData("Shooter Vel", (shooter.getVelocity() * 60) / (2 * Math.PI));
+            dashboard.getTelemetry().addData("Looptime", time - lastTime);
+            lastTime = time;
             dashboard.getTelemetry().addData("Battery Voltage", battery.getVoltage());
             dashboard.getTelemetry().update();
         }

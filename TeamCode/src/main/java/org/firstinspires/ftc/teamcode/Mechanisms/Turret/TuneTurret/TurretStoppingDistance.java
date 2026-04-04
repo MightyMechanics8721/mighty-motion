@@ -20,9 +20,9 @@ public class TurretStoppingDistance extends LinearOpMode {
         Turret turret = Turret.getInstance();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         packet.put("velocity", turret.getVelocity());
-
+        turret.setInitialAngle(0);
         waitForStart();
-
+        int count = 0;
         while (opModeIsActive()) {
             boolean run = gamepad1.right_bumper;
             boolean reset = gamepad1.left_bumper;
@@ -32,6 +32,8 @@ public class TurretStoppingDistance extends LinearOpMode {
             packet.put("power", power);
             packet.put("run?", run);
             packet.put("reset", reset);
+            packet.put("loops", count);
+            count++;
             dashboard.sendTelemetryPacket(packet);
         }
     }

@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
 @Config
 public class Shooter {
-    public static double SHOOTER_SCALE_FACTOR = 1.17;
+    public static double SHOOTER_SCALE_FACTOR = 1;
     public static double SHOOTER_SECONDS_THRESHOLD = 2;
 
     /**
@@ -49,7 +49,7 @@ public class Shooter {
      * Configuration names for hardware mapping.
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
-    public static double openPos = 0.6;
+    public static double openPos = 0.5;
     public static double closePos = 0.85;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
@@ -180,7 +180,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 8.8 * distance + 1288;
+        return 9.71 * distance + 1295;
     }
 
     public Action autonomousVelocityInfinite(double desiredVelo) {
@@ -463,12 +463,12 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0, 0.00132, 0.2);
+        public FFConstants ffConstants = new FFConstants(0, 0.002122, 0.2);
 
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.11, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.3, 0, 0);
     }
 
     public static class HardwareConstants {

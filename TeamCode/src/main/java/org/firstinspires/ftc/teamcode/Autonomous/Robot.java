@@ -90,7 +90,14 @@ public class Robot {
         );
     }
 
-    public SequentialAction shoot(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double shootTime) {
+    public SequentialAction shoot(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            double pathTime,
+            double shootTime
+    ) {
         return new SequentialAction(
                 shooter.hardStopClose(),
                 drivetrain.followPathTimed(
@@ -107,7 +114,14 @@ public class Robot {
         );
     }
 
-    public SequentialAction shootFAR(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double shootTime) {
+    public SequentialAction shootFAR(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            double pathTime,
+            double shootTime
+    ) {
         return new SequentialAction(
                 shooter.hardStopClose(),
                 drivetrain.followPathTimed(
@@ -125,7 +139,15 @@ public class Robot {
     }
 
 
-    public ParallelAction shootIntake(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime, double extraTime, double shootTime) {
+    public ParallelAction shootIntake(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            double pathTime,
+            double extraTime,
+            double shootTime
+    ) {
         return new ParallelAction(
                 transfer.ballDetectionTimed(extraTime),
                 new SequentialAction(
@@ -145,14 +167,21 @@ public class Robot {
     }
 
     /**
-     * @param path              PATH
-     * @param maxSpeed          MAXSPEED IN/S
+     * @param path PATH
+     * @param maxSpeed MAXSPEED IN/S
      * @param distanceThreshold IN (radius)
-     * @param angleThreshold    DEGREE
-     * @param pathTime          TIMER
+     * @param angleThreshold DEGREE
+     * @param pathTime TIMER
+     *
      * @return
      */
-    public ParallelAction gatherRow(Path path, double maxSpeed, double distanceThreshold, double angleThreshold, double pathTime) {
+    public ParallelAction gatherRow(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            double pathTime
+    ) {
         return new ParallelAction(
                 shooter.hardStopClose(),
                 drivetrain.followPathTimed(
@@ -169,9 +198,11 @@ public class Robot {
         );
     }
 
-    public ParallelAction gatherGate(Path path, double maxSpeed, double distanceThreshold,
-                                     double angleThreshold, double xGateBackup,
-                                     double yGateBackup, double thetaGateBackup, double pathTime, double backUpTime) {
+    public ParallelAction gatherGate(
+            Path path, double maxSpeed, double distanceThreshold,
+            double angleThreshold, double xGateBackup,
+            double yGateBackup, double thetaGateBackup, double pathTime, double backUpTime
+    ) {
         return new ParallelAction(
                 shooter.hardStopClose(),
                 new SequentialAction(
@@ -181,23 +212,49 @@ public class Robot {
                                         maxSpeed,
                                         0.0,
                                         Math.toRadians
-                                                (0.0),
+                                                    (0.0),
                                         true,
-                                        pathTime),
+                                        pathTime
+                                ),
                         new ParallelAction(
                                 drivetrain.goToPoseTimed(
                                         Utils
                                                 .makePoseVector(
                                                         xGateBackup,
                                                         yGateBackup,
-                                                        thetaGateBackup),
+                                                        thetaGateBackup
+                                                ),
                                         distanceThreshold,
                                         Math.toRadians(
                                                 angleThreshold),
                                         true, backUpTime
                                 ),
                                 transfer.ballDetectionTimed(
-                                        backUpTime))
+                                        backUpTime)
+                        )
+                )
+        );
+    }
+
+    public ParallelAction gatherGateNoBackup(
+            Path path, double maxSpeed, double pathTime,
+            double ballTime
+    ) {
+        return new ParallelAction(
+                shooter.hardStopClose(),
+                new SequentialAction(
+                        drivetrain
+                                .followPathTimed(
+                                        path,
+                                        maxSpeed,
+                                        0.0,
+                                        Math.toRadians
+                                                    (0.0),
+                                        true,
+                                        pathTime
+                                ),
+                        transfer.ballDetectionTimed(
+                                ballTime)
                 )
         );
     }
@@ -216,7 +273,13 @@ public class Robot {
         );
     }
 
-    public SequentialAction gatherLingeringBalls(Path toBalls, Path toShoot, double maxSpeed, double pathTime, double waitTime) {
+    public SequentialAction gatherLingeringBalls(
+            Path toBalls,
+            Path toShoot,
+            double maxSpeed,
+            double pathTime,
+            double waitTime
+    ) {
         return new SequentialAction(
                 drivetrain.followPathTimed(
                         toBalls,
@@ -225,7 +288,8 @@ public class Robot {
                         Math
                                 .toRadians(
                                         2.0),
-                        true, pathTime),
+                        true, pathTime
+                ),
                 transfer.ballDetectionTimed(waitTime),
                 drivetrain.followPathTimed(
                         toShoot,

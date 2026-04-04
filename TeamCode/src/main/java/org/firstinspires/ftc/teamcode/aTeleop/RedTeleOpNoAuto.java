@@ -25,7 +25,7 @@ import java.util.Map;
 @TeleOp(name = "Red TeleOp No Auto", group = "123Competition")
 public class RedTeleOpNoAuto extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2500;
+    public static double SHOOTER_VELOCITY_IDLE = 1500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3200;

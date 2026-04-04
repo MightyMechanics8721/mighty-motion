@@ -10,23 +10,17 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Encoder;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils;
-import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 
@@ -34,12 +28,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.17;
-    public static PIDConstants pidConstants = new PIDConstants(0.005, 0.0, 0.0001);
+    public static PIDConstants pidConstants = new PIDConstants(0.01, 0.0, 0);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
     public static double turretAngle = 0;
     public static double staticTheta = 0.0;
+    public static double linearCoeff = 0.05;
+    public static double quadCoeff = 0.000075;
     public static long staticThetaUpdateCounter = 0;
     public static double bias = 0;
     private static Turret instance;
@@ -92,10 +88,9 @@ public class Turret {
         thetaConstant = angle;
     }
 
-    public void computeStoppingDistance() {
-
-        //        double driftedPosition = Math.signum(turretEncoder.getCurrentPosition()) *
-        // drifted formula;
+    public double computeStoppingDistance(double velocity) {
+        return Math.signum(velocity) * addDrift(Math.abs(
+                velocity));
     }
 
     /**
@@ -243,8 +238,16 @@ public class Turret {
      * Computes PID power to reach a desired angle
      */
     private double computeSpinPower(double desiredAngle) {
-        double pidOutput = pid.calculate(desiredAngle, getAngle(), getVelocity());
+        double velocity = getVelocity();
+        double pidOutput = pid.calculate(
+                desiredAngle,
+                getAngle() + computeStoppingDistance(velocity)
+        );
         return staticGain * Math.signum(pidOutput) + pidOutput;
+    }
+
+    private double addDrift(double vel) {
+        return linearCoeff * vel + quadCoeff * Math.pow(vel, 2);
     }
 
     /**
@@ -368,8 +371,8 @@ public class Turret {
         //        if (reset) {
         //            turretEncoder.reset();
         //        }
-        if (turretEncoder.getVelocity() > maxVelocity) {
-            maxVelocity = turretEncoder.getVelocity();
+        if (Math.abs(this.getVelocity()) > maxVelocity) {
+            maxVelocity = Math.abs(this.getVelocity());
         }
         if (run) {
             set = true;

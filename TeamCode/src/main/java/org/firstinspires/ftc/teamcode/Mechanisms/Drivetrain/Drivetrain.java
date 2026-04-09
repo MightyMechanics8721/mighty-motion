@@ -66,6 +66,7 @@ public class Drivetrain {
     private final PoseController poseController;
     private final PoseController followController;
     private final MecanumKinematicModel mecanumKinematicModel;
+    public SimpleMatrix shootWhileMovingPose;
     public SimpleMatrix driftedPose;
     public SimpleMatrix preloadPose;
     public SimpleMatrix state;
@@ -76,7 +77,7 @@ public class Drivetrain {
      * Initializes the Drivetrain (Wheels of the Robot)
      *
      * @param hardwareMap The hardwareMap of the Robot, describes which port of the hub is connected
-     *                    to which name
+     * to which name
      */
     private Drivetrain(HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -148,6 +149,7 @@ public class Drivetrain {
         this.state = new SimpleMatrix(6, 1);
         this.driftedPose = new SimpleMatrix(3, 1);
         this.preloadPose = new SimpleMatrix(3, 1);
+        this.shootWhileMovingPose = new SimpleMatrix(3, 1);
 
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
     }
@@ -171,7 +173,7 @@ public class Drivetrain {
      *
      * @param xPosition Initial X position (inches)
      * @param yPosition Initial Y position (inches)
-     * @param heading   Initial heading (degrees)
+     * @param heading Initial heading (degrees)
      */
     public void setInitialPose(double xPosition, double yPosition, double heading) {
         this.twoWheelOdo.odo.setPosX(xPosition, DistanceUnit.INCH);
@@ -189,6 +191,45 @@ public class Drivetrain {
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
         this.preloadPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
+        this.state.get(0, 0); // x-position (in)
+        this.state.get(1, 0); // y-position (in)
+        this.state.get(2, 0); // heading (rad)
+        this.state.get(3, 0); // long. velocity (in/s)
+        this.state.get(4, 0); // lat. velocity (in/s)
+        this.state.get(5, 0); // turning rate (rad/s)
+
+        SimpleMatrix bodyFrameVelocities = state.extractMatrix(3, 6, 0, 1);
+        SimpleMatrix fieldFrameVelocites = Utils.rotateBodyToGlobal(
+                bodyFrameVelocities,
+                this.state.get(2, 0)
+        );
+
+        SimpleMatrix shootWhileMovingPose = new SimpleMatrix(3, 1);
+        shootWhileMovingPose.set(
+                0,
+                0,
+                this.state.get(0, 0)
+                        + THRESHOLD_PARAMETERS.compensationFactor * fieldFrameVelocites.get(0, 0)
+
+        );
+        shootWhileMovingPose.set(
+                1,
+                0,
+                this.state.get(1, 0)
+                        + THRESHOLD_PARAMETERS.compensationFactor * fieldFrameVelocites.get(1, 0)
+
+        );
+        shootWhileMovingPose.set(
+                2,
+                0,
+                this.state.get(2, 0)
+                        + THRESHOLD_PARAMETERS.compensationFactorTheta * fieldFrameVelocites.get(
+                        2,
+                        0
+                )
+
+        );
+        this.shootWhileMovingPose = shootWhileMovingPose;
     }
 
     public Action updateStaticState(boolean isOpModeActive) {
@@ -368,7 +409,7 @@ public class Drivetrain {
     /**
      * Sets the Wheels speed and acceleration.
      *
-     * @param wheelSpeeds        Current Wheel Speed
+     * @param wheelSpeeds Current Wheel Speed
      * @param wheelAccelerations Increment of Wheel Speed
      */
     public void setWheelSpeedAcceleration(
@@ -596,10 +637,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPath(
@@ -632,10 +674,11 @@ public class Drivetrain {
 
     /**
      * @param path
-     * @param maxSpeed            ~120
-     * @param distanceThreshold   INCHES
-     * @param angleThreshold      RADIANS
+     * @param maxSpeed ~120
+     * @param distanceThreshold INCHES
+     * @param angleThreshold RADIANS
      * @param useStoppingDistance
+     *
      * @return
      */
     public Action followPathTimed(
@@ -692,6 +735,7 @@ public class Drivetrain {
      * @param ly Left stick Y axis (forward/backward)
      * @param lx Left stick X axis (strafe left/right)
      * @param rX Right stick X axis (rotation)
+     *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
     public Action manualControl(double ly, double lx, double rX) {
@@ -717,11 +761,11 @@ public class Drivetrain {
                                                         + MECHANICAL_PARAMETERS.latDistToAxles))
                                                 * rx
                                 },
-                        }
+                                }
                 );
                 double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
                 setPower(mecanumKinematicModel.inverseKinematics(compensatedTwist)
-                        .scale(1 / denominator));
+                                              .scale(1 / denominator));
                 return false;
             }
         };
@@ -779,5 +823,7 @@ public class Drivetrain {
         public double distanceThreshold = 1.0;
         public double angleThreshold = Math.toRadians(2.5);
         public boolean useStoppingDistance = true;
+        public double compensationFactor = 0;
+        public double compensationFactorTheta = 0.12;
     }
 }

@@ -330,7 +330,7 @@ public class Turret {
      * Auto-aim at a field goal using robot pose
      */
     public Action autoAim(Vector2d goalPos, double autoAimBias) {
-        SimpleMatrix robotState = Drivetrain.getInstance().state;
+        SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
         Pose2d robotPose = new Pose2d(
                 robotState.get(0, 0),
                 robotState.get(1, 0),
@@ -353,7 +353,7 @@ public class Turret {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                SimpleMatrix robotState = Drivetrain.getInstance().state;
+                SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
                 Pose2d robotPose = new Pose2d(
                         robotState.get(0, 0),
                         robotState.get(1, 0),
@@ -408,7 +408,7 @@ public class Turret {
                     timer.reset();
                 }
                 if (timer.seconds() < seconds) {
-                    SimpleMatrix robotState = Drivetrain.getInstance().state;
+                    SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
                     Pose2d robotPose = new Pose2d(
                             robotState.get(0, 0),
                             robotState.get(1, 0),

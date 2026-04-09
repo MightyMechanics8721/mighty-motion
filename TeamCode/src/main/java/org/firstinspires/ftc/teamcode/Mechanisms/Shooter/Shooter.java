@@ -372,8 +372,8 @@ public class Shooter {
     public void autoShootFunction(double x, double y) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
-                drivetrain.state.get(0, 0),
-                drivetrain.state.get(1, 0), x,
+                drivetrain.shootWhileMovingPose.get(0, 0),
+                drivetrain.shootWhileMovingPose.get(1, 0), x,
                 y
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
@@ -468,7 +468,7 @@ public class Shooter {
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.3, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.32, 0, 0);
     }
 
     public static class HardwareConstants {

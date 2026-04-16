@@ -180,7 +180,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 15.2 * distance + 900;
+        return 15.2 * distance + 800;
     }
 
     public Action autonomousVelocityInfinite(double desiredVelo) {

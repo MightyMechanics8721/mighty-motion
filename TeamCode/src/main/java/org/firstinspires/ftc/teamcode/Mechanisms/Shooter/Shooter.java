@@ -180,7 +180,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 9.71 * distance + 1295;
+        return 15.2 * distance + 900;
     }
 
     public Action autonomousVelocityInfinite(double desiredVelo) {
@@ -463,12 +463,12 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0, 0.002122, 0.2);
+        public FFConstants ffConstants = new FFConstants(0, 0.00213, 0.13);
 
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.32, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.05, 0, 0);
     }
 
     public static class HardwareConstants {

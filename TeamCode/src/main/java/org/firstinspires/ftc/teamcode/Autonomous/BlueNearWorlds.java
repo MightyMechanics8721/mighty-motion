@@ -33,11 +33,11 @@ public class BlueNearWorlds extends LinearOpMode {
     public static double yGateBackup = -56.5;
     public static double thetaGateBackup = -120;
     public static double xGate = 12;
-    public static double yGate = -57.5;
-    public static double thetaGate = -120;
-    public static double FOLLOW_PATH_TIME = 1.5; // OPENS GATE
+    public static double yGate = -59;
+    public static double thetaGate = -115;
+    public static double FOLLOW_PATH_TIME = 1.35; // OPENS GATE
     public static double GATE_TRANSFER_TIME = 1.75; // COLLECTS FROM GATE
-    public static double ROW_TRANSFER_TIME = 1.75; // GATHERS GATE
+    public static double ROW_TRANSFER_TIME = 2.25; // GATHERS GATE
     public static double EXTRA_TRANSFER_TIME = 1; // GATHER WHILE MOVING
     public static double ALL_PATH_TIME = 5;
     public static double SHOOT_TIME = 0.4;
@@ -166,14 +166,9 @@ public class BlueNearWorlds extends LinearOpMode {
                                                     ),
 
                                                     // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
+                                                    robot.gatherGateNoBackup(
                                                             gate,
                                                             150,
-                                                            0.5,
-                                                            2.5,
-                                                            xGate,
-                                                            yGate,
-                                                            thetaGate,
                                                             FOLLOW_PATH_TIME,
                                                             GATE_TRANSFER_TIME
                                                     ),
@@ -190,14 +185,9 @@ public class BlueNearWorlds extends LinearOpMode {
                                                     ),
 
                                                     // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
+                                                    robot.gatherGateNoBackup(
                                                             gate,
                                                             150,
-                                                            0.5,
-                                                            2.5,
-                                                            xGate,
-                                                            yGate,
-                                                            thetaGate,
                                                             FOLLOW_PATH_TIME,
                                                             GATE_TRANSFER_TIME
                                                     ),
@@ -213,14 +203,27 @@ public class BlueNearWorlds extends LinearOpMode {
                                                             SHOOT_TIME
                                                     ),
                                                     // TODO ----- GATHER GATE -----
-                                                    robot.gatherGate(
+                                                    robot.gatherGateNoBackup(
                                                             gate,
                                                             150,
-                                                            0.5,
+                                                            FOLLOW_PATH_TIME,
+                                                            GATE_TRANSFER_TIME
+                                                    ),
+
+                                                    // TODO ----- SHOOT GATE -----
+                                                    robot.shootIntake(
+                                                            shoot,
+                                                            150,
+                                                            2,
                                                             2.5,
-                                                            xGate,
-                                                            yGate,
-                                                            thetaGate,
+                                                            ALL_PATH_TIME,
+                                                            EXTRA_TRANSFER_TIME,
+                                                            SHOOT_TIME
+                                                    ),
+                                                    // TODO ----- GATHER GATE -----
+                                                    robot.gatherGateNoBackup(
+                                                            gate,
+                                                            150,
                                                             FOLLOW_PATH_TIME,
                                                             GATE_TRANSFER_TIME
                                                     ),

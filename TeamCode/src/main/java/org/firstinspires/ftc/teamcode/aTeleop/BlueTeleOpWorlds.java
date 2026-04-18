@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.aTeleop.OpModes;
+package org.firstinspires.ftc.teamcode.aTeleop;
+
+import static org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Utils.Utils.calculateDistance;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -7,9 +9,8 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.Autonomous.RedNearWorlds;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
@@ -17,68 +18,99 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Intake.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Mechanisms.Transfer.Transfer;
 import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Filters.LowPassFilter;
-import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Filters.LowPassFilterParameters;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@TeleOp(name = "TESTING TeleOp", group = "Competition")
-public class DecodeTeleOp extends LinearOpMode {
+@TeleOp(name = "Blue TeleOp Worlds", group = "1123Competition")
+public class BlueTeleOpWorlds extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2500;
+    public static double SHOOTER_VELOCITY_IDLE = 1500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
-    public static double SHOOTER_VELOCITY_FAR = 3500;
+    public static double SHOOTER_VELOCITY_FAR = 3200;
+    public static double robotLength = 14.25; //in
+    public static double robotWidth = 16.75; //in
+    public static double dist = 80;
     boolean rumbleStop;
     Battery battery;
     Turret turret;
     Indexer indexer;
     Intake intake;
     Shooter shooter;
-    //    DistanceSensor distanceSensor;
     Transfer transfer;
     Drivetrain drivetrain;
-
     FtcDashboard dashboard;
-    ElapsedTime timer;
-    LowPassFilter filter;
-    double lastTime;
+    private double mult = 1;
+    private double myCacheAngle = 0.0;
+    private double myCacheCount = 0.0;
 
     private Map<String, Action> runningActions = new HashMap<>();
 
     @Override
     public void runOpMode() {
+        double autoAimBias = 0.0;
+
+        myCacheAngle = Turret.staticTheta;
+        myCacheCount = Turret.staticThetaUpdateCounter;
 
         dashboard = FtcDashboard.getInstance();
-        double autoAimBias = 0.0;
+        TelemetryPacket packet = new TelemetryPacket();
+
         Battery.initialize(hardwareMap);
         Turret.initialize(hardwareMap);
         Indexer.initialize(hardwareMap);
         Intake.initialize(hardwareMap);
         Shooter.initialize(hardwareMap);
-        //        DistanceSensor.initialize(hardwareMap);
         Transfer.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
-
         // Hardware
         turret = Turret.getInstance();
         intake = Intake.getInstance();
         indexer = Indexer.getInstance();
         shooter = Shooter.getInstance();
-        //        distanceSensor = DistanceSensor.getInstance();
         transfer = Transfer.getInstance();
         drivetrain = Drivetrain.getInstance();
-        filter = new LowPassFilter(new LowPassFilterParameters(0.99));
-
         battery = Battery.getInstance();
-        timer = new ElapsedTime();
-        lastTime = 0;
+
+        drivetrain.setTelemetry(packet);
+
+        drivetrain.setInitialPose(
+                RedNearWorlds.staticRobotState.get(0, 0),
+                RedNearWorlds.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0))
+        );
+        turret.setInitialAngle(RedNearWorlds.staticTurretAngle);
+        packet.put("x", RedNearWorlds.staticRobotState.get(0, 0));
+        packet.put("y", RedNearWorlds.staticRobotState.get(1, 0));
+        packet.put("theta", Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0)));
+        packet.put("turret", RedNearWorlds.staticTurretAngle);
+        packet.put("x_real", drivetrain.state.get(0, 0));
+        packet.put("y_real", drivetrain.state.get(1, 0));
+        packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
+        packet.put("turret_real", turret.getAngle());
+        dashboard.sendTelemetryPacket(packet);
         waitForStart();
+        drivetrain.setInitialPose(
+                RedNearWorlds.staticRobotState.get(0, 0),
+                RedNearWorlds.staticRobotState.get(1, 0),
+                Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0))
+        );
+        turret.setInitialAngle(RedNearWorlds.staticTurretAngle);
 
         while (opModeIsActive()) {
-            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("x", RedNearWorlds.staticRobotState.get(0, 0));
+            packet.put("y", RedNearWorlds.staticRobotState.get(1, 0));
+            packet.put("theta", Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0)));
+            packet.put("turret", RedNearWorlds.staticTurretAngle);
+            packet.put("x_real", drivetrain.state.get(0, 0));
+            packet.put("y_real", drivetrain.state.get(1, 0));
+            packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
+            packet.put("turret_real", turret.getAngle());
+            packet.put("main loop turret angle (deg)", turret.getAngle());
+            dashboard.sendTelemetryPacket(packet);
+            //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
             runningActions.put("stopper", shooter.hardStopClose());
             // ----- DRIVETRAIN -----
@@ -91,16 +123,27 @@ public class DecodeTeleOp extends LinearOpMode {
             );
 
             //             ----- INTAKE && INDEXER -----
+            if (calculateDistance(
+                    drivetrain.state.get(0, 0),
+                    drivetrain.state.get(1, 0), -60,
+                    -60
+            ) > dist) {
+                mult = 0.75;
+            } else {
+                mult = 1;
+            }
             if (gamepad1.right_trigger > 0.1 || gamepad2.right_bumper) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(1, 1));
-
+                        "transfer", transfer.setIntakeIndexerPower(mult, mult));
+            } else if (gamepad1.left_trigger > 0.1 && gamepad1.left_bumper) {
+                runningActions.put(
+                        "transfer", transfer.setIntakeIndexerPower(-mult, -mult));
             } else if (gamepad1.left_trigger > 0.1) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(-1, 0));
+                        "transfer", transfer.setIntakeIndexerPower(-mult, 0));
             } else if (gamepad1.left_bumper) {
                 runningActions.put(
-                        "transfer", transfer.setIntakeIndexerPower(0, -1));
+                        "transfer", transfer.setIntakeIndexerPower(0, -mult));
             } else if (gamepad1.right_bumper) {
                 runningActions.put(
                         "transfer", transfer.ballDetection());
@@ -109,10 +152,6 @@ public class DecodeTeleOp extends LinearOpMode {
                         "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
-            if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60), autoAimBias));
-            }
-
             if (gamepad2.dpad_up) {
                 SHOOTER_VELOCITY_FAR += 5;
             } else if (gamepad2.dpad_down) {
@@ -123,6 +162,17 @@ public class DecodeTeleOp extends LinearOpMode {
                 autoAimBias += 0.5;
             } else if (gamepad2.dpad_right) {
                 autoAimBias -= 0.5;
+            }
+
+            if (gamepad2.dpad_up) {
+                autoAimBias += 0.5;
+            } else if (gamepad2.dpad_down) {
+                autoAimBias -= 0.5;
+            }
+            if (gamepad2.left_trigger > 0.05) {
+                runningActions.put("turret", turret.autoAim(new Vector2d(-58, -58), autoAimBias));
+            } else {
+                runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }
 
             if (gamepad1.dpad_up) {
@@ -167,6 +217,12 @@ public class DecodeTeleOp extends LinearOpMode {
                 );
             }
 
+            if (gamepad1.dpad_left) {
+                drivetrain.setInitialPose(72 - robotLength / 2, -72 + robotWidth / 2, 180);
+            }
+            if (gamepad1.dpad_right) {
+                drivetrain.setInitialPose(72 - robotLength / 2, 72 - robotWidth / 2, 180);
+            }
             if (transfer.ballCount == 3) {
                 if (!rumbleStop) {
                     gamepad1.rumble(1000);
@@ -204,16 +260,9 @@ public class DecodeTeleOp extends LinearOpMode {
             runningActions = newActions;
 
             dashboard.sendTelemetryPacket(packet);
-            double time = timer.seconds();
+
             // Dashboard telemetry
-            dashboard.getTelemetry()
-                     .addData("Shooter Vel", (shooter.getVelocity() * 60) / (2 * Math.PI));
-            dashboard.getTelemetry().addData(
-                    "Intake Current",
-                    intake.getIntakeMotor().getCurrent(CurrentUnit.MILLIAMPS).toString()
-            );
-            dashboard.getTelemetry().addData("Looptime", time - lastTime);
-            lastTime = time;
+            dashboard.getTelemetry().addData("Shooter Vel", shooter.getVelocity());
             dashboard.getTelemetry().addData("Battery Voltage", battery.getVoltage());
             dashboard.getTelemetry().update();
         }

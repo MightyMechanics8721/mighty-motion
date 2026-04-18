@@ -64,6 +64,10 @@ public class Intake {
         intakeMotor.setPower(power);
     }
 
+    public DcMotorAdvanced getIntakeMotor() {
+        return intakeMotor;
+    }
+
     public static class ConfigurationNames {
 
         public String intakeMotorName = "intake";

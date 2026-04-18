@@ -126,7 +126,7 @@ public class BlueTeleOp extends LinearOpMode {
             if (calculateDistance(
                     drivetrain.state.get(0, 0),
                     drivetrain.state.get(1, 0), -60,
-                    60
+                    -60
             ) > dist) {
                 mult = 0.75;
             } else {

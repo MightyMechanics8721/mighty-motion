@@ -10,7 +10,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Autonomous.RedNearWorlds;
+import org.firstinspires.ftc.teamcode.Autonomous.BlueNearWorlds;
 import org.firstinspires.ftc.teamcode.Hardware.Sensors.Battery;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Indexer.Indexer;
@@ -77,15 +77,15 @@ public class BlueTeleOpWorlds extends LinearOpMode {
         drivetrain.setTelemetry(packet);
 
         drivetrain.setInitialPose(
-                RedNearWorlds.staticRobotState.get(0, 0),
-                RedNearWorlds.staticRobotState.get(1, 0),
-                Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0))
+                BlueNearWorlds.staticRobotState.get(0, 0),
+                BlueNearWorlds.staticRobotState.get(1, 0),
+                Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0))
         );
-        turret.setInitialAngle(RedNearWorlds.staticTurretAngle);
-        packet.put("x", RedNearWorlds.staticRobotState.get(0, 0));
-        packet.put("y", RedNearWorlds.staticRobotState.get(1, 0));
-        packet.put("theta", Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0)));
-        packet.put("turret", RedNearWorlds.staticTurretAngle);
+        turret.setInitialAngle(BlueNearWorlds.staticTurretAngle);
+        packet.put("x", BlueNearWorlds.staticRobotState.get(0, 0));
+        packet.put("y", BlueNearWorlds.staticRobotState.get(1, 0));
+        packet.put("theta", Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0)));
+        packet.put("turret", BlueNearWorlds.staticTurretAngle);
         packet.put("x_real", drivetrain.state.get(0, 0));
         packet.put("y_real", drivetrain.state.get(1, 0));
         packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
@@ -93,17 +93,17 @@ public class BlueTeleOpWorlds extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         waitForStart();
         drivetrain.setInitialPose(
-                RedNearWorlds.staticRobotState.get(0, 0),
-                RedNearWorlds.staticRobotState.get(1, 0),
-                Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0))
+                BlueNearWorlds.staticRobotState.get(0, 0),
+                BlueNearWorlds.staticRobotState.get(1, 0),
+                Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0))
         );
-        turret.setInitialAngle(RedNearWorlds.staticTurretAngle);
+        turret.setInitialAngle(BlueNearWorlds.staticTurretAngle);
 
         while (opModeIsActive()) {
-            packet.put("x", RedNearWorlds.staticRobotState.get(0, 0));
-            packet.put("y", RedNearWorlds.staticRobotState.get(1, 0));
-            packet.put("theta", Math.toDegrees(RedNearWorlds.staticRobotState.get(2, 0)));
-            packet.put("turret", RedNearWorlds.staticTurretAngle);
+            packet.put("x", BlueNearWorlds.staticRobotState.get(0, 0));
+            packet.put("y", BlueNearWorlds.staticRobotState.get(1, 0));
+            packet.put("theta", Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0)));
+            packet.put("turret", BlueNearWorlds.staticTurretAngle);
             packet.put("x_real", drivetrain.state.get(0, 0));
             packet.put("y_real", drivetrain.state.get(1, 0));
             packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
@@ -154,8 +154,10 @@ public class BlueTeleOpWorlds extends LinearOpMode {
             // ----- TURRET -----
             if (gamepad2.dpad_up) {
                 SHOOTER_VELOCITY_FAR += 5;
+                Shooter.constant += 5;
             } else if (gamepad2.dpad_down) {
                 SHOOTER_VELOCITY_FAR -= 5;
+                Shooter.constant -= 5;
             }
 
             if (gamepad2.dpad_left) {
@@ -184,7 +186,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-60, -60));
+                runningActions.put("shooter", shooter.autoShoot(-70, -70));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

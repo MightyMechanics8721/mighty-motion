@@ -152,21 +152,17 @@ public class RedTeleOp extends LinearOpMode {
                         "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
+            if (gamepad2.dpad_up) {
+                SHOOTER_VELOCITY_FAR += 5;
+                Shooter.constant += 5;
+            } else if (gamepad2.dpad_down) {
+                SHOOTER_VELOCITY_FAR -= 5;
+                Shooter.constant -= 5;
+            }
+
             if (gamepad2.dpad_left) {
-                Turret.bias += 1;
+                autoAimBias += 0.5;
             } else if (gamepad2.dpad_right) {
-                Turret.bias -= 1;
-            }
-
-            if (gamepad2.dpad_up) {
-                autoAimBias += 0.5;
-            } else if (gamepad2.dpad_down) {
-                autoAimBias -= 0.5;
-            }
-
-            if (gamepad2.dpad_up) {
-                autoAimBias += 0.5;
-            } else if (gamepad2.dpad_down) {
                 autoAimBias -= 0.5;
             }
             if (gamepad2.left_trigger > 0.05) {
@@ -184,7 +180,7 @@ public class RedTeleOp extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-60, 60));
+                runningActions.put("shooter", shooter.autoShoot(-70, 70));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

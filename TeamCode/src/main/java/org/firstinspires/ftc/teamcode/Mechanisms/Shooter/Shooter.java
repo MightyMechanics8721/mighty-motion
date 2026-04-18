@@ -51,6 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.85;
+    public static double constant = 750;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -180,7 +181,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 15.2 * distance + 800;
+        return 15.2 * distance + constant;
     }
 
     public Action autonomousVelocityInfinite(double desiredVelo) {

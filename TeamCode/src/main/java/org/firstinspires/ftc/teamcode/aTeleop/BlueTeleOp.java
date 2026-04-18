@@ -152,21 +152,23 @@ public class BlueTeleOp extends LinearOpMode {
                         "transfer", transfer.setIntakeIndexerPower(0, 0));
             }
             // ----- TURRET -----
-            if (gamepad2.dpad_left) {
-                Turret.bias += 1;
-            } else if (gamepad2.dpad_right) {
-                Turret.bias -= 1;
+            if (gamepad2.dpad_up) {
+                SHOOTER_VELOCITY_FAR += 5;
+                Shooter.constant += 5;
+            } else if (gamepad2.dpad_down) {
+                SHOOTER_VELOCITY_FAR -= 5;
+                Shooter.constant -= 5;
             }
 
-            if (gamepad2.dpad_up) {
+            if (gamepad2.dpad_left) {
                 autoAimBias += 0.5;
-            } else if (gamepad2.dpad_down) {
+            } else if (gamepad2.dpad_right) {
                 autoAimBias -= 0.5;
             }
 
 
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-60, -60), autoAimBias));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-70, -70), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }

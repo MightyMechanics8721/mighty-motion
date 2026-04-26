@@ -76,19 +76,6 @@ public class Robot {
         );
     }
 
-    /**
-     * ----- Wrap in parallel action with path -----
-     */
-    public SequentialAction moveShoot() {
-        return new SequentialAction(
-                transfer.setIntakeIndexerPower(1, 1),
-                new SleepAction(0.5),
-                new ParallelAction(
-                        transfer.setIntakeIndexerPower(0, 0),
-                        shooter.hardStopClose()
-                )
-        );
-    }
 
     public SequentialAction shoot(
             Path path,
@@ -264,11 +251,14 @@ public class Robot {
      */
     public SequentialAction moveShootFAR() {
         return new SequentialAction(
+                shooter.hardStopOpen(),
                 transfer.setIntakeIndexerPower(0.3, 0.3),
+                shooter.autoShoot(-58, 58),
                 new SleepAction(1),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()
+
                 )
         );
     }

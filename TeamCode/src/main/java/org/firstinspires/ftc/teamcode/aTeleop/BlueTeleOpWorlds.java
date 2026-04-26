@@ -33,6 +33,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;
+    public static double autoShootMultiplier = 1.0;
     boolean rumbleStop;
     Battery battery;
     Turret turret;
@@ -186,7 +187,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-70, -70));
+                runningActions.put("shooter", shooter.autoShoot(-70, -70, autoShootMultiplier));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

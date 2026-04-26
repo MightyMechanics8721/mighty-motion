@@ -31,6 +31,8 @@ public class DecodeTeleOp extends LinearOpMode {
     public static double SHOOTER_VELOCITY_NORMAL = 2500;
     public static double SHOOTER_VELOCITY_CLOSE = 2250;
     public static double SHOOTER_VELOCITY_FAR = 3500;
+    public static double autoShootMultiplier = 1.0;
+    public static double getAutoShootDistanceSubtraction = 12.0;
     boolean rumbleStop;
     Battery battery;
     Turret turret;
@@ -134,7 +136,7 @@ public class DecodeTeleOp extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-70, -70));
+                runningActions.put("shooter", shooter.autoShoot(-70+getAutoShootDistanceSubtraction, -70+getAutoShootDistanceSubtraction, autoShootMultiplier));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

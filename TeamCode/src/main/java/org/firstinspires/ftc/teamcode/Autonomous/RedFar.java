@@ -29,11 +29,11 @@ import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 @Config
 @Autonomous(name = "RED FAR Autonomous  3/7", group = "TEST")
 public class RedFar extends LinearOpMode {
-    public static double ROW_TRANSFER_TIME = 2;
+    public static double ROW_TRANSFER_TIME = 6;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
-    public double SHOOT_TIME = 0.4;
-    public double ALL_TIME = 4;
+    public double SHOOT_TIME = 4;
+    public double ALL_TIME = 6;
 
     @Override
     public void runOpMode() {
@@ -71,13 +71,13 @@ public class RedFar extends LinearOpMode {
         double[][] TRTosH = {{36, 57}, {50, 30}, {60, 24}};
         double[][] sHToLB = {{60, 24}, {45, 36}, {45, 48}, {55, 60}};
         double[][] LBTosH = {{55, 60}, {60, 24}};
-        Path shootToHumanPlayer = new Path(sHTohP, Math.toRadians(180), false, false);
-        Path shootToHumanPlayerContinued = new Path(shTohPContinued, Math.toRadians(180), false, false);
-        Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(180), false, false);
+        Path shootToHumanPlayer = new Path(sHTohP, Math.toRadians(0), false, true);
+        Path shootToHumanPlayerContinued = new Path(shTohPContinued, Math.toRadians(90), false, false);
+        Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(0), false, false);
         Path shootToThirdRow = new Path(sHToTR, Math.toRadians(90), false, true);
 
-        Path thirdRowToShoot = new Path(TRTosH, Math.toRadians(180), true, false);
-        Path lingeringBallsToShoot = new Path(LBTosH, Math.toRadians(180), true, false);
+        Path thirdRowToShoot = new Path(TRTosH, Math.toRadians(0), true, false);
+        Path lingeringBallsToShoot = new Path(LBTosH, Math.toRadians(0), true, false);
         Path humanPlayerToShoot = new Path(hPtoShoot, Math.toRadians(90), true, false);
 
 
@@ -98,27 +98,32 @@ public class RedFar extends LinearOpMode {
                         updateTurretAngle(),
                         updateRobotState(),
                         new SleepAction(1),
-                        new SequentialAction(
-                                robot.moveShootFAR(), // ----- SHOOT PRELOAD -----
+                        new ParallelAction(
+                                turret.autoAimInfinite(new Vector2d(
+                                        -68,
+                                        68
+                                )),
+                                new SequentialAction(
+                                        robot.moveShootFAR(), // ----- SHOOT PRELOAD -----
 
-                                //  ----- INTAKE HUMAN PLAYER -----
-                                drivetrain.followPathTimed(shootToHumanPlayer, 150, 1.5, 2.0, true, ROW_TRANSFER_TIME),
-                                robot.gatherRow(shootToHumanPlayerContinued, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
+                                        //  ----- INTAKE HUMAN PLAYER -----
+                                        drivetrain.followPathTimed(shootToHumanPlayer, 150, 1.5, 2.0, true, ROW_TRANSFER_TIME),
+                                        robot.gatherRow(shootToHumanPlayerContinued, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
 
-                                // ----- SHOOT HUMAN PLAYER -----
-                                robot.shootFAR(humanPlayerToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
+                                        // ----- SHOOT HUMAN PLAYER -----
+                                        robot.shootFAR(humanPlayerToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
 
-                                // ----- INTAKE THIRD ROW -----
-                                robot.gatherRow(shootToThirdRow, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
+                                        // ----- INTAKE THIRD ROW -----
+                                        robot.gatherRow(shootToThirdRow, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
 
-                                // ----- SHOOT THIRD ROW -----
-                                robot.shootFAR(thirdRowToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
+                                        // ----- SHOOT THIRD ROW -----
+                                        robot.shootFAR(thirdRowToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
 
-                                // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS FROM GATE) -----
-                                robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
-                                robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
-                                robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15)
-                        )
+                                        // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS FROM GATE) -----
+                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
+                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
+                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15)
+                                ))
 
                 )
 

@@ -126,6 +126,20 @@ public class Shooter {
             }
         };
     }
+    /**
+     * Automatically calculates shooter power based on distance from robot coordinates to goal
+     * coordinate INSTANT action
+     */
+    public Action autoShoot(double x, double y, double powerMultiplier) {
+        return new Action() {
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                autoShootFunctionMultipliedPower(x, y, powerMultiplier);
+                return false;
+            }
+        };
+    }
 
     /**
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
@@ -382,6 +396,23 @@ public class Shooter {
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
         shooterMotor2.setPower(power);
+    }
+    /**
+     * Automatically calculates shooter power based on distance from robot coordinates to goal
+     * coordinate
+     */
+    public void autoShootFunctionMultipliedPower(double x, double y, double powerMultiplier) {
+        Drivetrain drivetrain = Drivetrain.getInstance();
+        double distance = calculateDistance(
+                drivetrain.shootWhileMovingPose.get(0, 0),
+                drivetrain.shootWhileMovingPose.get(1, 0), x,
+                y
+        );
+        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double power = velocityPidController.calculate(velocity, getVelocity())
+                + velocityFeedForwardController.calculate(velocity, 0);
+        shooterMotor1.setPower(power*powerMultiplier);
+        shooterMotor2.setPower(power*powerMultiplier);
     }
 
     /**

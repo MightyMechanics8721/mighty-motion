@@ -167,11 +167,6 @@ public class BlueTeleOpWorlds extends LinearOpMode {
                 autoAimBias -= 0.5;
             }
 
-            if (gamepad2.dpad_up) {
-                autoAimBias += 0.5;
-            } else if (gamepad2.dpad_down) {
-                autoAimBias -= 0.5;
-            }
             if (gamepad2.left_trigger > 0.05) {
                 runningActions.put("turret", turret.autoAim(new Vector2d(-58, -58), autoAimBias));
             } else {

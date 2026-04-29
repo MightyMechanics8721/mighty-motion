@@ -40,7 +40,7 @@ public class BlueNearWorlds extends LinearOpMode {
     public static double ROW_TRANSFER_TIME = 2.25; // GATHERS GATE
     public static double EXTRA_TRANSFER_TIME = 1; // GATHER WHILE MOVING
     public static double ALL_PATH_TIME = 5;
-    public static double SHOOT_TIME = 0.4;
+    public static double SHOOT_TIME = 0.45;
     //    public static double preloadTime = 0.45;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;

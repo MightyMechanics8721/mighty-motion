@@ -50,7 +50,7 @@ public class Shooter {
      */
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
-    public static double closePos = 0.85;
+    public static double closePos = 0.65;
     public static double constant = 1434;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
@@ -406,15 +406,15 @@ public class Shooter {
     public void autoShootFunctionMultipliedPower(double x, double y, double powerMultiplier) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
-                drivetrain.shootWhileMovingPose.get(0, 0),
-                drivetrain.shootWhileMovingPose.get(1, 0), x,
+                drivetrain.preloadPose.get(0, 0),
+                drivetrain.preloadPose.get(1, 0), x,
                 y
         );
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
-        shooterMotor1.setPower(power * powerMultiplier);
-        shooterMotor2.setPower(power * powerMultiplier);
+        shooterMotor1.setPower(power);
+        shooterMotor2.setPower(power);
     }
 
     /**

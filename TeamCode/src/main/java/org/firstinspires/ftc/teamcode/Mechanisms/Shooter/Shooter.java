@@ -51,7 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.85;
-    public static double constant = 750;
+    public static double constant = 1434;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -126,6 +126,7 @@ public class Shooter {
             }
         };
     }
+
     /**
      * Automatically calculates shooter power based on distance from robot coordinates to goal
      * coordinate INSTANT action
@@ -195,7 +196,7 @@ public class Shooter {
     }
 
     public double calculateVelocity(double distance) {
-        return 15.2 * distance + constant;
+        return 0.103 * distance * distance - 4.53 * distance + constant;
     }
 
     public Action autonomousVelocityInfinite(double desiredVelo) {
@@ -397,6 +398,7 @@ public class Shooter {
         shooterMotor1.setPower(power);
         shooterMotor2.setPower(power);
     }
+
     /**
      * Automatically calculates shooter power based on distance from robot coordinates to goal
      * coordinate
@@ -411,8 +413,8 @@ public class Shooter {
         double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
-        shooterMotor1.setPower(power*powerMultiplier);
-        shooterMotor2.setPower(power*powerMultiplier);
+        shooterMotor1.setPower(power * powerMultiplier);
+        shooterMotor2.setPower(power * powerMultiplier);
     }
 
     /**

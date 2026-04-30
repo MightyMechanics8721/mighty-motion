@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 public class Turret {
     // --- Tunable ---
     public static double staticGain = 0.1;
-    public static PIDConstants pidConstants = new PIDConstants(0.015, 0.0, 0);
+    public static PIDConstants pidConstants = new PIDConstants(0.013, 0.0, 0);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();

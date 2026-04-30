@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.FFConstants;
 import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.Constants.PIDConstants;
@@ -70,6 +71,7 @@ public class Drivetrain {
     public SimpleMatrix driftedPose;
     public SimpleMatrix preloadPose;
     public SimpleMatrix state;
+    public double current = 0;
     private TelemetryPacket packet;
 
 
@@ -83,6 +85,7 @@ public class Drivetrain {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            current = hub.getCurrent(CurrentUnit.MILLIAMPS);
         }
 
         this.motorController = new DrivetrainMotorController(FF_CONSTANTS);

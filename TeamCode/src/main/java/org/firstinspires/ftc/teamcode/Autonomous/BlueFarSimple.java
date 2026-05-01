@@ -28,13 +28,11 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 
 @Config
-@Autonomous(name = "Blue FAR Autonomous  3/7", group = "TEST")
-public class BlueFar extends LinearOpMode {
-    public static double ROW_TRANSFER_TIME = 2;
+@Autonomous(name = "Blue FAR  Worlds", group = "TEST")
+public class BlueFarSimple extends LinearOpMode {
+
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
-    public double SHOOT_TIME = 0.4;
-    public double ALL_TIME = 4;
 
     @Override
     public void runOpMode() {
@@ -96,90 +94,25 @@ public class BlueFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                                    shooter.autonomousVelocityInfinite(3200),
-                                    turret.autoAimInfinite(new Vector2d(
-                                            -68,
-                                            -68
-                                    )),
+                                    shooter.autoShootMovingInfinite(-60, -60),
+                                    turret.autoAimTimed(
+                                            new Vector2d(
+                                                    -68,
+                                                    -68
+                                            ), 20
+                                    ),
                                     updateTurretAngle(),
                                     updateRobotState(),
-                                    new SleepAction(1),
                                     new SequentialAction(
-                                            robot.moveShootFAR(),
-                                            // ----- SHOOT PRELOAD -----
-
-                                            //  ----- INTAKE HUMAN PLAYER -----
-                                            drivetrain.followPathTimed(
-                                                    shootToHumanPlayer,
-                                                    150,
-                                                    1.5,
-                                                    2.0,
-                                                    true,
-                                                    ROW_TRANSFER_TIME
-                                            ),
-                                            robot.gatherRow(
-                                                    shootToHumanPlayerContinued,
-                                                    150,
-                                                    1.5,
-                                                    2.0,
-                                                    ROW_TRANSFER_TIME
-                                            ),
-
-                                            // ----- SHOOT HUMAN PLAYER -----
-                                            robot.shootFAR(
-                                                    humanPlayerToShoot,
-                                                    150,
-                                                    1.5,
-                                                    2.0,
-                                                    ALL_TIME,
-                                                    SHOOT_TIME
-                                            ),
-
-                                            // ----- INTAKE THIRD ROW -----
-                                            robot.gatherRow(
-                                                    shootToThirdRow,
-                                                    150,
-                                                    1.5,
-                                                    2.0,
-                                                    ROW_TRANSFER_TIME
-                                            ),
-
-                                            // ----- SHOOT THIRD ROW -----
-                                            robot.shootFAR(
-                                                    thirdRowToShoot,
-                                                    150,
-                                                    1.5,
-                                                    2.0,
-                                                    ALL_TIME,
-                                                    SHOOT_TIME
-                                            ),
-
-
-                                            // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS
-                                            // FROM GATE) -----
-                                            robot.gatherLingeringBalls(
-                                                    shootToLingeringBalls,
-                                                    lingeringBallsToShoot,
-                                                    150,
-                                                    ALL_TIME,
-                                                    4
-                                            ),
-                                            robot.gatherLingeringBalls(
-                                                    shootToLingeringBalls,
-                                                    lingeringBallsToShoot,
-                                                    150,
-                                                    ALL_TIME,
-                                                    4
-                                            ),
+                                            new SleepAction(1),
+                                            robot.shootFAR(),
                                             drivetrain.goToPoseTimed(
                                                     Utils.makePoseVector(
                                                             64, -48
                                                             , -180
                                                     ), 1, Math.toRadians(1), true, 5
                                             )
-
                                     )
-
                 )
 
         );

@@ -72,7 +72,12 @@ public class RedFar extends LinearOpMode {
         double[][] sHToLB = {{60, 24}, {45, 36}, {45, 48}, {55, 60}};
         double[][] LBTosH = {{55, 60}, {60, 24}};
         Path shootToHumanPlayer = new Path(sHTohP, Math.toRadians(0), false, true);
-        Path shootToHumanPlayerContinued = new Path(shTohPContinued, Math.toRadians(90), false, false);
+        Path shootToHumanPlayerContinued = new Path(
+                shTohPContinued,
+                Math.toRadians(90),
+                false,
+                false
+        );
         Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(0), false, false);
         Path shootToThirdRow = new Path(sHToTR, Math.toRadians(90), false, true);
 
@@ -90,42 +95,90 @@ public class RedFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                        shooter.autonomousVelocityInfinite(3200),
-                        turret.autoAimInfinite(new Vector2d(
-                                -72,
-                                72
-                        )),
-                        updateTurretAngle(),
-                        updateRobotState(),
-                        new SleepAction(1),
-                        new ParallelAction(
-                                turret.autoAimInfinite(new Vector2d(
-                                        -68,
-                                        68
-                                )),
-                                new SequentialAction(
-                                        robot.moveShootFAR(), // ----- SHOOT PRELOAD -----
+                                    shooter.autonomousVelocityInfinite(3200),
+                                    turret.autoAimInfinite(new Vector2d(
+                                            -68,
+                                            68
+                                    )),
+                                    updateTurretAngle(),
+                                    updateRobotState(),
+                                    new SleepAction(1),
+                                    new SequentialAction(
+                                            robot.moveShootFAR(),
+                                            // ----- SHOOT PRELOAD -----
 
-                                        //  ----- INTAKE HUMAN PLAYER -----
-                                        drivetrain.followPathTimed(shootToHumanPlayer, 150, 1.5, 2.0, true, ROW_TRANSFER_TIME),
-                                        robot.gatherRow(shootToHumanPlayerContinued, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
+                                            //  ----- INTAKE HUMAN PLAYER -----
+                                            drivetrain.followPathTimed(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    true,
+                                                    ROW_TRANSFER_TIME
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayerContinued,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    ROW_TRANSFER_TIME
+                                            ),
 
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFAR(humanPlayerToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
+                                            // ----- SHOOT HUMAN PLAYER -----
+                                            robot.shootFAR(
+                                                    humanPlayerToShoot,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    ALL_TIME,
+                                                    SHOOT_TIME
+                                            ),
 
-                                        // ----- INTAKE THIRD ROW -----
-                                        robot.gatherRow(shootToThirdRow, 150, 1.5, 2.0, ROW_TRANSFER_TIME),
+                                            // ----- INTAKE THIRD ROW -----
+                                            robot.gatherRow(
+                                                    shootToThirdRow,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    ROW_TRANSFER_TIME
+                                            ),
 
-                                        // ----- SHOOT THIRD ROW -----
-                                        robot.shootFAR(thirdRowToShoot, 150, 1.5, 2.0, ALL_TIME, SHOOT_TIME),
+                                            // ----- SHOOT THIRD ROW -----
+                                            robot.shootFAR(
+                                                    thirdRowToShoot,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    ALL_TIME,
+                                                    SHOOT_TIME
+                                            ),
 
-                                        // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS FROM GATE) -----
-                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
-                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15),
-                                        robot.gatherLingeringBalls(shootToLingeringBalls, lingeringBallsToShoot, 150, ALL_TIME, 15)
-                                ))
-
+                                            // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS
+                                            // FROM GATE) -----
+                                            robot.gatherLingeringBalls(
+                                                    shootToLingeringBalls,
+                                                    lingeringBallsToShoot,
+                                                    150,
+                                                    ALL_TIME,
+                                                    15
+                                            ),
+                                            robot.gatherLingeringBalls(
+                                                    shootToLingeringBalls,
+                                                    lingeringBallsToShoot,
+                                                    150,
+                                                    ALL_TIME,
+                                                    15
+                                            ),
+                                            robot.gatherLingeringBalls(
+                                                    shootToLingeringBalls,
+                                                    lingeringBallsToShoot,
+                                                    150,
+                                                    ALL_TIME,
+                                                    15
+                                            )
+                                    )
                 )
+
 
         );
     }
@@ -140,7 +193,7 @@ public class RedFar extends LinearOpMode {
 
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    StaticVariables.staticTurretAngle = turretAngle;
+                    RedNearWorlds.staticTurretAngle = turretAngle;
                 }
                 return true;
             }
@@ -154,7 +207,7 @@ public class RedFar extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    StaticVariables.staticRobotState = robotState;
+                    RedNearWorlds.staticRobotState = robotState;
                 }
                 return true;
             }

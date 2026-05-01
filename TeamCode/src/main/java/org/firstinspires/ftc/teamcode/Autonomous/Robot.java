@@ -125,6 +125,15 @@ public class Robot {
         );
     }
 
+    public SequentialAction shootFAR(
+
+    ) {
+        return new SequentialAction(
+                shooter.hardStopOpen(),
+                new SleepAction(0.1),
+                moveShootFAR()
+        );
+    }
 
     public ParallelAction shootIntake(
             Path path,
@@ -252,9 +261,9 @@ public class Robot {
     public SequentialAction moveShootFAR() {
         return new SequentialAction(
                 shooter.hardStopOpen(),
-                transfer.setIntakeIndexerPower(0.3, 0.3),
-                shooter.autoShoot(-58, 58),
-                new SleepAction(1),
+                transfer.setIntakeIndexerPower(0.1, 0.1),
+
+                new SleepAction(3),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()

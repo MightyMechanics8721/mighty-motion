@@ -27,10 +27,10 @@ import java.util.Map;
 @TeleOp(name = "TESTING TeleOp", group = "Competition")
 public class DecodeTeleOp extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 2500;
-    public static double SHOOTER_VELOCITY_NORMAL = 2500;
-    public static double SHOOTER_VELOCITY_CLOSE = 2250;
-    public static double SHOOTER_VELOCITY_FAR = 3500;
+    public static double SHOOTER_VELOCITY_IDLE = 1500;
+    public static double SHOOTER_VELOCITY_NORMAL = 1600;
+    public static double SHOOTER_VELOCITY_CLOSE = 1300;
+    public static double SHOOTER_VELOCITY_FAR = 2100;
     public static double autoShootMultiplier = 1.0;
     public static double getAutoShootDistanceSubtraction = 12.0;
     boolean rumbleStop;
@@ -136,7 +136,13 @@ public class DecodeTeleOp extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-70+getAutoShootDistanceSubtraction, -70+getAutoShootDistanceSubtraction, autoShootMultiplier));
+                runningActions.put("shooter",
+                                   shooter.autoShoot(
+                                           -70 + getAutoShootDistanceSubtraction,
+                                           -70 + getAutoShootDistanceSubtraction,
+                                           autoShootMultiplier
+                                   )
+                );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

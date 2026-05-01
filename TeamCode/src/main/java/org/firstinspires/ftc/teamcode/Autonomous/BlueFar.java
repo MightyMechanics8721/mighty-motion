@@ -96,7 +96,7 @@ public class BlueFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                                    shooter.autonomousVelocityInfinite(3200),
+                                    shooter.autonomousVelocityInfinite(2100),
                                     turret.autoAimInfinite(new Vector2d(
                                             -68,
                                             -68

@@ -27,14 +27,14 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Utils.Controllers.PID;
 @Config
 public class Turret {
     // --- Tunable ---
-    public static double staticGain = 0.1;
-    public static PIDConstants pidConstants = new PIDConstants(0.01, 0.0, 0);
+    public static double staticGain = 0;
+    public static PIDConstants pidConstants = new PIDConstants(0.015, 0.0, 0);
     public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
     public static double turretAngle = 0;
     public static double staticTheta = 0.0;
-    public static double linearCoeff = 0.075;
+    public static double linearCoeff = 0.083;
     public static double quadCoeff = 0.000075;
     public static long staticThetaUpdateCounter = 0;
     public static double bias = 0;

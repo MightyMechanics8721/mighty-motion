@@ -132,7 +132,7 @@ public class BlueNearWorlds extends LinearOpMode {
                                                             // TODO ----- SHOOT PRELOAD ROW ------
                                                             turret.setTurretAngleTimed(
                                                                     -180,
-                                                                    1
+                                                                    0.1
                                                             ),
                                                             robot.shoot(
                                                                     preload,

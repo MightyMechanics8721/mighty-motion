@@ -29,10 +29,9 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
     private static final double MAX_VOLTS = 3.3;
     private static final double MAX_DISTANCE_MM = 80;
     public static double targetVelocity = 2500; // (RPM)
-    public static double SHOOTER_VELOCITY_IDLE = 1500;
-    public static double SHOOTER_VELOCITY_NORMAL = 2500;
-    public static double SHOOTER_VELOCITY_CLOSE = 2250;
-    public static double SHOOTER_VELOCITY_FAR = 3200;
+    public static double SHOOTER_VELOCITY_NORMAL = 1600;
+    public static double SHOOTER_VELOCITY_CLOSE = 1300;
+    public static double SHOOTER_VELOCITY_FAR = 2100;
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;

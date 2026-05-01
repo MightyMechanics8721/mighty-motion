@@ -193,7 +193,7 @@ public class Drivetrain {
         this.driftedPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
         this.preloadPose =
-                this.state.extractMatrix(0, 3, 0, 1).plus(this.computePreloadDistance());
+                this.state.extractMatrix(0, 3, 0, 1);
         this.state.get(0, 0); // x-position (in)
         this.state.get(1, 0); // y-position (in)
         this.state.get(2, 0); // heading (rad)

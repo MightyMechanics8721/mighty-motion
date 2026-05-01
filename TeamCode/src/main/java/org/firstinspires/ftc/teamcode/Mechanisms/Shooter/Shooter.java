@@ -502,7 +502,7 @@ public class Shooter {
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.125, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.13, 0, 0);
     }
 
     public static class HardwareConstants {

@@ -117,10 +117,10 @@ public class RedNearWorlds extends LinearOpMode {
                 new SequentialAction(
                         shooter.hardStopClose(),
                         new ParallelAction( //main loop
-                                            shooter.autoShootMovingInfinite(-57, 57),
+                                            shooter.autoShootMovingInfinite(-60, 60),
                                             turret.autoAimInfinite(new Vector2d(
-                                                    -68,
-                                                    68
+                                                    -70,
+                                                    70
                                             )),
                                             updateTurretAngle(),
                                             updateRobotState(),

@@ -168,7 +168,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
             }
 
             if (gamepad2.left_trigger > 0.05) {
-                runningActions.put("turret", turret.autoAim(new Vector2d(-58, -58), autoAimBias));
+                runningActions.put("turret", turret.autoAim(new Vector2d(-70, -70), autoAimBias));
             } else {
                 runningActions.put("turret", turret.setTurretAngle(Turret.bias));
             }
@@ -182,7 +182,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
 
             // ----- SHOOTER -----
             if (gamepad2.right_trigger > 0.05) {
-                runningActions.put("shooter", shooter.autoShoot(-70, -70, autoShootMultiplier));
+                runningActions.put("shooter", shooter.autoShoot(-60, -60, autoShootMultiplier));
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());

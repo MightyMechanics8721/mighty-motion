@@ -38,8 +38,8 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 @Config
 public class TwoWheelOdometery {
 
-    public static double xOffset = 156.65; //MM
-    public static double yOffset = 42.13; //MM
+    public static double xOffset = 155; //MM
+    public static double yOffset = 43.13; //MM
     public GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
 
@@ -58,7 +58,7 @@ public class TwoWheelOdometery {
     public SimpleMatrix calculate() {
         TelemetryPacket packet = new TelemetryPacket();
         odo.update();
-        
+
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         SimpleMatrix globalRelativeTVelocities = new SimpleMatrix(

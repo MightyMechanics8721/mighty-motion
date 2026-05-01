@@ -89,16 +89,13 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
 
 
         while (opModeIsActive()) {
+            TelemetryPacket bruhPacket = new TelemetryPacket();
             double volts = laserAnalog.getVoltage();
 
             // Convert voltage to distance in millimeters (linear mapping)
             double curr = (volts / MAX_VOLTS) * MAX_DISTANCE_MM;
 
-            // Telemetry
-            packet.put("main loop turret angle (deg)", turret.getAngle());
-            //turret.initAngle();
-            //turret.getAngle();
-            packet.put("turret 789", turret.getAngle());
+
             //dashboard.sendTelemetryPacket(packet);
             //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
@@ -197,11 +194,10 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
                 );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else {
-                //                runningActions.put(
-                //                        "shooter",
-                //                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE *
-                //                        2 * Math.PI / 60)
-                //                );
+                runningActions.put(
+                        "shooter",
+                        shooter.setShooterVelocityLoop(0)
+                );
             }
 
             if (gamepad1.dpad_left) {
@@ -220,22 +216,6 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
                 rumbleStop = false;
             }
 
-            // ----- DISTANCE SENSOR -----
-
-            // ----- INDEXER -----
-            //
-            //            if (gamepad1.cross) {
-            //                runningActions.put("indexer", indexer.setIndexerPower(1.0));
-            //            } else {
-            //                runningActions.put("indexer", indexer.setIndexerPower(0.0));
-            //            }
-
-            //            if (gamepad2.right_trigger > 0.05) {
-            //                runningActions.put("shooter", shooter.setShooterVelocity
-            //                (SHOOTER_VELOCITY * ((double) gamepad1.right_trigger)));
-            //                // right_trigger -- float -- 0-255
-            //            }
-
             // ----- RUN ACTIONS -----
             HashMap<String, Action> newActions = new HashMap<>();
             for (Map.Entry<String, Action> entry : runningActions.entrySet()) {
@@ -245,12 +225,9 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
                 }
             }
             runningActions = newActions;
-            packet.put("Sensor Voltage (V)", volts);
-            packet.put("Sensor Current (A)", curr);
-            telemetry.addData("Sensor Voltage (V)", volts);
-            telemetry.addData("Sensor Current (A)", curr);
-            telemetry.update();
-            dashboard.sendTelemetryPacket(packet);
+
+            bruhPacket.put("Sensor Current (A)", curr);
+            dashboard.sendTelemetryPacket(bruhPacket);
         }
 
     }

@@ -99,7 +99,7 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
             //turret.initAngle();
             //turret.getAngle();
             packet.put("turret 789", turret.getAngle());
-            dashboard.sendTelemetryPacket(packet);
+            //dashboard.sendTelemetryPacket(packet);
             //            TelemetryPacket packet = new TelemetryPacket();
             //If we have another stopper action already, this won't fire
             runningActions.put("stopper", shooter.hardStopClose());
@@ -197,10 +197,11 @@ public class BlueTeleOpNoAutoCurr extends LinearOpMode {
                 );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else {
-                runningActions.put(
-                        "shooter",
-                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE * 2 * Math.PI / 60)
-                );
+                //                runningActions.put(
+                //                        "shooter",
+                //                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE *
+                //                        2 * Math.PI / 60)
+                //                );
             }
 
             if (gamepad1.dpad_left) {

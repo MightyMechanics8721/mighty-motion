@@ -22,7 +22,7 @@ public class Limelight {
         instance = new Limelight(hardwareMap);
     }
 
-    public Limelight getInstance() {
+    public static Limelight getInstance() {
         if (instance == null) {
             throw new IllegalStateException("Limelight not initialized!");
         }

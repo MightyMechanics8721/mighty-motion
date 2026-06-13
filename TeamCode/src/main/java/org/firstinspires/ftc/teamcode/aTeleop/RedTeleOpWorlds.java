@@ -154,8 +154,10 @@ public class RedTeleOpWorlds extends LinearOpMode {
             // ----- TURRET -----
             if (gamepad2.dpad_up) {
                 SHOOTER_VELOCITY_FAR += 5;
+                Shooter.constant += 5;
             } else if (gamepad2.dpad_down) {
                 SHOOTER_VELOCITY_FAR -= 5;
+                Shooter.constant -= 5;
             }
 
             if (gamepad2.dpad_left) {

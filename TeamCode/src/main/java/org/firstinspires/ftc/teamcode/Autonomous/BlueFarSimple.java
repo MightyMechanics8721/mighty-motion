@@ -28,11 +28,13 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Turret.Turret;
 import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 
 @Config
-@Autonomous(name = "Blue FAR  Worlds", group = "TEST")
+@Autonomous(name = "Blue FAR worlds", group = "TEST")
 public class BlueFarSimple extends LinearOpMode {
-
+    public static double ROW_TRANSFER_TIME = 2;
     public static double staticTurretAngle;
     public static SimpleMatrix staticRobotState;
+    public double SHOOT_TIME = 0.4;
+    public double ALL_TIME = 4;
 
     @Override
     public void runOpMode() {
@@ -63,56 +65,25 @@ public class BlueFarSimple extends LinearOpMode {
         drivetrain.setInitialPose(64, -24, 180);
         dashboard.sendTelemetryPacket(packet);
 
-        double[][] sHTohP = {{60, -24}, {45, -36}, {45, -48}, {45, -60}};
-        double[][] shTohPContinued = {{45, -60}, {45, -63}, {63, -63}};
-        double[][] hPtoShoot = {{60, -60}, {60, -48}, {60, -24}};
-        double[][] sHToTR = {{60, -24}, {48, -20}, {36, -30}, {36, -36}, {36, -57}};
-        double[][] TRTosH = {{36, -57}, {50, -30}, {60, -24}};
-        double[][] sHToLB = {{60, -24}, {45, -36}, {45, -48}, {55, -60}};
-        double[][] LBTosH = {{55, -60}, {60, -24}};
-        Path shootToHumanPlayer = new Path(sHTohP, Math.toRadians(-180), false, false);
-        Path shootToHumanPlayerContinued = new Path(
-                shTohPContinued,
-                Math.toRadians(-180),
-                false,
-                false
-        );
-        Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(-180), false, false);
-        Path shootToThirdRow = new Path(sHToTR, Math.toRadians(-90), false, true);
-
-        Path thirdRowToShoot = new Path(TRTosH, Math.toRadians(-180), true, false);
-        Path lingeringBallsToShoot = new Path(LBTosH, Math.toRadians(-180), true, false);
-        Path humanPlayerToShoot = new Path(hPtoShoot, Math.toRadians(-90), true, false);
-
-
         waitForStart();
-
         looptime.reset();
         Turret.staticTheta = 0;
         drivetrain.setInitialPose(64, -24, -180);
         turret.setInitialAngle(0);
         //Alex Ko bless this code
         Actions.runBlocking(
-                new ParallelAction( //main loop
-                                    shooter.autonomousVelocityInfinite(2100),
-                                    turret.autoAimTimed(
-                                            new Vector2d(
-                                                    -68,
-                                                    -68
-                                            ), 20
-                                    ),
-                                    updateTurretAngle(),
-                                    updateRobotState(),
-                                    new SequentialAction(
-                                            new SleepAction(1),
-                                            robot.shootFAR(),
-                                            drivetrain.goToPoseTimed(
-                                                    Utils.makePoseVector(
-                                                            64, -48
-                                                            , -180
-                                                    ), 1, Math.toRadians(1), true, 5
-                                            )
-                                    )
+           new ParallelAction(
+                   turret.autoAimTimed(new Vector2d(-70, -70), 30),
+                   shooter.autoShoot(-70, -70),
+                   updateTurretAngle(),
+                   updateRobotState(),
+                   new SequentialAction(
+                           new SleepAction(3),
+                           robot.shootFAR(),
+                           drivetrain.goToPoseTimed(Utils.makePoseVector(64, -28, -180),
+                                   1, Math.toRadians(1),  true, 5)
+
+                   )
                 )
 
         );
@@ -128,7 +99,7 @@ public class BlueFarSimple extends LinearOpMode {
 
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    BlueNearWorlds.staticTurretAngle = turretAngle;
+                    StaticVariables.staticTurretAngle = turretAngle;
                 }
                 return true;
             }
@@ -142,7 +113,7 @@ public class BlueFarSimple extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    BlueNearWorlds.staticRobotState = robotState;
+                    StaticVariables.staticRobotState = robotState;
                 }
                 return true;
             }

@@ -261,7 +261,7 @@ public class Robot {
     public SequentialAction moveShootFAR() {
         return new SequentialAction(
                 shooter.hardStopOpen(),
-                transfer.setIntakeIndexerPower(0.1, 0.1),
+                transfer.setIntakeIndexerPower(0.5, 0.325),
 
                 new SleepAction(3),
                 new ParallelAction(

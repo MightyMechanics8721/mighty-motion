@@ -29,7 +29,7 @@ public class BlueTeleOpWorlds extends LinearOpMode {
     public static double SHOOTER_VELOCITY_IDLE = 1500;
     public static double SHOOTER_VELOCITY_NORMAL = 1600;
     public static double SHOOTER_VELOCITY_CLOSE = 1300;
-    public static double SHOOTER_VELOCITY_FAR = 2100;
+    public static double SHOOTER_VELOCITY_FAR = 3100;
     public static double robotLength = 14.25; //in
     public static double robotWidth = 16.75; //in
     public static double dist = 80;

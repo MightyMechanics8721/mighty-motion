@@ -51,7 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.65;
-    public static double constant = 1434;
+    public static double constant = 1667;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -497,12 +497,12 @@ public class Shooter {
         /**
          * Feedforward constants used for velocity control.
          */
-        public FFConstants ffConstants = new FFConstants(0, 0.02, 0.00225);
+        public FFConstants ffConstants = new FFConstants(0, 0.002, 0.23);
 
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.13, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.5, 0, 0);
     }
 
     public static class HardwareConstants {

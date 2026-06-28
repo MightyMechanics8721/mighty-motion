@@ -123,6 +123,28 @@ public class Robot {
                 moveShootFAR()
         );
     }
+    public SequentialAction shootFARFast(
+            Path path,
+            double maxSpeed,
+            double distanceThreshold,
+            double angleThreshold,
+            double pathTime
+    ) {
+        return new SequentialAction(
+                shooter.hardStopClose(),
+                drivetrain.followPathTimed(
+                        path,
+                        maxSpeed,
+                        distanceThreshold,
+                        Math.toRadians(angleThreshold),
+                        true, pathTime
+                ),
+                new SleepAction(0.05),
+                shooter.hardStopOpen(),
+                new SleepAction(0.1),
+                moveShootFARFast()
+        );
+    }
 
     public SequentialAction shootFAR(
 
@@ -262,7 +284,21 @@ public class Robot {
                 shooter.hardStopOpen(),
                 transfer.setIntakeIndexerPower(0.5, 0.4),
 
-                new SleepAction(3),
+                new SleepAction(2),
+                new ParallelAction(
+                        transfer.setIntakeIndexerPower(0, 0),
+                        shooter.hardStopClose()
+
+                )
+        );
+    }
+
+    public SequentialAction moveShootFARFast() {
+        return new SequentialAction(
+                shooter.hardStopOpen(),
+                transfer.setIntakeIndexerPower(0.5, 0.4),
+
+                new SleepAction(0.5),
                 new ParallelAction(
                         transfer.setIntakeIndexerPower(0, 0),
                         shooter.hardStopClose()

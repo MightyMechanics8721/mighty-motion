@@ -68,7 +68,7 @@ public class BlueFar extends LinearOpMode {
         double[][] shthP2 = {{60, -24}, {60, -36}, {60, -48}, {60, -62}};
         double[][] pullOut = {{60, -63}, {60, -58}};
         double[][] impreg = {{60, -53}, {60, -60}};
-//        double[][] shthP2c = {{46, -63}, {64, -64}};
+        //        double[][] shthP2c = {{46, -63}, {64, -64}};
 
         double[][] hPtoShoot = {{60, -60}, {60, -48}, {60, -24}};
         double[][] sHToTR = {{60, -24}, {36, -15}, {36, -62}};
@@ -79,7 +79,7 @@ public class BlueFar extends LinearOpMode {
 
         Path um = new Path(preC, Math.toRadians(-180), false, true);
         Path shootToHumanPlayer = new Path(shthP2, Math.toRadians(-90), false, true);
-//        Path shootToHumanPlayerC = new Path(shthP2c, Math.toRadians(-90), false, false);
+        //        Path shootToHumanPlayerC = new Path(shthP2c, Math.toRadians(-90), false, false);
         Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(-140), false, true);
         Path shootToThirdRow = new Path(sHToTR, Math.toRadians(-90), false, true);
 
@@ -87,7 +87,7 @@ public class BlueFar extends LinearOpMode {
         Path lingeringBallsToShoot = new Path(LBTosH, Math.toRadians(-180), true, false);
         Path humanPlayerToShoot = new Path(hPtoShoot, Math.toRadians(-90), true, false);
         Path cim = new Path(preCu, Math.toRadians(-180), false, false);
-//        Path pull0ut = new Path(pullOut, Math.toRadians(-70), false, true);
+        //        Path pull0ut = new Path(pullOut, Math.toRadians(-70), false, true);
         Path impr3g = new Path(impreg, Math.toRadians(-90), false, true);
         waitForStart();
 
@@ -98,185 +98,191 @@ public class BlueFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                        shooter.autonomousVelocityInfinite(velocity),
-                        turret.autoAimInfinite(new Vector2d(
-                                -68,
-                                -70
-                        )),
+                                    shooter.autonomousVelocityInfinite(velocity),
+                                    turret.autoAimInfinite(new Vector2d(
+                                            -68,
+                                            -69
+                                    )),
 
-                        shooter.hardStopClose(),
-                        updateTurretAngle(),
-                        updateRobotState(),
-                        new SequentialAction(
-                                drivetrain.followPathTimed(
-                                        um,
-                                        150,
-                                        1,
-                                        0.5,
-                                        true,
-                                        0.5
-                                ),
-                                new SleepAction(1),
-                                robot.moveShootFAR(),
-                                // ----- SHOOT PRELOAD -----
+                                    shooter.hardStopClose(),
+                                    updateTurretAngle(),
+                                    updateRobotState(),
+                                    new SequentialAction(
+                                            drivetrain.followPathTimed(
+                                                    um,
+                                                    150,
+                                                    1,
+                                                    0.5,
+                                                    true,
+                                                    0.5
+                                            ),
+                                            new SleepAction(1),
+                                            robot.moveShootFAR(),
+                                            // ----- SHOOT PRELOAD -----
 
 
-                                // ----- INTAKE THIRD ROW -----
-                                robot.gatherRow(
-                                        shootToThirdRow,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1.5
-                                ),
-                                // ----- SHOOT THIRD ROW -----
-                                robot.shootFAR(
-                                        thirdRowToShoot,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1.5
-                                ),
+                                            // ----- INTAKE THIRD ROW -----
+                                            robot.gatherRow(
+                                                    shootToThirdRow,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1.5
+                                            ),
+                                            // ----- SHOOT THIRD ROW -----
+                                            robot.shootFAR(
+                                                    thirdRowToShoot,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1.5
+                                            ),
 
-                                //  ----- INTAKE HUMAN PLAYER -----
-//drivetrain.followPathTimed(pull0ut, 150, 2.0, 3.0, true, 2),
-//
-//        robot.gatherRow(
-//                impr3g,
-//                150,
-//                0.5,
-//                1,
-//                1
-//        )
-//                                robot.gatherRow(
-//                                        shootToHumanPlayerC,
-//                                        150,
-//                                        1.5,
-//                                        2.0,
-//                                        2
-//                                ),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
-                                robot.gatherRow(
-                                        shootToHumanPlayer,
-                                        150,
-                                        1.5,
-                                        2.0,
-                                        1
-                                ),
-                                new ParallelAction(
-                                        transfer.ballDetectionTimed(1),
-                                        // ----- SHOOT HUMAN PLAYER -----
-                                        robot.shootFARFast(
-                                                humanPlayerToShoot,
-                                                150,
-                                                1.5,
-                                                2.0,
-                                                1
-                                        )),
+                                            //  ----- INTAKE HUMAN PLAYER -----
+                                            //drivetrain.followPathTimed(pull0ut, 150, 2.0, 3.0,
+                                            // true, 2),
+                                            //
+                                            //        robot.gatherRow(
+                                            //                impr3g,
+                                            //                150,
+                                            //                0.5,
+                                            //                1,
+                                            //                1
+                                            //        )
+                                            //                                robot.gatherRow(
+                                            //                                        shootToHumanPlayerC,
+                                            //                                        150,
+                                            //                                        1.5,
+                                            //                                        2.0,
+                                            //                                        2
+                                            //                                ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
+                                            robot.gatherRow(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    1
+                                            ),
+                                            new ParallelAction(
+                                                    transfer.ballDetectionTimed(1),
+                                                    // ----- SHOOT HUMAN PLAYER -----
+                                                    robot.shootFARFast(
+                                                            humanPlayerToShoot,
+                                                            150,
+                                                            1.5,
+                                                            2.0,
+                                                            1
+                                                    )
+                                            ),
 
-                                // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS
-                                // FROM GATE) -----
+                                            // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS
+                                            // FROM GATE) -----
 
-                                drivetrain.followPathTimed(
-                                        cim,
-                                        150,
-                                        0,
-                                        0,
-                                        true,
-                                        1.5
-                                )
+                                            drivetrain.followPathTimed(
+                                                    cim,
+                                                    150,
+                                                    0,
+                                                    0,
+                                                    true,
+                                                    1.5
+                                            )
 
-                        )
+                                    )
                 )
 
 
         );
     }
-
 
 
     public Action updateTurretAngle() {

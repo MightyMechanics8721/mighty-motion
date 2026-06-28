@@ -51,7 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.65;
-    public static double constant = 1690;
+    public static double constant = 1700;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -502,7 +502,7 @@ public class Shooter {
         /**
          * PID constants used for velocity control.
          */
-        public PIDConstants pidConstants = new PIDConstants(0.5, 0, 0);
+        public PIDConstants pidConstants = new PIDConstants(0.2, 0, 0);
     }
 
     public static class HardwareConstants {

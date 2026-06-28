@@ -51,7 +51,7 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.65;
-    public static double constant = 1667;
+    public static double constant = 1690;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;

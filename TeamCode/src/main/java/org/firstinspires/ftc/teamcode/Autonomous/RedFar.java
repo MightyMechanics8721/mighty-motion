@@ -29,11 +29,12 @@ import org.firstinspires.ftc.teamcode.aTeleop.StaticVariables;;
 @Config
 @Autonomous(name = "RED FAR Autonomous  3/7", group = "TEST")
 public class RedFar extends LinearOpMode {
-    public static double ROW_TRANSFER_TIME = 6;
-    public static double staticTurretAngle;
-    public static SimpleMatrix staticRobotState;
-    public double SHOOT_TIME = 4;
-    public double ALL_TIME = 4;
+    public static double ROW_TRANSFER_TIME = 3;
+    public static double velocity = 2700;
+    //    public static double staticTurretAngle;
+    //    public static SimpleMatrix staticRobotState;
+    public double SHOOT_TIME = 3;
+    public double ALL_TIME = 3;
 
     @Override
     public void runOpMode() {
@@ -64,23 +65,27 @@ public class RedFar extends LinearOpMode {
         drivetrain.setInitialPose(64, 24, 180);
         dashboard.sendTelemetryPacket(packet);
 
-        double[][] sHTohP = {{60, 24}, {50, 36}, {45, 48},{50, 63}, {63, 63}};
-        double[][] shthP2 = {{60, 24}, {45, 36},{45,48},{46,63}};
+        double[][] preC = {{64, 24}, {60, 24}};
+        double[][] shthP2 = {{60, 24}, {45, 36}, {45, 48}, {46, 63}};
         double[][] shthP2c = {{46, 63}, {64, 64}};
         double[][] hPtoShoot = {{60, 60}, {60, 48}, {60, 24}};
         double[][] sHToTR = {{60, 24}, {36, 15}, {36, 62}};
         double[][] TRTosH = {{36, 62}, {50, 30}, {60, 24}};
-        double[][] sHToLB = {{60, 24}, {45, 36}, {45, 48}, {55, 60}};
+        double[][] sHToLB = {{60, 24}, {45, 36}, {45, 48}, {55, 62}};
         double[][] LBTosH = {{55, 60}, {60, 24}};
 
+        double[][] preCu = {{60, 24}, {60, 36}};
+
+        Path um = new Path(preC, Math.toRadians(180), false, true);
         Path shootToHumanPlayer = new Path(shthP2, Math.toRadians(0), false, true);
         Path shootToHumanPlayerC = new Path(shthP2c, Math.toRadians(90), false, false);
-        Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(180), false, false);
+        Path shootToLingeringBalls = new Path(sHToLB, Math.toRadians(170), false, true);
         Path shootToThirdRow = new Path(sHToTR, Math.toRadians(90), false, true);
 
         Path thirdRowToShoot = new Path(TRTosH, Math.toRadians(180), true, false);
         Path lingeringBallsToShoot = new Path(LBTosH, Math.toRadians(180), true, false);
         Path humanPlayerToShoot = new Path(hPtoShoot, Math.toRadians(90), true, false);
+        Path cim = new Path(preCu, Math.toRadians(180), false, false);
 
 
         waitForStart();
@@ -92,16 +97,25 @@ public class RedFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                                    shooter.autonomousVelocityInfinite(2300),
+                                    shooter.autonomousVelocityInfinite(velocity),
                                     turret.autoAimInfinite(new Vector2d(
                                             -68,
-                                            68
+                                            70
                                     )),
+
                                     shooter.hardStopClose(),
                                     updateTurretAngle(),
                                     updateRobotState(),
                                     new SequentialAction(
-                                            new SleepAction(1.5),
+                                            drivetrain.followPathTimed(
+                                                    um,
+                                                    150,
+                                                    1,
+                                                    0.5,
+                                                    true,
+                                                    1.5
+                                            ),
+                                            new SleepAction(1),
                                             robot.moveShootFAR(),
                                             // ----- SHOOT PRELOAD -----
 
@@ -112,7 +126,7 @@ public class RedFar extends LinearOpMode {
                                                     150,
                                                     1.5,
                                                     2.0,
-                                                    ROW_TRANSFER_TIME
+                                                    2.5
                                             ),
 
                                             // ----- SHOOT THIRD ROW -----
@@ -121,19 +135,25 @@ public class RedFar extends LinearOpMode {
                                                     150,
                                                     1.5,
                                                     2.0,
-                                                    ALL_TIME,
-                                                    SHOOT_TIME
+                                                    2
                                             ),
 
                                             //  ----- INTAKE HUMAN PLAYER -----
-                                            drivetrain.followPathTimed(shootToHumanPlayer, 150,1.5,2.0,true,2),
+                                            drivetrain.followPathTimed(
+                                                    shootToHumanPlayer,
+                                                    150,
+                                                    1.5,
+                                                    2.0,
+                                                    true,
+                                                    2
+                                            ),
 
                                             robot.gatherRow(
                                                     shootToHumanPlayerC,
                                                     150,
                                                     1.5,
                                                     2.0,
-                                                    3
+                                                    2
                                             ),
                                             // ----- SHOOT HUMAN PLAYER -----
                                             robot.shootFAR(
@@ -141,8 +161,7 @@ public class RedFar extends LinearOpMode {
                                                     150,
                                                     1.5,
                                                     2.0,
-                                                    ALL_TIME,
-                                                    SHOOT_TIME
+                                                    2
                                             ),
                                             // ----- GO TO HUMAN PLAYER (COLLECT LINGERING BALLS
                                             // FROM GATE) -----
@@ -150,23 +169,18 @@ public class RedFar extends LinearOpMode {
                                                     shootToLingeringBalls,
                                                     lingeringBallsToShoot,
                                                     150,
-                                                    ALL_TIME,
-                                                    15
+                                                    15,
+                                                    10
                                             ),
-                                            robot.gatherLingeringBalls(
-                                                    shootToLingeringBalls,
-                                                    lingeringBallsToShoot,
+                                            drivetrain.followPathTimed(
+                                                    cim,
                                                     150,
-                                                    ALL_TIME,
-                                                    15
-                                            ),
-                                            robot.gatherLingeringBalls(
-                                                    shootToLingeringBalls,
-                                                    lingeringBallsToShoot,
-                                                    150,
-                                                    ALL_TIME,
-                                                    15
+                                                    0,
+                                                    0,
+                                                    true,
+                                                    1.5
                                             )
+
                                     )
                 )
 

@@ -106,8 +106,7 @@ public class Robot {
             double maxSpeed,
             double distanceThreshold,
             double angleThreshold,
-            double pathTime,
-            double shootTime
+            double pathTime
     ) {
         return new SequentialAction(
                 shooter.hardStopClose(),
@@ -261,7 +260,7 @@ public class Robot {
     public SequentialAction moveShootFAR() {
         return new SequentialAction(
                 shooter.hardStopOpen(),
-                transfer.setIntakeIndexerPower(0.5, 0.325),
+                transfer.setIntakeIndexerPower(0.5, 0.4),
 
                 new SleepAction(3),
                 new ParallelAction(

@@ -20,10 +20,7 @@ public class Transfer {
     public int ballCount = 0;
     boolean[] balls = new boolean[3];
 
-    /**
-     * Takes the Intake and Indexer the OpMode already built. Do not initialise them here: that
-     * swaps the singletons and leaves the OpMode holding a stale one.
-     */
+    /** Takes the Intake and Indexer the OpMode already built. Do not initialise them here. */
     private Transfer(HardwareMap hardwareMap) {
         // Initialize digital laser sensors
         laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1"); // BOTTOM

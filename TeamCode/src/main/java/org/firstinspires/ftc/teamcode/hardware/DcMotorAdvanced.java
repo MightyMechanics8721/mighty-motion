@@ -41,8 +41,8 @@ public class DcMotorAdvanced {
     }
 
     /**
-     * Sets motor power in [-1, 1], skipping the write if it moved less than powerThreshold.
-     * Scales by maxVoltage / batteryVoltage when a maxVoltage was given, then clips to [-1, 1].
+     * Sets motor power in [-1, 1]. Skips writes below powerThreshold, scales by
+     * maxVoltage / batteryVoltage, clips to [-1, 1].
      */
     public void setPower(double power) {
         if (Math.abs(power - previousPower) <= this.powerThreshold) {

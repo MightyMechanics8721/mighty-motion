@@ -28,9 +28,7 @@ public class PID {
         timer.reset();
     }
 
-    /**
-     * One PID update. The I and D terms are skipped on the first call and whenever dt is zero.
-     */
+    /** One PID update. I and D are skipped on the first call and when dt is zero. */
     public double calculate(double target, double currentState) {
         double error = target - currentState;
         double dt = timer.seconds();
@@ -48,9 +46,7 @@ public class PID {
                 + (pidConstants.kD * eDerivative);
     }
 
-    /**
-     * One PID update, taking D from the measured speed instead of differentiating the error.
-     */
+    /** One PID update, D taken from the measured speed. */
     public double calculate(double target, double currentState, double currentSpeed) {
         double error = target - currentState;
         double dt = timer.seconds();

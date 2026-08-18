@@ -234,9 +234,7 @@ public class Turret {
     /**
      * Computes PID power to reach a desired angle
      */
-    /**
-     * Power to drive the turret toward desiredAngle, taking the short way round. [deg]
-     */
+    /** Power toward desiredAngle [deg], by the shorter direction. */
     private double computeSpinPower(double desiredAngle) {
         double predictedAngle = getAngle() + computeStoppingDistance(getVelocity());
         double error = Utils.angleWrapDegrees(desiredAngle - predictedAngle);

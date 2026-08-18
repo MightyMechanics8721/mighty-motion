@@ -383,8 +383,8 @@ public class Drivetrain {
      * @param powers matrix of wheel power values (order:lfm, lbm, rbm, rfm)
      */
     /**
-     * Powers the four motors (lfm, lbm, rbm, rfm). Scales the whole vector down if any wheel is
-     * over full power, so the ratios between wheels, and therefore the direction, are kept.
+     * Powers the four motors (lfm, lbm, rbm, rfm). Scales the vector down if any wheel exceeds
+     * full power, preserving the ratios between them.
      */
     public void setPower(SimpleMatrix powers) {
         double largest = powers.elementMaxAbs();

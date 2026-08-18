@@ -6,10 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.ejml.simple.SimpleMatrix;
 import org.junit.Test;
 
-/**
- * Covers the geometry helpers the whole control stack depends on: angle wrapping, distance, frame
- * rotation and pose construction.
- */
+/** Geometry helpers: angle wrapping, distance, frame rotation, pose vectors. */
 public class UtilsTest {
 
     private static final double EPS = 1e-9;
@@ -75,5 +72,42 @@ public class UtilsTest {
         SimpleMatrix v = new SimpleMatrix(new double[][]{{1}, {2}, {0.75}});
         assertEquals(0.75, Utils.rotateBodyToGlobal(v, 1.1).get(2, 0), 1e-9);
         assertEquals(0.75, Utils.rotateGlobalToBody(v, 1.1).get(2, 0), 1e-9);
+    }
+
+    @Test
+    public void angleWrapDegreesLeavesAnglesInRangeAlone() {
+        assertEquals(0.0, Utils.angleWrapDegrees(0), EPS);
+        assertEquals(90.0, Utils.angleWrapDegrees(90), EPS);
+        assertEquals(-90.0, Utils.angleWrapDegrees(-90), EPS);
+        assertEquals(180.0, Utils.angleWrapDegrees(180), EPS);
+    }
+
+    @Test
+    public void angleWrapDegreesFoldsIntoPlusMinus180() {
+        assertEquals(-170.0, Utils.angleWrapDegrees(190), EPS);
+        assertEquals(170.0, Utils.angleWrapDegrees(-190), EPS);
+        assertEquals(0.0, Utils.angleWrapDegrees(360), EPS);
+        assertEquals(0.0, Utils.angleWrapDegrees(-360), EPS);
+        assertEquals(-1.0, Utils.angleWrapDegrees(359), EPS);
+    }
+
+    @Test
+    public void angleWrapDegreesTakesTheShortWayAcrossTheSeam() {
+        double error = Utils.angleWrapDegrees(1 - 359);
+        assertEquals("1 deg past 359 must read as +2, not -358", 2.0, error, EPS);
+    }
+
+    @Test
+    public void angleWrapDegreesHandlesManyRevolutions() {
+        assertEquals(45.0, Utils.angleWrapDegrees(45 + 360 * 5), 1e-9);
+        assertEquals(45.0, Utils.angleWrapDegrees(45 - 360 * 5), 1e-9);
+    }
+
+    @Test
+    public void angleWrapDegreesAgreesWithTheRadianVersion() {
+        for (double deg : new double[]{0, 37, 179, 181, 359, -37, -181, 540}) {
+            assertEquals(Math.toDegrees(Utils.angleWrap(Math.toRadians(deg))),
+                    Utils.angleWrapDegrees(deg), 1e-9);
+        }
     }
 }

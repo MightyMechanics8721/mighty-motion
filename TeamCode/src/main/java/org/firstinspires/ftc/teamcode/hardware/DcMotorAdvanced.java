@@ -41,16 +41,8 @@ public class DcMotorAdvanced {
     }
 
     /**
-     * Sets motor power, skipping the hardware write when the request has not moved by more than
-     * powerThreshold since the last one.
-     * <p>
-     * When a maxVoltage was supplied, the request is scaled by maxVoltage / batteryVoltage so a
-     * given command produces the same torque as the pack drains. With clipBeforeBatteryCompensation
-     * the request is limited to [-1, 1] before that scaling, letting compensation push it above
-     * full power; without it the limit is applied after, so full power is the hard ceiling. Either
-     * way the value that reaches the hardware is clipped to [-1, 1].
-     *
-     * @param power requested power in [-1, 1]
+     * Sets motor power in [-1, 1], skipping the write if it moved less than powerThreshold.
+     * Scales by maxVoltage / batteryVoltage when a maxVoltage was given, then clips to [-1, 1].
      */
     public void setPower(double power) {
         if (Math.abs(power - previousPower) <= this.powerThreshold) {

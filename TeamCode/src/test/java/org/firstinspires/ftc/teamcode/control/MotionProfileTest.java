@@ -5,10 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-/**
- * Covers the trapezoidal and triangular motion profiles: the phase boundaries, continuity across
- * them, and behaviour past the end of the profile.
- */
+/** Trapezoidal and triangular motion profiles: phase boundaries and continuity. */
 public class MotionProfileTest {
 
     private static final double MAX_V = 30.0;

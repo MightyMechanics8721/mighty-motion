@@ -3,9 +3,7 @@ package org.firstinspires.ftc.teamcode.control;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class PID {
-    /**
-     * Largest |integral| term allowed, to stop windup while a mechanism is stalled or saturated.
-     */
+    /** Integral clamp. */
     public static double maxIntegralSum = 1000;
     public double eIntegralSum;
     public double eDerivative;
@@ -13,9 +11,6 @@ public class PID {
     public functionType type;
     public ElapsedTime timer = new ElapsedTime();
     private final PIDConstants pidConstants;
-    /**
-     * True until the first calculate() call, which has no previous error and no meaningful dt.
-     */
     private boolean firstRun = true;
 
     public PID(PIDConstants pidConstants, functionType type) {
@@ -24,10 +19,7 @@ public class PID {
         reset();
     }
 
-    /**
-     * Clears accumulated integral and derivative state. Call before re-using a controller for a new
-     * motion, otherwise error from the previous one leaks into it.
-     */
+    /** Clears integral and derivative state. */
     public void reset() {
         eIntegralSum = 0;
         eDerivative = 0;
@@ -37,16 +29,7 @@ public class PID {
     }
 
     /**
-     * Runs one PID update and returns the control effort.
-     * <p>
-     * The integral term accumulates {@code error * dt} and is clamped to +/- maxIntegralSum. The
-     * derivative term is {@code (error - previousError) / dt}. On the first call, and whenever dt
-     * is not positive, the I and D terms are skipped and only the proportional term applies.
-     *
-     * @param target the setpoint
-     * @param currentState the measured value
-     *
-     * @return the control effort, in whatever units the gains were tuned for
+     * One PID update. The I and D terms are skipped on the first call and whenever dt is zero.
      */
     public double calculate(double target, double currentState) {
         double error = target - currentState;
@@ -66,18 +49,7 @@ public class PID {
     }
 
     /**
-     * Runs one PID update using a measured speed for the derivative term instead of differentiating
-     * the error.
-     * <p>
-     * Taking D from the measurement rather than the error avoids the spike a normal derivative
-     * gives when the setpoint jumps, which matters for a mechanism that is commanded to a new
-     * target in one step.
-     *
-     * @param target the setpoint
-     * @param currentState the measured value
-     * @param currentSpeed the measured rate of change of the state
-     *
-     * @return the control effort, in whatever units the gains were tuned for
+     * One PID update, taking D from the measured speed instead of differentiating the error.
      */
     public double calculate(double target, double currentState, double currentSpeed) {
         double error = target - currentState;
@@ -95,20 +67,13 @@ public class PID {
                 + (pidConstants.kD * -currentSpeed);
     }
 
-    /**
-     * Adds this cycle's contribution to the running integral of error over time, clamped so a
-     * stalled mechanism cannot wind it up without bound.
-     */
+    /** Adds error * dt to the integral, clamped to maxIntegralSum. */
     private void accumulateIntegral(double error, double dt) {
         eIntegralSum += error * dt;
         eIntegralSum = Math.max(-maxIntegralSum, Math.min(maxIntegralSum, eIntegralSum));
     }
 
-    /**
-     * The proportional term. LINEAR gives {@code kP * error}; SQRT gives
-     * {@code kP * sqrt(|error|) * sign(error)}, which has proportionally more authority at small
-     * errors and softens the response to large ones.
-     */
+    /** kP * error, or kP * sqrt(|error|) * sign(error) in SQRT mode. */
     private double proportional(double error) {
         if (type == functionType.LINEAR) {
             return pidConstants.kP * error;

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
-import static androidx.core.math.MathUtils.clamp;
 
 import androidx.annotation.NonNull;
 
@@ -100,13 +99,13 @@ public class Turret {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
 
-                if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
+                if (Math.abs(Utils.angleWrapDegrees(desiredAngle - getAngle())) < THRESHOLD_PARAMETERS.angleThreshold) {
                     turretLeft.setPower(0);
                     turretRight.setPower(0);
                     return false;
                 }
 
-                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+                double power = computeSpinPower(Utils.angleWrapDegrees(desiredAngle));
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
 
@@ -126,13 +125,13 @@ public class Turret {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
                 if (!cutoff) {
-                    if (Math.abs(desiredAngle - getAngle()) < THRESHOLD_PARAMETERS.angleThreshold) {
+                    if (Math.abs(Utils.angleWrapDegrees(desiredAngle - getAngle())) < THRESHOLD_PARAMETERS.angleThreshold) {
                         turretLeft.setPower(0);
                         turretRight.setPower(0);
                         return true;
                     }
 
-                    double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+                    double power = computeSpinPower(Utils.angleWrapDegrees(desiredAngle));
                     turretLeft.setPower(power);
                     turretRight.setPower(power);
                     //packet.put("Power", power);
@@ -186,14 +185,14 @@ public class Turret {
                 }
 
                 // Stop if angle reached
-                if (Math.abs(desiredAngle - getAngle())
+                if (Math.abs(Utils.angleWrapDegrees(desiredAngle - getAngle()))
                         < THRESHOLD_PARAMETERS.angleThreshold) {
                     turretLeft.setPower(0);
                     turretRight.setPower(0);
                     return true;
                 }
 
-                double power = computeSpinPower(clamp(desiredAngle, -180, 180));
+                double power = computeSpinPower(Utils.angleWrapDegrees(desiredAngle));
 
                 turretLeft.setPower(power);
                 turretRight.setPower(power);
@@ -235,12 +234,13 @@ public class Turret {
     /**
      * Computes PID power to reach a desired angle
      */
+    /**
+     * Power to drive the turret toward desiredAngle, taking the short way round. [deg]
+     */
     private double computeSpinPower(double desiredAngle) {
-        double velocity = getVelocity();
-        double pidOutput = pid.calculate(
-                desiredAngle,
-                getAngle() + computeStoppingDistance(velocity)
-        );
+        double predictedAngle = getAngle() + computeStoppingDistance(getVelocity());
+        double error = Utils.angleWrapDegrees(desiredAngle - predictedAngle);
+        double pidOutput = pid.calculate(error, 0);
         return staticGain * Math.signum(pidOutput) + pidOutput;
     }
 
@@ -254,7 +254,7 @@ public class Turret {
     public double getAngle() {
         double ticks = turretEncoder.getCurrentPosition();
         double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
-        return (angleDeg + thetaConstant) % 360;
+        return Utils.angleWrapDegrees(angleDeg + thetaConstant);
     }
 
     public void saveTheta(LinearOpMode op) {
@@ -452,16 +452,11 @@ public class Turret {
         double robotHeading = Math.toDegrees(robotPose.heading.toDouble());
         double relativeAngle = fieldAngle - robotHeading;
 
-        // Wrap 0–360
-        //        return (relativeAngle % 360 + 360) % 360;
-        return Math.toDegrees(Utils.angleWrap(Math.toRadians(relativeAngle)));
+        return Utils.angleWrapDegrees(relativeAngle);
     }
 
     public static class ThresholdParameters {
 
-        /**
-         * How close the turret must be to its target to count as aimed. [deg]
-         */
-        public double angleThreshold = 2.0;
+        public double angleThreshold = 2.0; // (deg)
     }
 }

@@ -79,6 +79,19 @@ public class Utils {
      *
      * @return calculated distance between (xPosition1, yPosition1) and (xPosition2, yPosition2)
      */
+    /**
+     * Converts an angle in degrees to its equal value between -180 and 180.
+     */
+    public static double angleWrapDegrees(double degrees) {
+        double wrapped = degrees % 360;
+        if (wrapped > 180) {
+            wrapped -= 360;
+        } else if (wrapped < -180) {
+            wrapped += 360;
+        }
+        return wrapped;
+    }
+
     public static double calculateDistance(
             double xPosition1,
             double yPosition1,

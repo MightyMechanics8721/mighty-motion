@@ -21,12 +21,8 @@ public class Transfer {
     boolean[] balls = new boolean[3];
 
     /**
-     * Builds the Transfer from the beam-break channels, and takes the Intake and Indexer that the
-     * OpMode has already initialised.
-     * <p>
-     * It deliberately does not initialise those two itself. Doing so would replace the singletons,
-     * leaving any reference the OpMode had already captured pointing at a second object driving the
-     * same motors with its own power-deduplication state, so commands would be silently dropped.
+     * Takes the Intake and Indexer the OpMode already built. Do not initialise them here: that
+     * swaps the singletons and leaves the OpMode holding a stale one.
      */
     private Transfer(HardwareMap hardwareMap) {
         // Initialize digital laser sensors

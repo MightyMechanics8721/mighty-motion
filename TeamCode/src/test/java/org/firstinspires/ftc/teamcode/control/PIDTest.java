@@ -5,14 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-/**
- * Covers the PID maths, including the derivative-on-measurement overload the shooter and turret
- * use.
- * <p>
- * The controller reads its timestep from an internal clock, so the timing-sensitive assertions here
- * drive it through a short settle first and then check invariants that hold regardless of how fast
- * the test machine runs.
- */
+/** PID maths, including the derivative-on-measurement overload. */
 public class PIDTest {
 
     private static final double EPS = 1e-9;

@@ -383,14 +383,8 @@ public class Drivetrain {
      * @param powers matrix of wheel power values (order:lfm, lbm, rbm, rfm)
      */
     /**
-     * Applies power to the four drive motors, in the order lfm, lbm, rbm, rfm.
-     * <p>
-     * If any wheel is asked for more than full power the whole vector is scaled down until the
-     * largest is exactly full. Letting each wheel clip on its own would change the ratios between
-     * them, and those ratios are what set the robot's direction of travel, so a saturated command
-     * would send the robot somewhere other than where it was told to go.
-     *
-     * @param powers 4x1 matrix of wheel powers
+     * Powers the four motors (lfm, lbm, rbm, rfm). Scales the whole vector down if any wheel is
+     * over full power, so the ratios between wheels, and therefore the direction, are kept.
      */
     public void setPower(SimpleMatrix powers) {
         double largest = powers.elementMaxAbs();

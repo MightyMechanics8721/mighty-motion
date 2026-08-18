@@ -32,15 +32,15 @@ public class Turret {
             new Turret.ThresholdParameters();
     public static double turretAngle = 0;
     public static double staticTheta = 0.0;
-    public static double linearCoeff = 0.083;
-    public static double quadCoeff = 0.000075;
+    public static double linearCoeff = 0.083; // (deg per deg/s)
+    public static double quadCoeff = 0.000075; // (deg per (deg/s)^2)
     public static long staticThetaUpdateCounter = 0;
     public static double bias = 0;
     private static Turret instance;
     private static double prevAngle = 0.0;
     // --- Hardware constants ---
-    private final double TICKS_PER_REV = 4000.0;
-    private final double GEAR_RATIO = 140.0 / 30;
+    private final double TICKS_PER_REV = 4000.0; // (ticks/rev) at the turret encoder
+    private final double GEAR_RATIO = 140.0 / 30; // motor revs per turret rev
     // --- Hardware ---
     private final CRServo turretLeft;
     private final CRServo turretRight;
@@ -86,6 +86,11 @@ public class Turret {
         thetaConstant = angle;
     }
 
+    /**
+     * @param velocity turret velocity (deg/s)
+     *
+     * @return angle the turret coasts through before stopping (deg)
+     */
     public double computeStoppingDistance(double velocity) {
         return Math.signum(velocity) * addDrift(Math.abs(
                 velocity));
@@ -242,6 +247,7 @@ public class Turret {
         return staticGain * Math.signum(pidOutput) + pidOutput;
     }
 
+    /** Coast angle (deg) for a speed in deg/s. */
     private double addDrift(double vel) {
         return linearCoeff * vel + quadCoeff * Math.pow(vel, 2);
     }
@@ -250,8 +256,8 @@ public class Turret {
      * Returns the current bot-relative turret angle in degrees
      */
     public double getAngle() {
-        double ticks = turretEncoder.getCurrentPosition();
-        double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO);
+        double ticks = turretEncoder.getCurrentPosition(); // (ticks)
+        double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO); // (deg)
         return Utils.angleWrapDegrees(angleDeg + thetaConstant);
     }
 
@@ -316,7 +322,7 @@ public class Turret {
     }
 
     /**
-     * Returns the current turret velocity in degrees/sec
+     * @return turret velocity (deg/s)
      */
     public double getVelocity() {
         return Math.toDegrees(turretEncoder.getVelocity()) / GEAR_RATIO;

@@ -102,9 +102,7 @@ public class Shooter {
     }
 
     /**
-     * Returns the current shooter flywheel velocity.
-     *
-     * @return the current velocity of the shooter flywheel (rad/sec)
+     * @return shooter flywheel velocity (rad/s)
      */
     public double getVelocity() {
         return this.encoder.getVelocity();
@@ -193,6 +191,11 @@ public class Shooter {
         };
     }
 
+    /**
+     * @param distance distance to the goal (in)
+     *
+     * @return flywheel speed (rev/min)
+     */
     public double calculateVelocity(double distance) {
         return 0.103 * distance * distance - 4.53 * distance + constant;
     }

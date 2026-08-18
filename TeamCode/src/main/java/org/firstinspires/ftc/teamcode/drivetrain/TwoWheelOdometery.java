@@ -38,8 +38,8 @@ import org.firstinspires.ftc.teamcode.util.Utils;
 @Config
 public class TwoWheelOdometery {
 
-    public static double xOffset = 155; //MM
-    public static double yOffset = 43.13; //MM
+    public static double xOffset = 155; // (mm) forward pod from centre of rotation
+    public static double yOffset = 43.13; // (mm) lateral pod from centre of rotation
     public GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
 
@@ -55,6 +55,10 @@ public class TwoWheelOdometery {
         this.odo.resetPosAndIMU();
     }
 
+    /**
+     * @return 6x1 state: x (in), y (in), heading (rad), then body-frame vx (in/s), vy (in/s),
+     * omega (rad/s)
+     */
     public SimpleMatrix calculate() {
         TelemetryPacket packet = new TelemetryPacket();
         odo.update();

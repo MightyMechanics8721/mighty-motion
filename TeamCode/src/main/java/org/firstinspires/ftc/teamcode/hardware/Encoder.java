@@ -5,10 +5,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class Encoder {
-    private final double TICKS_PER_RADIAN;
+    private final double TICKS_PER_RADIAN; // (ticks/rad)
     private DcMotorEx encoder;
-    private int storedPos = 0;
+    private int storedPos = 0; // (ticks) reading at the last reset
 
+    /**
+     * @param ticksPerRevolution encoder ticks per shaft revolution (ticks/rev)
+     */
     public Encoder(DcMotorEx encoder, double ticksPerRevolution) {
         this.encoder = encoder;
         this.encoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -25,19 +28,20 @@ public class Encoder {
     //        this.TICKS_PER_RADIAN = ticksPerRevolution / (2 * Math.PI);
     //    }
 
+    /** Zeroes the reading in software. */
     public void reset() {
         storedPos = encoder.getCurrentPosition();
     }
 
     /**
-     * @return ticks of current encoder // possibly different per different encoder
+     * @return shaft position since the last reset (ticks)
      */
     public int getCurrentPosition() {
         return encoder.getCurrentPosition() - storedPos;
     }
 
     /**
-     * @return radians/second
+     * @return shaft velocity (rad/s)
      */
     public double getVelocity() {
         return this.encoder.getVelocity() / this.TICKS_PER_RADIAN;

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import static com.acmerobotics.roadrunner.Math.clamp;
 
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -41,27 +40,35 @@ public class DcMotorAdvanced {
         this(motor, Double.POSITIVE_INFINITY, 0.0);
     }
 
+    /**
+     * Sets motor power, skipping the hardware write when the request has not moved by more than
+     * powerThreshold since the last one.
+     * <p>
+     * When a maxVoltage was supplied, the request is scaled by maxVoltage / batteryVoltage so a
+     * given command produces the same torque as the pack drains. With clipBeforeBatteryCompensation
+     * the request is limited to [-1, 1] before that scaling, letting compensation push it above
+     * full power; without it the limit is applied after, so full power is the hard ceiling. Either
+     * way the value that reaches the hardware is clipped to [-1, 1].
+     *
+     * @param power requested power in [-1, 1]
+     */
     public void setPower(double power) {
-        TelemetryPacket packet = new TelemetryPacket();
-        if (Math.abs(power - previousPower) > this.powerThreshold) {
-
-            if (this.maxVoltage != Double.POSITIVE_INFINITY) {
-                double batteryVoltage = Battery.getInstance().getVoltage();
-
-                // NOTE: might want to clip the power between (-1 and 1).
-                // Maybe for shooter - @kevin.
-                if (this.clipBeforeBatteryCompensation) {
-                    power = clamp(power, -1.0, 1.0);
-                }
-
-                power = maxVoltage / batteryVoltage * power;
-                motor.setPower(power);
-
-            } else {
-                motor.setPower(power);
-            }
+        if (Math.abs(power - previousPower) <= this.powerThreshold) {
+            return;
         }
         previousPower = power;
+
+        double output = power;
+        if (this.maxVoltage != Double.POSITIVE_INFINITY) {
+            if (this.clipBeforeBatteryCompensation) {
+                output = clamp(output, -1.0, 1.0);
+            }
+            double batteryVoltage = Battery.getInstance().getVoltage();
+            if (batteryVoltage > 0) {
+                output = maxVoltage / batteryVoltage * output;
+            }
+        }
+        motor.setPower(clamp(output, -1.0, 1.0));
     }
 
     public DcMotorSimple.Direction getDirection() {

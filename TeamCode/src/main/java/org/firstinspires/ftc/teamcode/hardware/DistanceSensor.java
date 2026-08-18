@@ -22,6 +22,14 @@ public class DistanceSensor {
     boolean[] balls = new boolean[3];
     int ballCount = 0;
 
+    /**
+     * Builds the DistanceSensor from the beam-break channels, and takes the Intake and Indexer that the
+     * OpMode has already initialised.
+     * <p>
+     * It deliberately does not initialise those two itself. Doing so would replace the singletons,
+     * leaving any reference the OpMode had already captured pointing at a second object driving the
+     * same motors with its own power-deduplication state, so commands would be silently dropped.
+     */
     private DistanceSensor(HardwareMap hardwareMap) {
         // Initialize digital laser sensors
         laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1"); // BOTTOM
@@ -31,8 +39,6 @@ public class DistanceSensor {
         laserInput1.setMode(DigitalChannel.Mode.INPUT);
         laserInput2.setMode(DigitalChannel.Mode.INPUT);
         laserInput3.setMode(DigitalChannel.Mode.INPUT);
-        Intake.initialize(hardwareMap);
-        Indexer.initialize(hardwareMap);
         intake = Intake.getInstance();
         indexer = Indexer.getInstance();
     }

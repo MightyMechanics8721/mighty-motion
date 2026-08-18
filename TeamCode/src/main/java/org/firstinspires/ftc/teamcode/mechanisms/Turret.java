@@ -29,7 +29,6 @@ public class Turret {
     // --- Tunable ---
     public static double staticGain = 0;
     public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0);
-    public static double angleThreshold = 1.0;
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
     public static double turretAngle = 0;
@@ -461,8 +460,8 @@ public class Turret {
     public static class ThresholdParameters {
 
         /**
-         * Maximum expected voltage of the battery in volts.
+         * How close the turret must be to its target to count as aimed. [deg]
          */
-        public double angleThreshold = 2.0; // (deg)
+        public double angleThreshold = 2.0;
     }
 }

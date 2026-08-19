@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import org.firstinspires.ftc.teamcode.control.ShooterModel;
+
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import static org.firstinspires.ftc.teamcode.util.Utils.calculateDistance;
@@ -135,10 +137,10 @@ public class RedTeleOpNoAuto extends LinearOpMode {
             // ----- TURRET -----
             if (gamepad2.dpad_up) {
                 SHOOTER_VELOCITY_FAR += 5;
-                Shooter.constant += 5;
+                ShooterModel.constant += 5;
             } else if (gamepad2.dpad_down) {
                 SHOOTER_VELOCITY_FAR -= 5;
-                Shooter.constant -= 5;
+                ShooterModel.constant -= 5;
             }
 
             if (gamepad2.dpad_left) {

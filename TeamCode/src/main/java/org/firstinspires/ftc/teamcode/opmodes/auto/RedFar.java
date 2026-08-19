@@ -91,7 +91,6 @@ public class RedFar extends LinearOpMode {
         waitForStart();
 
         looptime.reset();
-        Turret.staticTheta = 0;
         drivetrain.setInitialPose(64, 24, 180);
         turret.setInitialAngle(0);
         //Alex Ko bless this code

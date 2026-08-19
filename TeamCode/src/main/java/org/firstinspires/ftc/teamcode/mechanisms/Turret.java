@@ -19,6 +19,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import org.firstinspires.ftc.teamcode.control.PID;
 import org.firstinspires.ftc.teamcode.control.PIDConstants;
+import org.firstinspires.ftc.teamcode.control.StoppingDistance;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.util.Utils;
@@ -30,7 +31,6 @@ public class Turret {
     public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0);
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
-    public static double turretAngle = 0;
     public static double staticTheta = 0.0;
     public static double linearCoeff = 0.083; // (deg per deg/s)
     public static double quadCoeff = 0.000075; // (deg per (deg/s)^2)
@@ -68,11 +68,12 @@ public class Turret {
         turretLeft.setDirection(CRServo.Direction.REVERSE);
         turretRight.setDirection(CRServo.Direction.REVERSE);
         turretEncoder.reset();
-        //        turretAngle = 0;
     }
 
     public static void initialize(HardwareMap hardwareMap) {
         instance = new Turret(hardwareMap);
+        staticTheta = 0;
+        staticThetaUpdateCounter = 0;
     }
 
     public static Turret getInstance() {
@@ -92,8 +93,7 @@ public class Turret {
      * @return angle the turret coasts through before stopping (deg)
      */
     public double computeStoppingDistance(double velocity) {
-        return Math.signum(velocity) * addDrift(Math.abs(
-                velocity));
+        return StoppingDistance.forVelocity(velocity, linearCoeff, quadCoeff);
     }
 
     /**
@@ -247,10 +247,6 @@ public class Turret {
         return staticGain * Math.signum(pidOutput) + pidOutput;
     }
 
-    /** Coast angle (deg) for a speed in deg/s. */
-    private double addDrift(double vel) {
-        return linearCoeff * vel + quadCoeff * Math.pow(vel, 2);
-    }
 
     /**
      * Returns the current bot-relative turret angle in degrees

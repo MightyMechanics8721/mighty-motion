@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.control.FFConstants;
 import org.firstinspires.ftc.teamcode.control.FeedForward;
 import org.firstinspires.ftc.teamcode.control.PID;
 import org.firstinspires.ftc.teamcode.control.PIDConstants;
+import org.firstinspires.ftc.teamcode.control.ShooterModel;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.hardware.Encoder;
@@ -52,7 +53,6 @@ public class Shooter {
     public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.65;
-    public static double constant = 1700;
     private static Shooter instance;
     public final DcMotorAdvanced shooterMotor1;
     public final DcMotorAdvanced shooterMotor2;
@@ -199,7 +199,7 @@ public class Shooter {
      * @return flywheel speed (rev/min)
      */
     public double calculateVelocity(double distance) {
-        return 0.103 * distance * distance - 4.53 * distance + constant;
+        return ShooterModel.velocityForDistance(distance);
     }
 
     /**

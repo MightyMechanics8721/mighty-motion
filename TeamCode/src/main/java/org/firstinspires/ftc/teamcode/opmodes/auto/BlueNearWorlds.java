@@ -111,7 +111,6 @@ public class BlueNearWorlds extends LinearOpMode {
         waitForStart();
 
         looptime.reset();
-        Turret.staticTheta = 0;
         drivetrain.setInitialPose(-51, -51, 45);
         turret.setInitialAngle(-180);
         //Alex Ko bless this code

@@ -1,7 +1,8 @@
 # TeamCode layout
 
 ```
-control/      PID, FeedForward, MotionProfile, LowPassFilter and their constants
+control/      PID, FeedForward, MotionProfile, LowPassFilter, ShooterModel,
+              StoppingDistance and their constants. Pure maths, no hardware, all tested
 drivetrain/   Drivetrain, TwoWheelOdometery, PoseController, GeometricController,
               DrivetrainMotorController, MecanumKinematicModel, Path, Drawing
 hardware/     DcMotorAdvanced, ServoAdvanced, Encoder, Battery, DistanceSensor,
@@ -49,6 +50,9 @@ two teleops read a field nothing wrote.
 
 Every mechanism is a singleton. `initialize(hardwareMap)` builds a fresh instance and must be called
 at the start of each OpMode; `getInstance()` throws if you forget.
+
+`initialize()` also resets the runtime statics that class owns, so a value cannot leak into the
+next run. Tuning knobs are left alone.
 
 Do not switch these to lazy construction. `HardwareMap` is rebuilt every run, so an instance cached
 from a previous run holds dead device handles.

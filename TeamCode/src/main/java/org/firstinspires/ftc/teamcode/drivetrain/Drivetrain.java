@@ -342,39 +342,6 @@ public class Drivetrain {
         return stopDistanceGlobal;
     }
 
-    private SimpleMatrix computePreloadDistance() {
-        SimpleMatrix stopDistance = new SimpleMatrix(
-                new double[][]{
-                        new double[]{
-                                Math.signum(this.state.get(3, 0)) * this.stoppingDistanceX(
-                                        scale * Math.abs(this.state.get(3, 0)))
-                        },
-                        new double[]{
-                                Math.signum(this.state.get(4, 0)) * this.stoppingDistanceY(
-                                        scale * Math.abs(this.state.get(4, 0)))
-                        },
-                        new double[]{
-                                Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
-                                        scale * Math.abs(this.state.get(5, 0))
-                                )
-                        }
-                }
-        );
-
-        SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
-                stopDistance, this.state.get(
-                        2,
-                        0
-                )
-        );
-
-        //        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
-        //        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
-        //        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2,
-        //        0)));
-
-        return stopDistanceGlobal;
-    }
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change

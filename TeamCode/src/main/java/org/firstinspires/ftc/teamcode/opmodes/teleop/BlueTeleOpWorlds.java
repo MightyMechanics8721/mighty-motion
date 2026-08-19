@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import org.firstinspires.ftc.teamcode.control.ShooterModel;
+
 import org.ejml.simple.SimpleMatrix;
 
 import org.firstinspires.ftc.teamcode.storage.StaticVariables;
@@ -165,10 +167,10 @@ public class BlueTeleOpWorlds extends LinearOpMode {
             // ----- TURRET -----
             if (gamepad2.dpad_up) {
                 SHOOTER_VELOCITY_FAR += 5;
-                Shooter.constant += 5;
+                ShooterModel.constant += 5;
             } else if (gamepad2.dpad_down) {
                 SHOOTER_VELOCITY_FAR -= 5;
-                Shooter.constant -= 5;
+                ShooterModel.constant -= 5;
             }
 
             if (gamepad2.dpad_left) {

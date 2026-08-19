@@ -50,34 +50,6 @@ public class GeometricController {
         return new double[]{projX, projY};
     }
 
-    private static double[] findClosestPointOnPath(
-            double px, double py,
-            double[][] wayPoints
-    ) {
-        double bestX = wayPoints[0][0];
-        double bestY = wayPoints[0][1];
-        double bestDistSq = Double.POSITIVE_INFINITY;
-
-        for (int i = 0; i < wayPoints.length - 1; i++) {
-            double[] cand = closestPointOnSegment(
-                    px, py,
-                    wayPoints[i][0], wayPoints[i][1],
-                    wayPoints[i + 1][0], wayPoints[i + 1][1]
-            );
-
-            double dx = cand[0] - px;
-            double dy = cand[1] - py;
-            double distSq = dx * dx + dy * dy;
-
-            if (distSq < bestDistSq) {
-                bestDistSq = distSq;
-                bestX = cand[0];
-                bestY = cand[1];
-            }
-        }
-
-        return new double[]{bestX, bestY};
-    }
 
     static double[] calcCircleLineIntersection(
             double xPos,

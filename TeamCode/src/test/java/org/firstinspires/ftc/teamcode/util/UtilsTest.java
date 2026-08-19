@@ -110,4 +110,30 @@ public class UtilsTest {
                     Utils.angleWrapDegrees(deg), 1e-9);
         }
     }
+
+    @Test
+    public void rpmToRadPerSecMatchesTheOldInlineExpression() {
+        for (double rpm : new double[]{0, 1, 2350, 2700, -1350, 6000}) {
+            assertEquals(rpm * 2 * Math.PI / 60, Utils.rpmToRadPerSec(rpm), 1e-12);
+        }
+    }
+
+    @Test
+    public void radPerSecToRpmMatchesTheOldInlineExpression() {
+        for (double rad : new double[]{0, 1, 246.09, -141.37, 628.3}) {
+            assertEquals(rad * 60 / (2 * Math.PI), Utils.radPerSecToRpm(rad), 1e-12);
+        }
+    }
+
+    @Test
+    public void rpmAndRadPerSecRoundTrip() {
+        for (double rpm : new double[]{0, 1, 2350, 2700, -1350}) {
+            assertEquals(rpm, Utils.radPerSecToRpm(Utils.rpmToRadPerSec(rpm)), 1e-9);
+        }
+    }
+
+    @Test
+    public void oneRevPerSecIsTwoPiRadPerSec() {
+        assertEquals(2 * Math.PI, Utils.rpmToRadPerSec(60), 1e-12);
+    }
 }

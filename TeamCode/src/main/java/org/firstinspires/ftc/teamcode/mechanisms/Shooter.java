@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.util.Utils;
+
 import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 import static org.firstinspires.ftc.teamcode.util.Utils.calculateDistance;
 
@@ -200,14 +202,17 @@ public class Shooter {
         return 0.103 * distance * distance - 4.53 * distance + constant;
     }
 
-    public Action autonomousVelocityInfinite(double desiredVelo) {
+    /**
+     * Holds the flywheel at a speed until the action is cancelled.
+     *
+     * @param velocity target flywheel speed (rad/s)
+     */
+    public Action autonomousVelocityInfinite(double velocity) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double power =
-                        velocityPidController.calculate(desiredVelo * Math.PI / 30, getVelocity())
-                                + velocityFeedForwardController.calculate(
-                                desiredVelo * Math.PI / 30, 0);
+                double power = velocityPidController.calculate(velocity, getVelocity())
+                        + velocityFeedForwardController.calculate(velocity, 0);
                 shooterMotor1.setPower(power);
                 shooterMotor2.setPower(power);
                 return true;
@@ -383,7 +388,7 @@ public class Shooter {
                 drivetrain.shootWhileMovingPose.get(1, 0), x,
                 y
         );
-        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -401,7 +406,7 @@ public class Shooter {
                 drivetrain.preloadPose.get(1, 0), x,
                 y
         );
-        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -419,14 +424,14 @@ public class Shooter {
                 drivetrain.preloadPose.get(1, 0), x,
                 y
         );
-        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
 
         if (seconds <= SHOOTER_SECONDS_THRESHOLD) {
             velocity *= SHOOTER_SCALE_FACTOR;
         }
 
         //TODO TUNE THIS CONSTANT VALUE
-        //        double velocity = 2750 * 2 * Math.PI / 60;
+        //        double velocity = Utils.rpmToRadPerSec(2750);
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -440,7 +445,7 @@ public class Shooter {
                 drivetrain.driftedPose.get(1, 0), -60,
                 -60
         );
-        double velocity = calculateVelocity(distance) * 2 * Math.PI / 60;
+        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
         return Math.abs(encoder.getVelocity() - velocity)
                 >= SHOOTER_CONSTANTS.velocityTolerance;
     }

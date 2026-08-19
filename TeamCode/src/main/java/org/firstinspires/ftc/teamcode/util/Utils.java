@@ -79,6 +79,16 @@ public class Utils {
      *
      * @return calculated distance between (xPosition1, yPosition1) and (xPosition2, yPosition2)
      */
+    /** Converts rev/min to rad/s. */
+    public static double rpmToRadPerSec(double rpm) {
+        return rpm * 2 * Math.PI / 60;
+    }
+
+    /** Converts rad/s to rev/min. */
+    public static double radPerSecToRpm(double radPerSec) {
+        return radPerSec * 60 / (2 * Math.PI);
+    }
+
     /** Wraps an angle in degrees to (-180, 180]. */
     public static double angleWrapDegrees(double degrees) {
         double wrapped = degrees % 360;

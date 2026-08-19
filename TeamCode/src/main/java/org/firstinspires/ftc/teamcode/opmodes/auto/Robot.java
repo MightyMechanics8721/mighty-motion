@@ -355,7 +355,7 @@ public class Robot {
                             indexer.setIndexerPower(1),
                             intake.setIntakePower(-1),
                             shooter.setShooterVelocityTimed(
-                                    2350 * 2 * Math.PI / 60,
+                                    Utils.rpmToRadPerSec(2350),
                                     0.5
                             )
                     ));

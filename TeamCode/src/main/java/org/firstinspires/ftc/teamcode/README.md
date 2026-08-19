@@ -26,15 +26,37 @@ from a previous run holds dead device handles.
 Do not call another mechanism's `initialize()` from inside a constructor either — that swaps the
 singleton out from under any OpMode that already captured it.
 
+## Units
+
+| Quantity | Unit | Notes |
+| --- | --- | --- |
+| Field position | in | |
+| Drivetrain heading | rad | `Drivetrain.setInitialPose` is the exception and takes deg |
+| Drivetrain velocity | in/s, rad/s | body frame |
+| Turret angle | deg | wrapped to (-180, 180] by `Utils.angleWrapDegrees` |
+| Turret velocity | deg/s | |
+| Shooter velocity | rad/s | every entry point, no exceptions |
+| `Shooter.calculateVelocity` | rev/min | the one rev/min value; convert at the call |
+| Encoder position | ticks | |
+| Encoder velocity | rad/s | |
+| Time | s | |
+
+Convert only at the boundary, using named helpers, never an inline expression:
+
+```java
+Utils.rpmToRadPerSec(rpm)     Utils.radPerSecToRpm(radPerSec)
+Utils.angleWrap(radians)      Utils.angleWrapDegrees(degrees)
+Math.toRadians(deg)           Math.toDegrees(rad)
+```
+
+Degrees appear only where a human types the number: dashboard fields, match constants, and
+`setInitialPose`. Everything downstream is radians.
+
+Field frame for position and heading, body frame for velocities: +x forwards, +y left, +heading
+counter-clockwise. Wheel order is always lf, lb, rb, rf.
+
 ## Conventions
 
-- Inches and radians in the drivetrain. Degrees at the boundaries a human types into.
-- The turret works in degrees throughout, wrapped to (-180, 180] by `Utils.angleWrapDegrees`.
-- Shooter velocities are rad/s. Convert RPM at the call site with `* 2 * Math.PI / 60`.
-  `autonomousVelocityInfinite` is the exception and takes RPM.
-- Field frame for position and heading, body frame for velocities. +x forwards, +y left,
-  +heading counter-clockwise.
-- Wheel order is always lf, lb, rb, rf.
 - Comments go above the method, not inside it.
 - Statics hold numbers only, for values that outlive an OpMode or are tuned on the dashboard.
 

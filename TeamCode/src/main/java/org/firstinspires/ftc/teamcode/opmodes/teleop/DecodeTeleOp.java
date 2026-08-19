@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import org.firstinspires.ftc.teamcode.util.Utils;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -147,31 +149,30 @@ public class DecodeTeleOp extends LinearOpMode {
             } else if (gamepad2.left_bumper) { // ----- REVERSE -----
                 runningActions.put("stopper", shooter.hardStopOpen());
                 runningActions.put(
-                        "shooter", shooter.setShooterVelocityLoop(-SHOOTER_VELOCITY_NORMAL
-                                                                          / 2 * 2 * Math.PI / 60)
+                        "shooter", shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(-SHOOTER_VELOCITY_NORMAL / 2))
                 );
             } else if (gamepad2.square) { // ------ NORMAL ------
                 runningActions.put(
                         "shooter", shooter.setShooterVelocityLoop(
-                                SHOOTER_VELOCITY_NORMAL * 2 * Math.PI / 60)
+                                Utils.rpmToRadPerSec(SHOOTER_VELOCITY_NORMAL))
                 );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.cross) { // ------ CLOSE ------
                 runningActions.put(
                         "shooter",
-                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_CLOSE * 2 * Math.PI / 60)
+                        shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(SHOOTER_VELOCITY_CLOSE))
                 );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else if (gamepad2.triangle) { // ------ FAR ------
                 runningActions.put(
                         "shooter",
-                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_FAR * 2 * Math.PI / 60)
+                        shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(SHOOTER_VELOCITY_FAR))
                 );
                 runningActions.put("stopper", shooter.hardStopOpen());
             } else {
                 runningActions.put(
                         "shooter",
-                        shooter.setShooterVelocityLoop(SHOOTER_VELOCITY_IDLE * 2 * Math.PI / 60)
+                        shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(SHOOTER_VELOCITY_IDLE))
                 );
             }
 
@@ -215,7 +216,7 @@ public class DecodeTeleOp extends LinearOpMode {
             double time = timer.seconds();
             // Dashboard telemetry
             dashboard.getTelemetry()
-                     .addData("Shooter Vel", (shooter.getVelocity() * 60) / (2 * Math.PI));
+                     .addData("Shooter Vel", Utils.radPerSecToRpm(shooter.getVelocity()));
             dashboard.getTelemetry().addData(
                     "Intake Current",
                     intake.getIntakeMotor().getCurrent(CurrentUnit.MILLIAMPS).toString()

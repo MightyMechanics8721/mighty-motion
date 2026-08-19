@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.hardware.Battery;
 import org.firstinspires.ftc.teamcode.mechanisms.Indexer;
 import org.firstinspires.ftc.teamcode.mechanisms.Intake;
 import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
+import org.firstinspires.ftc.teamcode.util.Utils;
 import org.firstinspires.ftc.teamcode.mechanisms.Transfer;
 import org.firstinspires.ftc.teamcode.mechanisms.Turret;
 
@@ -30,7 +31,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Turret;
 @Autonomous(name = "RED FAR Autonomous  3/7", group = "TEST")
 public class RedFar extends LinearOpMode {
     public static double ROW_TRANSFER_TIME = 3;
-    public static double velocity = 2700;
+    public static double velocity = 2700; // (rev/min)
     //    public static double staticTurretAngle;
     //    public static SimpleMatrix staticRobotState;
     public double SHOOT_TIME = 3;
@@ -96,7 +97,7 @@ public class RedFar extends LinearOpMode {
         //Alex Ko bless this code
         Actions.runBlocking(
                 new ParallelAction( //main loop
-                                    shooter.autonomousVelocityInfinite(velocity),
+                                    shooter.autonomousVelocityInfinite(Utils.rpmToRadPerSec(velocity)),
                                     turret.autoAimInfinite(new Vector2d(
                                             -68,
                                             70

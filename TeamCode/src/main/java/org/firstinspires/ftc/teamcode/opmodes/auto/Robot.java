@@ -54,10 +54,17 @@ public class Robot {
     }
 
     /**
-     * Saves the end-of-auton pose and turret angle. Safe to call while the OpMode is being torn
-     * down; a hardware read that fails leaves the last good value in place.
+     * Reads the odometry once more, then saves the pose and turret angle for TeleOp.
+     * <p>
+     * Drivetrain.state only refreshes while a drivetrain action is running, so it is stale by the
+     * time a routine has finished driving. Safe to call while the OpMode is being torn down; a
+     * hardware read that fails leaves the last good value in place.
      */
     public static void saveFinalState() {
+        try {
+            Drivetrain.getInstance().localize();
+        } catch (RuntimeException ignored) {
+        }
         try {
             StaticVariables.saveRobotState(Drivetrain.getInstance().state);
         } catch (RuntimeException ignored) {

@@ -32,8 +32,12 @@ SimpleMatrix startPose = StaticVariables.robotStateOr(Utils.makePoseVector(-51, 
 ```
 
 Autonomous saves twice: continuously from `updateRobotState()` inside the action tree, and once
-more from `Robot.saveFinalState()` in a `finally` around `runBlocking`. The action-tree save alone
-depends on that action still being scheduled and still running.
+more from `Robot.saveFinalState()` in a `finally` around `runBlocking`.
+
+`Drivetrain.state` only refreshes inside a drivetrain action's `run()`. Once a routine stops
+driving, the cached pose freezes, so `updateRobotState()` re-saves the same value for the rest of
+the period. `saveFinalState()` calls `localize()` before reading, which is the only save that
+reflects where the robot actually finished.
 
 Only plain numbers go in here. A `HardwareMap` is rebuilt every OpMode, so a motor, servo or sensor
 kept in a static would be a dead handle on the next run.

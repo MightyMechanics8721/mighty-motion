@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.util.Timed;
+
 
 import androidx.annotation.NonNull;
 
@@ -172,39 +174,15 @@ public class Turret {
     /**
      * Rotates the turret to a specific angle using PID as a Roadrunner Action, TIMED
      */
+    /** Cuts power to both turret motors. */
+    private void stopTurret() {
+        turretLeft.setPower(0);
+        turretRight.setPower(0);
+    }
+
+    /** Turns to desiredAngle (deg), giving up after seconds (s) and cutting power. */
     public Action setTurretAngleTimed(double desiredAngle, double seconds) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                if (timer.seconds() > seconds) {
-                    turretLeft.setPower(0);
-                    turretRight.setPower(0);
-                    return false;
-                }
-
-                // Stop if angle reached
-                if (Math.abs(Utils.angleWrapDegrees(desiredAngle - getAngle()))
-                        < THRESHOLD_PARAMETERS.angleThreshold) {
-                    turretLeft.setPower(0);
-                    turretRight.setPower(0);
-                    return true;
-                }
-
-                double power = computeSpinPower(Utils.angleWrapDegrees(desiredAngle));
-
-                turretLeft.setPower(power);
-                turretRight.setPower(power);
-
-                return true;
-            }
-        };
+        return Timed.deadline(setTurretAngleInfinite(desiredAngle), seconds, this::stopTurret);
     }
 
     //  --- Getter Functions ---
@@ -393,32 +371,9 @@ public class Turret {
     /**
      * Loop to Auto-aim at a field goal using robot pose
      */
+    /** Aims at the goal for the full duration (s). */
     public Action autoAimTimed(Vector2d goalPos, double seconds) {
-        return new Action() {
-            double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                if (timer.seconds() < seconds) {
-                    SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
-                    Pose2d robotPose = new Pose2d(
-                            robotState.get(0, 0),
-                            robotState.get(1, 0),
-                            robotState.get(2, 0)
-                    );
-                    double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
-                    //                    packet.put("angle to goal", angleToGoal);
-                    //                    packet.put("angle", getAngle());
-                    //                    packet.put("autoShootMoving Done", true);
-                    return setTurretAngleInfinite(angleToGoal).run(packet);
-                }
-                return false;
-            }
-        };
+        return Timed.forDuration(autoAimInfinite(goalPos), seconds);
     }
 
     /**

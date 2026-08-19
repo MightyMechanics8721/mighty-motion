@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.util.Timed;
+
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
@@ -235,25 +237,9 @@ public class Shooter {
      * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
      * goal coordinate Timed action
      */
+    /** Tracks the goal from the drifted pose for the full duration (s). */
     public Action autoShootMovingTimed(double seconds, double x, double y) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                autoShootMovingFunction(time, x, y);
-                if (time > seconds) {
-                    //packet.put("timer", "complete");
-                    return false;
-                }
-                return true;
-            }
-        };
+        return Timed.forDuration(autoShootMovingInfinite(x, y), seconds);
     }
 
     /**
@@ -317,25 +303,9 @@ public class Shooter {
         };
     }
 
+    /** Holds the flywheel at velocity (rad/s) for the full duration (s). */
     public Action setShooterVelocityTimed(double velocity, double seconds) {
-        return new Action() {
-            double time = -1;
-            ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 0);
-                shooterMotor1.setPower(power);
-                shooterMotor2.setPower(power);
-
-                return time <= seconds;
-            }
-        };
+        return Timed.forDuration(setShooterVelocityInfinite(velocity), seconds);
     }
 
     public Action hardStop() {

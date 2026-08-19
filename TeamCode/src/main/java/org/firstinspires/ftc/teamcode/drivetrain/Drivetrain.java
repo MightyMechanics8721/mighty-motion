@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drivetrain;
 
+import org.firstinspires.ftc.teamcode.util.Timed;
+
 import static org.firstinspires.ftc.teamcode.util.Utils.makePoseVector;
 
 import androidx.annotation.NonNull;
@@ -496,39 +498,18 @@ public class Drivetrain {
 
     }
 
+    /** goToPose, giving up after seconds (s) and cutting power. */
     public Action goToPoseTimed(
             SimpleMatrix desiredPose,
             double distanceThreshold,
             double angleThreshold,
             boolean useStoppingDistance, double seconds
     ) {
-        Drivetrain drivetrain = this;
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time >= seconds) {
-                    drivetrain.setPower(stopMatrix);
-                    return false;
-                }
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                drivetrain.setTelemetry(packet);
-                drivetrain.localize();
-                drivetrain.updateTelemetry();
-
-                return drivetrain.goToPoseFunction(
-                        desiredPose, distanceThreshold,
-                        angleThreshold,
-                        useStoppingDistance
-                );
-            }
-        };
-
+        return Timed.deadline(
+                goToPose(desiredPose, distanceThreshold, angleThreshold, useStoppingDistance),
+                seconds,
+                () -> setPower(stopMatrix)
+        );
     }
 
     private boolean followPathFunction(
@@ -648,42 +629,21 @@ public class Drivetrain {
      *
      * @return
      */
+    /** followPath, giving up after seconds (s) and cutting power. */
     public Action followPathTimed(
             Path path,
             double maxSpeed,
             double distanceThreshold,
             double angleThreshold,
-            boolean useStoppingDistance, double seconds
+            boolean useStoppingDistance,
+            double seconds
     ) {
-        Drivetrain drivetrain = this;
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time >= seconds) {
-                    drivetrain.setPower(stopMatrix);
-                    return false;
-                }
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                drivetrain.setTelemetry(packet);
-                drivetrain.localize();
-                drivetrain.updateTelemetry();
-
-                return (drivetrain.followPathFunction(
-                        path,
-                        maxSpeed,
-                        distanceThreshold,
-                        angleThreshold,
-                        useStoppingDistance
-                ));
-            }
-        };
-
+        return Timed.deadline(
+                followPath(path, maxSpeed, distanceThreshold, angleThreshold,
+                        useStoppingDistance),
+                seconds,
+                () -> setPower(stopMatrix)
+        );
     }
 
     /**

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.util.Timed;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -71,27 +73,10 @@ public class Transfer {
      * Powers Intake and Indexer based on balls detected in Intake System ----- INITIALIZE Intake
      * AND Indexer -----
      */
+    /** Runs ball detection, giving up after seconds (s) and stopping intake and indexer. */
     public Action ballDetectionTimed(double seconds) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                time = timer.seconds();
-                if (time < seconds) {
-                    updateBallCount();
-                    ballDetectionFunction();
-                } else {
-                    setIntakeIndexerPowerFunction(0, 0);
-                    return false;
-                }
-                return ballCount != 3;
-            }
-        };
+        return Timed.deadline(ballDetection(), seconds,
+                () -> setIntakeIndexerPowerFunction(0, 0));
     }
 
     /**

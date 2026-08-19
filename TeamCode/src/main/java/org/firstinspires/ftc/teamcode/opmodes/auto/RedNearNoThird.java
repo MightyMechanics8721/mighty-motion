@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -43,8 +45,6 @@ public class RedNearNoThird extends LinearOpMode {
     public static double ALL_PATH_TIME = 5;
     public static double SHOOT_TIME = 0.4;
     //    public static double preloadTime = 0.45;
-    public static double staticTurretAngle;
-    public static SimpleMatrix staticRobotState;
     private double SHOOTER_VELOCITY_NORMAL = 2500;
 
     @Override
@@ -283,7 +283,7 @@ public class RedNearNoThird extends LinearOpMode {
                 double turretAngle = Turret.getInstance().getAngle();
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    staticTurretAngle = turretAngle;
+                    StaticVariables.saveTurretAngle(turretAngle);
                 }
                 return true;
             }
@@ -297,7 +297,7 @@ public class RedNearNoThird extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    staticRobotState = robotState;
+                    StaticVariables.saveRobotState(robotState);
                 }
                 return true;
             }

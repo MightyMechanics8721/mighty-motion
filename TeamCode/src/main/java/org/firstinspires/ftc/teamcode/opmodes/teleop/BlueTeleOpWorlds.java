@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import org.ejml.simple.SimpleMatrix;
+
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
+
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 import static org.firstinspires.ftc.teamcode.util.Utils.calculateDistance;
@@ -79,16 +83,20 @@ public class BlueTeleOpWorlds extends LinearOpMode {
 
         drivetrain.setTelemetry(packet);
 
+        SimpleMatrix startPose = StaticVariables.robotStateOr(
+                Utils.makePoseVector(-51, -51, 45)); // (in, in, deg)
+
+
         drivetrain.setInitialPose(
-                BlueNearWorlds.staticRobotState.get(0, 0),
-                BlueNearWorlds.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0))
+                startPose.get(0, 0),
+                startPose.get(1, 0),
+                Math.toDegrees(startPose.get(2, 0))
         );
-        turret.setInitialAngle(BlueNearWorlds.staticTurretAngle);
-        packet.put("x", BlueNearWorlds.staticRobotState.get(0, 0));
-        packet.put("y", BlueNearWorlds.staticRobotState.get(1, 0));
-        packet.put("theta", Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0)));
-        packet.put("turret", BlueNearWorlds.staticTurretAngle);
+        turret.setInitialAngle(StaticVariables.turretAngle());
+        packet.put("x", startPose.get(0, 0));
+        packet.put("y", startPose.get(1, 0));
+        packet.put("theta", Math.toDegrees(startPose.get(2, 0)));
+        packet.put("turret", StaticVariables.turretAngle());
         packet.put("x_real", drivetrain.state.get(0, 0));
         packet.put("y_real", drivetrain.state.get(1, 0));
         packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));
@@ -96,17 +104,17 @@ public class BlueTeleOpWorlds extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         waitForStart();
         drivetrain.setInitialPose(
-                BlueNearWorlds.staticRobotState.get(0, 0),
-                BlueNearWorlds.staticRobotState.get(1, 0),
-                Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0))
+                startPose.get(0, 0),
+                startPose.get(1, 0),
+                Math.toDegrees(startPose.get(2, 0))
         );
-        turret.setInitialAngle(BlueNearWorlds.staticTurretAngle);
+        turret.setInitialAngle(StaticVariables.turretAngle());
 
         while (opModeIsActive()) {
-            packet.put("x", BlueNearWorlds.staticRobotState.get(0, 0));
-            packet.put("y", BlueNearWorlds.staticRobotState.get(1, 0));
-            packet.put("theta", Math.toDegrees(BlueNearWorlds.staticRobotState.get(2, 0)));
-            packet.put("turret", BlueNearWorlds.staticTurretAngle);
+            packet.put("x", startPose.get(0, 0));
+            packet.put("y", startPose.get(1, 0));
+            packet.put("theta", Math.toDegrees(startPose.get(2, 0)));
+            packet.put("turret", StaticVariables.turretAngle());
             packet.put("x_real", drivetrain.state.get(0, 0));
             packet.put("y_real", drivetrain.state.get(1, 0));
             packet.put("theta_real", Math.toDegrees(drivetrain.state.get(2, 0)));

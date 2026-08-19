@@ -10,10 +10,29 @@ mechanisms/   Shooter, Turret, Intake, Indexer, Transfer, HardwareConstants
 opmodes/auto/     the 12 competition routines and the Robot they share
 opmodes/teleop/   the driver-control OpModes
 tuning/       every tuning and bench-test OpMode
-util/         Utils (geometry), StaticVariables (auto to teleop handoff)
+storage/      StaticVariables, the only values carried from auto into teleop
+util/         Utils (geometry and unit conversions)
 ```
 
 `control/` never mentions our robot, which is why it is the part with unit tests.
+
+## Auto to teleop handoff
+
+`storage/StaticVariables` is the single home for values that outlive an OpMode. Autonomous saves:
+
+```java
+StaticVariables.saveRobotState(drivetrain.state);   // 3x1 x (in), y (in), heading (rad)
+StaticVariables.saveTurretAngle(turret.getAngle()); // deg
+```
+
+TeleOp reads, with a fallback for when no Autonomous ran:
+
+```java
+SimpleMatrix startPose = StaticVariables.robotStateOr(Utils.makePoseVector(-51, -51, 45));
+```
+
+Do not add per-OpMode static holders. They were previously spread across the auton classes, and
+two teleops read a field nothing wrote.
 
 ## Mechanism singletons
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -32,9 +34,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Turret;
 public class RedFar extends LinearOpMode {
     public static double ROW_TRANSFER_TIME = 3;
     public static double velocity = 2700; // (rev/min)
-    //    public static double staticTurretAngle;
-    //    public static SimpleMatrix staticRobotState;
-    public double SHOOT_TIME = 3;
+    //    //    public double SHOOT_TIME = 3;
     public double ALL_TIME = 3;
 
     @Override
@@ -194,7 +194,7 @@ public class RedFar extends LinearOpMode {
                 double turretAngle = Turret.getInstance().getAngle();
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    RedNearWorlds.staticTurretAngle = turretAngle;
+                    StaticVariables.saveTurretAngle(turretAngle);
                 }
                 return true;
             }
@@ -208,7 +208,7 @@ public class RedFar extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    RedNearWorlds.staticRobotState = robotState;
+                    StaticVariables.saveRobotState(robotState);
                 }
                 return true;
             }

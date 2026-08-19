@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -29,8 +31,6 @@ import org.firstinspires.ftc.teamcode.util.Utils;
 @Autonomous(name = "Blue FAR  MobeLine", group = "TEST")
 public class BlueFarMove extends LinearOpMode {
 
-    public static double staticTurretAngle;
-    public static SimpleMatrix staticRobotState;
 
     @Override
     public void runOpMode() {
@@ -93,7 +93,7 @@ public class BlueFarMove extends LinearOpMode {
                 double turretAngle = Turret.getInstance().getAngle();
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    BlueNearWorlds.staticTurretAngle = turretAngle;
+                    StaticVariables.saveTurretAngle(turretAngle);
                 }
                 return true;
             }
@@ -107,7 +107,7 @@ public class BlueFarMove extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    BlueNearWorlds.staticRobotState = robotState;
+                    StaticVariables.saveRobotState(robotState);
                 }
                 return true;
             }

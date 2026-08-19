@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.auto;
 
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -24,15 +26,12 @@ import org.firstinspires.ftc.teamcode.mechanisms.Intake;
 import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.mechanisms.Transfer;
 import org.firstinspires.ftc.teamcode.mechanisms.Turret;
-import org.firstinspires.ftc.teamcode.util.StaticVariables;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 @Config
 @Autonomous(name = "Blue FAR worlds", group = "TEST")
 public class BlueFarSimple extends LinearOpMode {
     public static double ROW_TRANSFER_TIME = 2;
-    public static double staticTurretAngle;
-    public static SimpleMatrix staticRobotState;
     public double SHOOT_TIME = 0.4;
     public double ALL_TIME = 4;
 
@@ -97,7 +96,7 @@ public class BlueFarSimple extends LinearOpMode {
                 double turretAngle = Turret.getInstance().getAngle();
 
                 if (opModeIsActive() && !isStopRequested()) {
-                    StaticVariables.staticTurretAngle = turretAngle;
+                    StaticVariables.saveTurretAngle(turretAngle);
                 }
                 return true;
             }
@@ -111,7 +110,7 @@ public class BlueFarSimple extends LinearOpMode {
 
                 SimpleMatrix robotState = Drivetrain.getInstance().state;
                 if (opModeIsActive() && !isStopRequested()) {
-                    StaticVariables.staticRobotState = robotState;
+                    StaticVariables.saveRobotState(robotState);
                 }
                 return true;
             }

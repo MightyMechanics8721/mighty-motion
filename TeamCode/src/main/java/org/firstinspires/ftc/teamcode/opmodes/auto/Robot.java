@@ -57,10 +57,16 @@ public class Robot {
      * Reads the odometry once more, then saves the pose and turret angle for TeleOp.
      * <p>
      * Drivetrain.state only refreshes while a drivetrain action is running, so it is stale by the
-     * time a routine has finished driving. Safe to call while the OpMode is being torn down; a
-     * hardware read that fails leaves the last good value in place.
+     * time a routine has finished driving.
+     * <p>
+     * Does nothing once the thread is interrupted. A Lynx read on an interrupted thread returns
+     * LynxUsbUtil.makePlaceholderValue(0) rather than throwing, so saving then would overwrite a
+     * good pose with zeros. On a stop the value saved by updateRobotState stands.
      */
     public static void saveFinalState() {
+        if (Thread.currentThread().isInterrupted()) {
+            return;
+        }
         try {
             Drivetrain.getInstance().localize();
         } catch (RuntimeException ignored) {

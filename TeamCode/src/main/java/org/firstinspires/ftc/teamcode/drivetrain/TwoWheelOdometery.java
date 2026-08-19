@@ -58,6 +58,11 @@ public class TwoWheelOdometery {
     /**
      * @return 6x1 state: x (in), y (in), heading (rad), then body-frame vx (in/s), vy (in/s),
      * omega (rad/s)
+     * <p>
+     * The Pinpoint reports position and velocity in the same frame. Its position is field-frame
+     * (see setPosition, "run a robot in field coordinates"), so the velocities are too, and are
+     * rotated into the body frame here. The "(forward)" and "(strafe)" wording in the driver names
+     * the axes; it is not a frame.
      */
     public SimpleMatrix calculate() {
         TelemetryPacket packet = new TelemetryPacket();

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuning;
+package org.firstinspires.ftc.teamcode.drivetrain;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Battery;
 
 @Config

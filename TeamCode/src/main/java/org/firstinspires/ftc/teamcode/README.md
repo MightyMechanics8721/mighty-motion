@@ -4,13 +4,13 @@
 control/      PID, FeedForward, MotionProfile, LowPassFilter, ShooterModel,
               StoppingDistance and their constants. Pure maths, no hardware, all tested
 drivetrain/   Drivetrain, TwoWheelOdometery, PoseController, GeometricController,
-              DrivetrainMotorController, MecanumKinematicModel, Path, Drawing
+              DrivetrainMotorController, MecanumKinematicModel, Path, Drawing,
+              and their tuners
 hardware/     DcMotorAdvanced, ServoAdvanced, Encoder, Battery, DistanceSensor,
               GoBildaPinpointDriver
-mechanisms/   Shooter, Turret, Intake, Indexer, Transfer, HardwareConstants
+mechanisms/   Shooter, Turret, Intake, Indexer, Transfer, and their tuners
 opmodes/auto/     the 12 competition routines and the Robot they share
 opmodes/teleop/   the driver-control OpModes
-tuning/       every tuning and bench-test OpMode
 storage/      StaticVariables, the only values carried from auto into teleop
 util/         Utils (geometry and unit conversions)
 ```

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuning;
+package org.firstinspires.ftc.teamcode.drivetrain;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.Battery;
 import org.firstinspires.ftc.teamcode.mechanisms.Indexer;
 import org.firstinspires.ftc.teamcode.mechanisms.Intake;

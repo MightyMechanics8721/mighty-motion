@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuning;
+package org.firstinspires.ftc.teamcode.mechanisms;
 
 import org.firstinspires.ftc.teamcode.util.Utils;
 
@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.Battery;
-import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 
 @Config
 @Autonomous(name = "Tune Shooter", group = "Testing")

@@ -111,6 +111,30 @@ public class GeometricController {
         this.packet = packet;
     }
 
+    /**
+     * Closest point to (px, py) anywhere on the path.
+     */
+    private static double[] findClosestPointOnPath(double px, double py, double[][] wayPoints) {
+        double[] best = {wayPoints[0][0], wayPoints[0][1]};
+        double bestDistSq = Double.POSITIVE_INFINITY;
+
+        for (int i = 0; i < wayPoints.length - 1; i++) {
+            double[] cand = closestPointOnSegment(
+                    px, py,
+                    wayPoints[i][0], wayPoints[i][1],
+                    wayPoints[i + 1][0], wayPoints[i + 1][1]
+            );
+            double dx = cand[0] - px;
+            double dy = cand[1] - py;
+            double distSq = dx * dx + dy * dy;
+            if (distSq < bestDistSq) {
+                bestDistSq = distSq;
+                best = cand;
+            }
+        }
+        return best;
+    }
+
     public SimpleMatrix calculate(SimpleMatrix pose, Path path) {
         double x = pose.get(0, 0);
         double y = pose.get(1, 0);
@@ -135,30 +159,15 @@ public class GeometricController {
             }
         }
         lastIndexTheta = lastLookaheadTheta;
-        // If we didn't find any lookahead intersections, fall back to nearest point
-        double[] fallbackPoint = null;
-        if (furthestIntersectionPointXY.isEmpty() || furthestIntersectionPointTheta.isEmpty()) {
-            try {
-                fallbackPoint = xyPoints[lastIndexXY + 1];
-            } catch (Exception e) {
-                fallbackPoint = path.getFinalPoint();
-            }
-
-        }
-
         ArrayList<double[]> thetaArray = new ArrayList<>(furthestIntersectionPointTheta);
         ArrayList<double[]> posArray = new ArrayList<>(furthestIntersectionPointXY);
 
-        double[] positionPoint;
-        double[] thetaPoint;
-
-        if (fallbackPoint == null) {
-            positionPoint = posArray.get(posArray.size() - 1);
-            thetaPoint = thetaArray.get(thetaArray.size() - 1);
-        } else {
-            positionPoint = fallbackPoint;
-            thetaPoint = fallbackPoint;
-        }
+        double[] positionPoint = posArray.isEmpty()
+                ? findClosestPointOnPath(x, y, xyPoints)
+                : posArray.get(posArray.size() - 1);
+        double[] thetaPoint = thetaArray.isEmpty()
+                ? path.getFinalPoint()
+                : thetaArray.get(thetaArray.size() - 1);
 
         // position (XY)
         //        if (posArray.isEmpty()) {
@@ -196,10 +205,11 @@ public class GeometricController {
         if (path.useStaticHeading) {
             desiredTheta = path.finalHeading;
         } else {
-            desiredTheta = Math.atan2(
-                    (thetaPoint[1] - y),
-                    (thetaPoint[0] - x)
-            );
+            double dxAim = thetaPoint[0] - x;
+            double dyAim = thetaPoint[1] - y;
+            desiredTheta = (dxAim == 0 && dyAim == 0)
+                    ? pose.get(2, 0)
+                    : Math.atan2(dyAim, dxAim);
             if (path.reverse) {
                 if (Math.signum(desiredTheta) == -1) {
                     desiredTheta += Math.PI;

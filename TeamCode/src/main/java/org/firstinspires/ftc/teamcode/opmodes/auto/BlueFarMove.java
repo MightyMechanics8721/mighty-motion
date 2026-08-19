@@ -68,21 +68,25 @@ public class BlueFarMove extends LinearOpMode {
         drivetrain.setInitialPose(64, -24, -180);
         turret.setInitialAngle(0);
         //Alex Ko bless this code
-        Actions.runBlocking(
-                new ParallelAction( //main loop
-                                    updateTurretAngle(),
-                                    updateRobotState(),
-                                    new SequentialAction(
-                                            drivetrain.goToPoseTimed(
-                                                    Utils.makePoseVector(
-                                                            64, -48
-                                                            , -180
-                                                    ), 1, Math.toRadians(1), true, 5
-                                            )
-                                    )
-                )
+        try {
+            Actions.runBlocking(
+                    new ParallelAction( //main loop
+                                        updateTurretAngle(),
+                                        updateRobotState(),
+                                        new SequentialAction(
+                                                drivetrain.goToPoseTimed(
+                                                        Utils.makePoseVector(
+                                                                64, -48
+                                                                , -180
+                                                        ), 1, Math.toRadians(1), true, 5
+                                                )
+                                        )
+                    )
 
-        );
+            );
+        } finally {
+            Robot.saveFinalState();
+        }
     }
 
     public Action updateTurretAngle() {

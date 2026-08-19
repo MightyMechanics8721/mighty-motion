@@ -31,6 +31,13 @@ TeleOp reads, with a fallback for when no Autonomous ran:
 SimpleMatrix startPose = StaticVariables.robotStateOr(Utils.makePoseVector(-51, -51, 45));
 ```
 
+Autonomous saves twice: continuously from `updateRobotState()` inside the action tree, and once
+more from `Robot.saveFinalState()` in a `finally` around `runBlocking`. The action-tree save alone
+depends on that action still being scheduled and still running.
+
+Only plain numbers go in here. A `HardwareMap` is rebuilt every OpMode, so a motor, servo or sensor
+kept in a static would be a dead handle on the next run.
+
 Do not add per-OpMode static holders. They were previously spread across the auton classes, and
 two teleops read a field nothing wrote.
 

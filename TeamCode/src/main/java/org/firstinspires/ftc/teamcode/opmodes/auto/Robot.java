@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Intake;
 import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.mechanisms.Transfer;
 import org.firstinspires.ftc.teamcode.mechanisms.Turret;
+import org.firstinspires.ftc.teamcode.storage.StaticVariables;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 public class Robot {
@@ -50,6 +51,21 @@ public class Robot {
         transfer = Transfer.getInstance();
         drivetrain = Drivetrain.getInstance();
         dashboard = FtcDashboard.getInstance();
+    }
+
+    /**
+     * Saves the end-of-auton pose and turret angle. Safe to call while the OpMode is being torn
+     * down; a hardware read that fails leaves the last good value in place.
+     */
+    public static void saveFinalState() {
+        try {
+            StaticVariables.saveRobotState(Drivetrain.getInstance().state);
+        } catch (RuntimeException ignored) {
+        }
+        try {
+            StaticVariables.saveTurretAngle(Turret.getInstance().getAngle());
+        } catch (RuntimeException ignored) {
+        }
     }
 
     public static Robot getInstance() {

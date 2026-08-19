@@ -70,22 +70,26 @@ public class BlueFarSimple extends LinearOpMode {
         drivetrain.setInitialPose(64, -24, -180);
         turret.setInitialAngle(0);
         //Alex Ko bless this code
-        Actions.runBlocking(
-           new ParallelAction(
-                   turret.autoAimTimed(new Vector2d(-70, -70), 30),
-                   shooter.autoShoot(-70, -70),
-                   updateTurretAngle(),
-                   updateRobotState(),
-                   new SequentialAction(
-                           new SleepAction(3),
-                           robot.shootFAR(),
-                           drivetrain.goToPoseTimed(Utils.makePoseVector(64, -28, -180),
-                                   1, Math.toRadians(1),  true, 5)
+        try {
+            Actions.runBlocking(
+               new ParallelAction(
+                       turret.autoAimTimed(new Vector2d(-70, -70), 30),
+                       shooter.autoShoot(-70, -70),
+                       updateTurretAngle(),
+                       updateRobotState(),
+                       new SequentialAction(
+                               new SleepAction(3),
+                               robot.shootFAR(),
+                               drivetrain.goToPoseTimed(Utils.makePoseVector(64, -28, -180),
+                                       1, Math.toRadians(1),  true, 5)
 
-                   )
-                )
+                       )
+                    )
 
-        );
+            );
+        } finally {
+            Robot.saveFinalState();
+        }
     }
 
     public Action updateTurretAngle() {

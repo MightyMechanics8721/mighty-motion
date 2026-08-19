@@ -12,7 +12,7 @@ mechanisms/   Shooter, Turret, Intake, Indexer, Transfer, and their tuners
 opmodes/auto/     the 12 competition routines and the Robot they share
 opmodes/teleop/   the driver-control OpModes
 storage/      StaticVariables, the only values carried from auto into teleop
-util/         Utils (geometry and unit conversions)
+util/         Utils (geometry and unit conversions), Timed (action timers)
 ```
 
 `control/` never mentions our robot, which is why it is the part with unit tests.
@@ -45,6 +45,21 @@ kept in a static would be a dead handle on the next run.
 
 Do not add per-OpMode static holders. They were previously spread across the auton classes, and
 two teleops read a field nothing wrote.
+
+## Timing an action
+
+`util/Timed` wraps any Action with a clock. The clock starts on the first `run()`, so a routine can
+build its whole tree up front.
+
+```java
+Timed.deadline(drivetrain.goToPose(pose), 5)          // ends on arrival or at 5 s
+Timed.deadline(action, 5, drivetrain::stopMotorsNow)  // and cuts power if the clock wins
+Timed.forDuration(shooter.revShooter(v), 2)           // runs the full 2 s either way
+Timed.once(action)                                    // one cycle, then done
+Timed.wait(0.5)                                       // pause
+```
+
+Prefer these over another hand-rolled `ElapsedTime` inside an anonymous Action.
 
 ## Mechanism singletons
 

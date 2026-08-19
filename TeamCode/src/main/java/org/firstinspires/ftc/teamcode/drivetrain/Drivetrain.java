@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drivetrain;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import org.firstinspires.ftc.teamcode.util.Timed;
 
 import static org.firstinspires.ftc.teamcode.util.Utils.makePoseVector;
@@ -48,8 +50,6 @@ public class Drivetrain {
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
     public static double scale = 2;
-    public static SimpleMatrix staticState = new SimpleMatrix(6, 1);
-    public static SimpleMatrix latestState = new SimpleMatrix(6, 1);
     private static Drivetrain instance;
     public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
@@ -103,22 +103,22 @@ public class Drivetrain {
         this.mecanumKinematicModel = new MecanumKinematicModel(MECHANICAL_PARAMETERS);
 
         this.motorLeftFront = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "lfm"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.LEFT_FRONT_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
         this.motorLeftBack = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "lbm"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.LEFT_BACK_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
         this.motorRightBack = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "rbm"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.RIGHT_BACK_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
         this.motorRightFront = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "rfm"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.RIGHT_FRONT_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
@@ -228,63 +228,6 @@ public class Drivetrain {
         this.shootWhileMovingPose = shootWhileMovingPose;
     }
 
-    public Action updateStaticState(boolean isOpModeActive) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if (isOpModeActive) {
-                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
-                        //Drivetrain.staticState = latestState;
-                        //latestState = state;
-                        Drivetrain.staticState = state;
-                    }
-                }
-                packet.put("cached x", Drivetrain.staticState.get(0, 0));
-                packet.put("cached y", Drivetrain.staticState.get(1, 0));
-                packet.put("cached theta", Drivetrain.staticState.get(2, 0));
-
-                packet.put("real x", state.get(0, 0));
-                packet.put("real y", state.get(1, 0));
-                packet.put("real theta", state.get(2, 0));
-
-                return true;
-            }
-        };
-    }
-
-    public Action updateStaticStateTimed(boolean isOpModeActive, double seconds) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                packet.put("autoShootMoving Done", true);
-                if (isOpModeActive && timer.seconds() < seconds) {
-                    if (state.get(0, 0) != 0 || state.get(1, 0) != 0 || state.get(2, 0) != 0) {
-                        //Drivetrain.staticState = latestState;
-                        //latestState = state;
-                        Drivetrain.staticState = state;
-                    }
-
-                    packet.put("cached x", Drivetrain.staticState.get(0, 0));
-                    packet.put("cached y", Drivetrain.staticState.get(1, 0));
-                    packet.put("cached theta", Drivetrain.staticState.get(2, 0));
-
-                    packet.put("real x", state.get(0, 0));
-                    packet.put("real y", state.get(1, 0));
-                    packet.put("real theta", state.get(2, 0));
-                    return true;
-                }
-
-                return false;
-            }
-        };
-    }
-
     private void updateTelemetry() {
         Canvas canvas = packet.fieldOverlay();
         Drawing.drawRobot(state, canvas, "black");
@@ -343,7 +286,6 @@ public class Drivetrain {
 
         return stopDistanceGlobal;
     }
-
 
     /**
      * Sets the power to the wheels & records Previous Power. Only updates power if the change

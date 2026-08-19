@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 
 import androidx.annotation.NonNull;
@@ -24,7 +26,7 @@ public class Intake {
 
     private Intake(HardwareMap hardwareMap) {
         this.intakeMotor = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "intake"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.INTAKE_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );
@@ -66,7 +68,7 @@ public class Intake {
 
     public static class ConfigurationNames {
 
-        public String intakeMotorName = "intake";
+        public String intakeMotorName = HardwareNames.INTAKE_MOTOR;
 
     }
 

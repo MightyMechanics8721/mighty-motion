@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 
 import androidx.annotation.NonNull;
@@ -21,7 +23,7 @@ public class Indexer {
 
     private Indexer(HardwareMap hardwareMap) {
         this.indexMotor = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "indexer"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.INDEXER_MOTOR),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference
         );

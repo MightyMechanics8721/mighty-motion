@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import org.firstinspires.ftc.teamcode.util.Timed;
 
 
@@ -58,10 +60,10 @@ public class Turret {
 
     // --- Constructor ---
     private Turret(HardwareMap hardwareMap) {
-        turretLeft = hardwareMap.get(CRServo.class, "turretLeft");
-        turretRight = hardwareMap.get(CRServo.class, "turretRight");
+        turretLeft = hardwareMap.get(CRServo.class, HardwareNames.TURRET_LEFT_SERVO);
+        turretRight = hardwareMap.get(CRServo.class, HardwareNames.TURRET_RIGHT_SERVO);
         turretEncoder = new Encoder(
-                hardwareMap.get(DcMotorEx.class, "lfm"), this.TICKS_PER_REV
+                hardwareMap.get(DcMotorEx.class, HardwareNames.TURRET_ENCODER), this.TICKS_PER_REV
         );
         // <-- use Encoder wrapper
 

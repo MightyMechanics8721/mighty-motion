@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import org.firstinspires.ftc.teamcode.util.Timed;
 
 import androidx.annotation.NonNull;
@@ -25,9 +27,9 @@ public class Transfer {
     /** Takes the Intake and Indexer the OpMode already built. Do not initialise them here. */
     private Transfer(HardwareMap hardwareMap) {
         // Initialize digital laser sensors
-        laserInput1 = hardwareMap.get(DigitalChannel.class, "bb1"); // BOTTOM
-        laserInput2 = hardwareMap.get(DigitalChannel.class, "bb2"); // MIDDLE
-        laserInput3 = hardwareMap.get(DigitalChannel.class, "bb3"); // TOP
+        laserInput1 = hardwareMap.get(DigitalChannel.class, HardwareNames.BEAM_BREAK_BOTTOM); // BOTTOM
+        laserInput2 = hardwareMap.get(DigitalChannel.class, HardwareNames.BEAM_BREAK_MIDDLE); // MIDDLE
+        laserInput3 = hardwareMap.get(DigitalChannel.class, HardwareNames.BEAM_BREAK_TOP); // TOP
 
         laserInput1.setMode(DigitalChannel.Mode.INPUT);
         laserInput2.setMode(DigitalChannel.Mode.INPUT);

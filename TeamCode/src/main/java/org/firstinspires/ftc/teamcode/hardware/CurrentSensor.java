@@ -50,7 +50,7 @@ public class CurrentSensor extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Map the analog device from the hardware configuration
-        laserAnalog = hardwareMap.get(AnalogInput.class, "cs");
+        laserAnalog = hardwareMap.get(AnalogInput.class, HardwareNames.CURRENT_SENSOR);
 
         // Wait for PLAY
         waitForStart();

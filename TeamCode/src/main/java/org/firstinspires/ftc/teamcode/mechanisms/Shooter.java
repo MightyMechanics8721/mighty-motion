@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import org.firstinspires.ftc.teamcode.util.Timed;
 
 import org.firstinspires.ftc.teamcode.util.Utils;
@@ -71,13 +73,13 @@ public class Shooter {
      */
     private Shooter(HardwareMap hardwareMap) {
         this.shooterMotor1 = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "f1"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.SHOOTER_MOTOR_1),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference, true
         );
 
         this.shooterMotor2 = new DcMotorAdvanced(
-                hardwareMap.get(DcMotorEx.class, "f2"),
+                hardwareMap.get(DcMotorEx.class, HardwareNames.SHOOTER_MOTOR_2),
                 THRESHOLD_PARAMETERS.maxVoltage,
                 THRESHOLD_PARAMETERS.acceptablePowerDifference, true
         );
@@ -85,12 +87,12 @@ public class Shooter {
                 MOTOR_CONTROLLER_CONSTANTS.pidConstants,
                 PID.functionType.LINEAR
         );
-        this.hardStop = new ServoAdvanced(hardwareMap.get(Servo.class, "hardStop"));
+        this.hardStop = new ServoAdvanced(hardwareMap.get(Servo.class, HardwareNames.SHOOTER_HARD_STOP));
         this.velocityFeedForwardController
                 = new FeedForward(MOTOR_CONTROLLER_CONSTANTS.ffConstants);
         this.shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         this.shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        encoder = new Encoder(hardwareMap.get(DcMotorEx.class, "indexer"), 28);
+        encoder = new Encoder(hardwareMap.get(DcMotorEx.class, HardwareNames.SHOOTER_ENCODER), 28);
 
     }
 
@@ -429,17 +431,17 @@ public class Shooter {
         /**
          * Name of the first shooter motor in the configuration.
          */
-        public String shooterMotor1Name = "f1";
+        public String shooterMotor1Name = HardwareNames.SHOOTER_MOTOR_1;
 
         /**
          * Name of the second shooter motor in the configuration.
          */
-        public String shooterMotor2Name = "f2";
+        public String shooterMotor2Name = HardwareNames.SHOOTER_MOTOR_2;
 
         /**
          * Name of the encoder associated with the shooter.
          */
-        public String encoderName = "f1";
+        public String encoderName = HardwareNames.SHOOTER_MOTOR_1;
     }
 
     /**

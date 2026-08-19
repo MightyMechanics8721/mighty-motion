@@ -6,8 +6,8 @@ control/      PID, FeedForward, MotionProfile, LowPassFilter, ShooterModel,
 drivetrain/   Drivetrain, TwoWheelOdometery, PoseController, GeometricController,
               DrivetrainMotorController, MecanumKinematicModel, Path, Drawing,
               and their tuners
-hardware/     DcMotorAdvanced, ServoAdvanced, Encoder, Battery, DistanceSensor,
-              GoBildaPinpointDriver
+hardware/     DcMotorAdvanced, ServoAdvanced, Encoder, Battery, HardwareNames,
+              GoBildaPinpointDriver, CurrentSensor
 mechanisms/   Shooter, Turret, Intake, Indexer, Transfer, and their tuners
 opmodes/auto/     the 12 competition routines and the Robot they share
 opmodes/teleop/   the driver-control OpModes
@@ -45,6 +45,20 @@ kept in a static would be a dead handle on the next run.
 
 Do not add per-OpMode static holders. They were previously spread across the auton classes, and
 two teleops read a field nothing wrote.
+
+## Device names
+
+`hardware/HardwareNames` holds every name from the Robot Controller config. Use it instead of a
+string literal, so renaming a device is one edit.
+
+Two encoders share a port with another subsystem's motor, and the aliases say so:
+
+```java
+TURRET_ENCODER  = LEFT_FRONT_MOTOR   // turret encoder in the left front motor's encoder port
+SHOOTER_ENCODER = INDEXER_MOTOR      // flywheel encoder in the indexer motor's encoder port
+```
+
+Rename either motor and the encoder follows.
 
 ## Timing an action
 

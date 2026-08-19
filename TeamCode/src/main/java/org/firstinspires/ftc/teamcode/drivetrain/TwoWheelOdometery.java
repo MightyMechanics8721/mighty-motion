@@ -22,6 +22,8 @@
 
 package org.firstinspires.ftc.teamcode.drivetrain;
 
+import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -45,7 +47,7 @@ public class TwoWheelOdometery {
 
     public TwoWheelOdometery(HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
-        this.odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+        this.odo = hardwareMap.get(GoBildaPinpointDriver.class, HardwareNames.ODOMETRY);
         this.odo.setOffsets(xOffset, yOffset, DistanceUnit.MM);
         this.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         this.odo.setEncoderDirections(

@@ -12,7 +12,7 @@ feedforward is only meaningful once the localizer reports true inches.
 
 ## 1. Localizer — `Tune 2 Wheel Localizer`
 
-Tunables: `TwoWheelOdometery.xOffset`, `yOffset`, `velocityIsFieldFrame`
+Tunables: `TwoWheelOdometry.xOffset`, `yOffset`, `velocityIsFieldFrame`
 
 **Pod offsets.** Push the robot a measured distance (a field tile is 23.5 in) and check `X [in]`
 and `Y [in]` match. Then spin the robot exactly 360° by hand and check `Theta [deg]` returns to
@@ -27,7 +27,7 @@ resolved long. vel   should be positive and large
 resolved lat.  vel   should be near zero
 ```
 
-If those two are swapped, flip `TwoWheelOdometery.velocityIsFieldFrame` on the dashboard.
+If those two are swapped, flip `TwoWheelOdometry.velocityIsFieldFrame` on the dashboard.
 
 This matters because `driftedPose` is built from these velocities and feeds **every** autonomous
 path. A wrong frame corrupts it at every heading except zero, and nothing else looks wrong.

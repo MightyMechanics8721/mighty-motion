@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.drivetrain;
+package org.firstinspires.ftc.teamcode.opmodes.tuning;
+
+import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -19,7 +21,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Turret;
 
 @Config
 @TeleOp(name = "miniBot", group = "11111111")
-public class miniBot extends LinearOpMode {
+public class MiniBot extends LinearOpMode {
     public static double targetVelocity = 2500; // (RPM)
     public static double SHOOTER_VELOCITY_IDLE = 2500;
     public static double SHOOTER_VELOCITY_NORMAL = 2500;

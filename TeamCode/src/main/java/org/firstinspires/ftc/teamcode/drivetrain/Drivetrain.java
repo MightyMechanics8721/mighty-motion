@@ -18,7 +18,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.List;
 
@@ -30,6 +29,7 @@ import org.firstinspires.ftc.teamcode.control.FFConstants;
 import org.firstinspires.ftc.teamcode.control.PIDConstants;
 import org.firstinspires.ftc.teamcode.control.StoppingDistance;
 import org.firstinspires.ftc.teamcode.hardware.DcMotorAdvanced;
+import org.firstinspires.ftc.teamcode.hardware.MotorConstants;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 /**
@@ -47,12 +47,12 @@ public class Drivetrain {
     public static FollowerConstants FOLLOWER_CONSTANTS = new FollowerConstants();
     public static FFConstantsController FF_CONSTANTS = new FFConstantsController();
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
-    public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
+    public static ShootOnMoveParameters SHOOT_ON_MOVE = new ShootOnMoveParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
     public static StoppingDistanceParameters STOPPING_DISTANCE_PARAMETERS =
             new StoppingDistanceParameters();
     private static Drivetrain instance;
-    public final TwoWheelOdometery twoWheelOdo;
+    public final TwoWheelOdometry twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
     public final DcMotorAdvanced motorLeftBack;
     public final DcMotorAdvanced motorRightBack;
@@ -96,29 +96,29 @@ public class Drivetrain {
                 FOLLOWER_CONSTANTS.headingPIDConstants
         );
 
-        this.twoWheelOdo = new TwoWheelOdometery(hardwareMap);
+        this.twoWheelOdo = new TwoWheelOdometry(hardwareMap);
 
         this.mecanumKinematicModel = new MecanumKinematicModel(MECHANICAL_PARAMETERS);
 
         this.motorLeftFront = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.LEFT_FRONT_MOTOR),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference
         );
         this.motorLeftBack = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.LEFT_BACK_MOTOR),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference
         );
         this.motorRightBack = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.RIGHT_BACK_MOTOR),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference
         );
         this.motorRightFront = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.RIGHT_FRONT_MOTOR),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference
         );
 
         this.motorLeftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -196,21 +196,21 @@ public class Drivetrain {
                 0,
                 0,
                 this.state.get(0, 0)
-                        + THRESHOLD_PARAMETERS.compensationFactor * fieldFrameVelocites.get(0, 0)
+                        + SHOOT_ON_MOVE.compensationFactor * fieldFrameVelocites.get(0, 0)
 
         );
         shootWhileMovingPose.set(
                 1,
                 0,
                 this.state.get(1, 0)
-                        + THRESHOLD_PARAMETERS.compensationFactor * fieldFrameVelocites.get(1, 0)
+                        + SHOOT_ON_MOVE.compensationFactor * fieldFrameVelocites.get(1, 0)
 
         );
         shootWhileMovingPose.set(
                 2,
                 0,
                 this.state.get(2, 0)
-                        + THRESHOLD_PARAMETERS.compensationFactorTheta * fieldFrameVelocites.get(
+                        + SHOOT_ON_MOVE.compensationFactorTheta * fieldFrameVelocites.get(
                         2,
                         0
                 )
@@ -700,13 +700,14 @@ public class Drivetrain {
         public double headingQuadratic = 0.00522;  // (rad per (rad/s)^2)
     }
 
-    public static class ThresholdParameters {
-        public double maxVoltage = 12.5; // (V)
-        public double acceptablePowerDifference = 0.0001;
-        public double distanceThreshold = 1.0;
-        public double angleThreshold = Math.toRadians(2.5);
-        public boolean useStoppingDistance = true;
-        public double compensationFactor = 0;
-        public double compensationFactorTheta = 0.12;
+    /**
+     * How far a shot leads the robot's own motion.
+     * <p>
+     * shootWhileMovingPose is the pose offset by these times the current field frame velocity, so
+     * zero means no lead at all.
+     */
+    public static class ShootOnMoveParameters {
+        public double compensationFactor = 0; // (s) applied to x and y
+        public double compensationFactorTheta = 0.12; // (s) applied to heading
     }
 }

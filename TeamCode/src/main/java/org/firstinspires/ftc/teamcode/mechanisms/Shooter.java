@@ -6,7 +6,6 @@ import org.firstinspires.ftc.teamcode.util.Timed;
 
 import org.firstinspires.ftc.teamcode.util.Utils;
 
-import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
 import static org.firstinspires.ftc.teamcode.util.Utils.calculateDistance;
 
 import androidx.annotation.NonNull;
@@ -27,6 +26,7 @@ import org.firstinspires.ftc.teamcode.control.PIDConstants;
 import org.firstinspires.ftc.teamcode.control.ShooterModel;
 import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.hardware.DcMotorAdvanced;
+import org.firstinspires.ftc.teamcode.hardware.MotorConstants;
 import org.firstinspires.ftc.teamcode.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.hardware.ServoAdvanced;
 
@@ -60,14 +60,14 @@ public class Shooter {
     private Shooter(HardwareMap hardwareMap) {
         this.shooterMotor1 = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.SHOOTER_MOTOR_1),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference, true
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference, true
         );
 
         this.shooterMotor2 = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.SHOOTER_MOTOR_2),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference, true
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference, true
         );
         this.velocityPidController = new PID(
                 MOTOR_CONTROLLER_CONSTANTS.pidConstants,

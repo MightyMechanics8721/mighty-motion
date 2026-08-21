@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.mechanisms;
 
 import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
 
-import static org.firstinspires.ftc.teamcode.drivetrain.Drivetrain.THRESHOLD_PARAMETERS;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -14,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.DcMotorAdvanced;
+import org.firstinspires.ftc.teamcode.hardware.MotorConstants;
 
 @Config
 public class Intake {
@@ -27,8 +26,8 @@ public class Intake {
     private Intake(HardwareMap hardwareMap) {
         this.intakeMotor = new DcMotorAdvanced(
                 hardwareMap.get(DcMotorEx.class, HardwareNames.INTAKE_MOTOR),
-                THRESHOLD_PARAMETERS.maxVoltage,
-                THRESHOLD_PARAMETERS.acceptablePowerDifference
+                MotorConstants.maxVoltage,
+                MotorConstants.acceptablePowerDifference
         );
         this.intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }

@@ -1,4 +1,7 @@
-package org.firstinspires.ftc.teamcode.drivetrain;
+package org.firstinspires.ftc.teamcode.opmodes.tuning;
+
+import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.drivetrain.TwoWheelOdometry;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -29,7 +32,7 @@ public class TuneTwoWheelLocalizer extends LinearOpMode {
 
         telemetry.addLine("Push the robot straight forward at a heading of about 90 deg.");
         telemetry.addLine("long. vel should be positive and lat. vel near zero.");
-        telemetry.addLine("If they come out swapped, flip TwoWheelOdometery.velocityIsFieldFrame.");
+        telemetry.addLine("If they come out swapped, flip TwoWheelOdometry.velocityIsFieldFrame.");
         telemetry.update();
         waitForStart();
 
@@ -48,7 +51,7 @@ public class TuneTwoWheelLocalizer extends LinearOpMode {
             telemetry.addLine("Y [in]: " + drivetrain.state.get(1, 0));
             telemetry.addLine("Theta [deg]: " + Math.toDegrees(drivetrain.state.get(2, 0)));
             telemetry.addLine("");
-            telemetry.addLine("velocityIsFieldFrame: " + TwoWheelOdometery.velocityIsFieldFrame);
+            telemetry.addLine("velocityIsFieldFrame: " + TwoWheelOdometry.velocityIsFieldFrame);
             telemetry.addLine("reported velX [in/s]: " + reported.get(0, 0));
             telemetry.addLine("reported velY [in/s]: " + reported.get(1, 0));
             telemetry.addLine("resolved long. vel [in/s]: " + drivetrain.state.get(3, 0));

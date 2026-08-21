@@ -7,13 +7,11 @@ import org.firstinspires.ftc.teamcode.util.Timed;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -35,10 +33,8 @@ public class Turret {
     public static PIDConstants pidConstants = new PIDConstants(0.02, 0.0, 0);
     public static Turret.ThresholdParameters THRESHOLD_PARAMETERS =
             new Turret.ThresholdParameters();
-    public static double staticTheta = 0.0;
     public static double linearCoeff = 0.083; // (deg per deg/s)
     public static double quadCoeff = 0.000075; // (deg per (deg/s)^2)
-    public static long staticThetaUpdateCounter = 0;
     public static double bias = 0;
     private static Turret instance;
     // --- Hardware constants ---
@@ -50,7 +46,6 @@ public class Turret {
     private final Encoder turretEncoder; // <-- replaced DcMotorEx with Encoder
     // --- Utilities ---
     private final PID pid;
-    private final FtcDashboard dashboard;
     public boolean cutoff = false;
     double abcdefgh = 0;
     boolean set = false;
@@ -66,7 +61,6 @@ public class Turret {
         );
         // <-- use Encoder wrapper
 
-        dashboard = FtcDashboard.getInstance();
         pid = new PID(pidConstants, PID.functionType.LINEAR);
         turretLeft.setDirection(CRServo.Direction.REVERSE);
         turretRight.setDirection(CRServo.Direction.REVERSE);
@@ -75,8 +69,6 @@ public class Turret {
 
     public static void initialize(HardwareMap hardwareMap) {
         instance = new Turret(hardwareMap);
-        staticTheta = 0;
-        staticThetaUpdateCounter = 0;
     }
 
     public static Turret getInstance() {
@@ -234,45 +226,6 @@ public class Turret {
         double ticks = turretEncoder.getCurrentPosition(); // (ticks)
         double angleDeg = ((ticks / TICKS_PER_REV) * 360.0 / GEAR_RATIO); // (deg)
         return Utils.angleWrapDegrees(angleDeg + thetaConstant);
-    }
-
-    /** Records the turret angle, skipping the wrapped +/-180 endpoint. */
-    public void saveTheta(LinearOpMode op) {
-        if (!op.opModeIsActive()) {
-            return;
-        }
-        double angle = getAngle();
-        if (Math.abs(Math.abs(angle) - 180.0) > THRESHOLD_PARAMETERS.angleThreshold) {
-            staticTheta = angle;
-            ++staticThetaUpdateCounter;
-        }
-    }
-
-    public Action saveAngle(LinearOpMode op) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                saveTheta(op);
-                return true;
-            }
-        };
-    }
-
-    public Action saveAngleAndCount(LinearOpMode op) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                //packet.put("count", staticThetaUpdateCounter);
-                return saveAngle(op).run(packet);
-            }
-        };
-    }
-
-    // --- Auto-Aim Functions ---
-
-    /** Saves the turret angle for the full duration (s), then finishes. */
-    public Action saveAngleAndCountTimed(LinearOpMode op, double seconds) {
-        return Timed.deadline(saveAngleAndCount(op), seconds);
     }
 
     public void reset() {

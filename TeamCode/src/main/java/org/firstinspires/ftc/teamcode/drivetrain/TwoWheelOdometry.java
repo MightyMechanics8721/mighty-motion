@@ -36,7 +36,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.teamcode.util.Utils;
 
 @Config
-public class TwoWheelOdometery {
+public class TwoWheelOdometry {
 
     public static double xOffset = 155; // (mm) forward pod from centre of rotation
     public static double yOffset = 43.13; // (mm) lateral pod from centre of rotation
@@ -57,7 +57,7 @@ public class TwoWheelOdometery {
     public GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
 
-    public TwoWheelOdometery(HardwareMap hardwareMap) {
+    public TwoWheelOdometry(HardwareMap hardwareMap) {
         this.hardwareMap = hardwareMap;
         this.odo = hardwareMap.get(GoBildaPinpointDriver.class, HardwareNames.ODOMETRY);
         this.odo.setOffsets(xOffset, yOffset, DistanceUnit.MM);

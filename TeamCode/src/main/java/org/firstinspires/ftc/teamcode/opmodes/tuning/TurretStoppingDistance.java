@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.mechanisms;
+package org.firstinspires.ftc.teamcode.opmodes.tuning;
+
+import org.firstinspires.ftc.teamcode.mechanisms.Turret;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;

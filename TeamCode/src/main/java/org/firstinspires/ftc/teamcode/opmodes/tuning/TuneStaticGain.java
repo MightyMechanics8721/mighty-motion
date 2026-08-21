@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.drivetrain;
+package org.firstinspires.ftc.teamcode.opmodes.tuning;
+
+import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;

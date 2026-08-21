@@ -4,17 +4,12 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
+
+import org.firstinspires.ftc.teamcode.util.Utils;
 
 import org.ejml.simple.SimpleMatrix;
 
 public class GeometricController {
-    // TODO: remove!!!
-    public static double geoPosPointX = 0.0;
-    public static double geoPosPointY = 0.0;
-    public static double geoThetaX = 0.0;
-    public static double geoThetaY = 0.0;
     public int lastIndexXY = 0;
     int lastIndexTheta = 0;
     int lastLookaheadXY = 0;
@@ -51,6 +46,9 @@ public class GeometricController {
     }
 
 
+    /**
+     * Point where the lookahead circle leaves segment i, or null when it does not cross it.
+     */
     static double[] calcCircleLineIntersection(
             double xPos,
             double yPos,
@@ -76,8 +74,7 @@ public class GeometricController {
         double discriminant = b * b - 4 * a * c;
 
         if (discriminant < 0) {
-            // no intersection
-            return new double[]{-99999, -99999};
+            return null;
         }
 
         double sqrtDisc = Math.sqrt(discriminant);
@@ -98,7 +95,7 @@ public class GeometricController {
             t = t2;
         } else {
             // both intersections are outside the segment
-            return new double[]{-99999, -99999};
+            return null;
         }
 
         double pX = x0 + dx * t;
@@ -140,12 +137,12 @@ public class GeometricController {
         double y = pose.get(1, 0);
         double[][] xyPoints = path.getWaypoints();
 
-        LinkedHashSet<double[]> furthestIntersectionPointXY = new LinkedHashSet<>();
-        LinkedHashSet<double[]> furthestIntersectionPointTheta = new LinkedHashSet<>();
+        ArrayList<double[]> posArray = new ArrayList<>();
+        ArrayList<double[]> thetaArray = new ArrayList<>();
         for (int i = lastIndexXY; i < xyPoints.length - 1; i++) {
             double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadXY, xyPoints);
-            if (!Arrays.equals(intersection, new double[]{-99999, -99999})) {
-                furthestIntersectionPointXY.add(intersection);
+            if (intersection != null) {
+                posArray.add(intersection);
                 lastLookaheadXY = i;
             }
         }
@@ -153,14 +150,12 @@ public class GeometricController {
 
         for (int i = lastIndexTheta; i < xyPoints.length - 1; i++) {
             double[] intersection = calcCircleLineIntersection(x, y, i, lookAheadTheta, xyPoints);
-            if (!Arrays.equals(intersection, new double[]{-99999, -99999})) {
-                furthestIntersectionPointTheta.add(intersection);
+            if (intersection != null) {
+                thetaArray.add(intersection);
                 lastLookaheadTheta = i;
             }
         }
         lastIndexTheta = lastLookaheadTheta;
-        ArrayList<double[]> thetaArray = new ArrayList<>(furthestIntersectionPointTheta);
-        ArrayList<double[]> posArray = new ArrayList<>(furthestIntersectionPointXY);
 
         double[] positionPoint = posArray.isEmpty()
                 ? findClosestPointOnPath(x, y, xyPoints)
@@ -168,38 +163,6 @@ public class GeometricController {
         double[] thetaPoint = thetaArray.isEmpty()
                 ? path.getFinalPoint()
                 : thetaArray.get(thetaArray.size() - 1);
-
-        // position (XY)
-        //        if (posArray.isEmpty()) {
-        //            if (fallbackPoint == null) {
-        //                try {
-        //                    fallbackPoint = xyPoints[lastIndexXY + 1];
-        //                } catch (Exception e) {
-        //                    fallbackPoint = xyPoints[xyPoints.length - 1];
-        //                }
-        //            }
-        //            positionPoint = fallbackPoint;
-        //        } else {
-        //            positionPoint = posArray.get(posArray.size() - 1);
-        //        }
-        //
-        //        // heading point (for theta lookahead)
-        //        if (thetaArray.isEmpty()) {
-        //            if (fallbackPoint == null) {
-        //                try {
-        //                    fallbackPoint = xyPoints[lastIndexTheta + 1];
-        //                } catch (Exception e) {
-        //                    fallbackPoint = xyPoints[xyPoints.length - 1];
-        //                }
-        //            }
-        //            thetaPoint = fallbackPoint;
-        //        } else {
-        //            thetaPoint = thetaArray.get(thetaArray.size() - 1);
-        //        }
-
-        // TODO: REMOVE THIS
-//        this.packet.put("heading point x (in)", thetaPoint[0] - y);
-//        this.packet.put("heading point y (in)", thetaPoint[1] - x);
 
         double desiredTheta;
         if (path.useStaticHeading) {
@@ -211,11 +174,7 @@ public class GeometricController {
                     ? pose.get(2, 0)
                     : Math.atan2(dyAim, dxAim);
             if (path.reverse) {
-                if (Math.signum(desiredTheta) == -1) {
-                    desiredTheta += Math.PI;
-                } else if (Math.signum(desiredTheta) >= 0) {
-                    desiredTheta -= Math.PI;
-                }
+                desiredTheta = Utils.angleWrap(desiredTheta + Math.PI);
             }
         }
 
@@ -227,30 +186,9 @@ public class GeometricController {
                 }
         );
 
-        //        TelemetryPacket packet = new TelemetryPacket();
-        //        packet.put("GEO (x): ", desiredPose.get(0, 0));
-        //        packet.put("GEO (y): ", desiredPose.get(1, 0));
-        //        packet.put("GEO (theta): ", desiredPose.get(2, 0));/
-        //Canvas canvas = packet.fieldOverlay();
-        //Drawing.drawTarget(canvas, desiredPose);
-        //        FtcDashboard.getInstance().sendTelemetryPacket(packet);
-
-        // TODO: remove
         Canvas canvas = this.packet.fieldOverlay();
         Drawing.drawPoint(positionPoint, canvas, "purple");
         Drawing.drawPoint(thetaPoint, canvas, "orange");
-
-//        this.packet.put("target x pos (in)", desiredPose.get(0, 0));
-//        this.packet.put("target y pos (in)", desiredPose.get(1, 0));
-//        this.packet.put("target heading GEO (deg)", Math.toDegrees(desiredPose.get(2, 0)));
-
-        //        geoPosPointX = positionPoint[0];
-        //        geoPosPointY = positionPoint[1];
-        //        geoThetaX = thetaPoint[0];
-        //        geoThetaY = thetaPoint[1];
-
-        // do y for pos point
-        // also do the same for theta point
 
         return desiredPose;
     }

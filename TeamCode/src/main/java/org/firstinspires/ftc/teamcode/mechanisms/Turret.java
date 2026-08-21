@@ -41,7 +41,6 @@ public class Turret {
     public static long staticThetaUpdateCounter = 0;
     public static double bias = 0;
     private static Turret instance;
-    private static double prevAngle = 0.0;
     // --- Hardware constants ---
     private final double TICKS_PER_REV = 4000.0; // (ticks/rev) at the turret encoder
     private final double GEAR_RATIO = 140.0 / 30; // motor revs per turret rev
@@ -237,18 +236,17 @@ public class Turret {
         return Utils.angleWrapDegrees(angleDeg + thetaConstant);
     }
 
+    /** Records the turret angle, skipping the wrapped +/-180 endpoint. */
     public void saveTheta(LinearOpMode op) {
-        if (op.opModeIsActive()) {
-            if (Math.abs(getAngle()) != 180) {
-                staticTheta = getAngle();
-                ++staticThetaUpdateCounter;
-            }
+        if (!op.opModeIsActive()) {
+            return;
+        }
+        double angle = getAngle();
+        if (Math.abs(Math.abs(angle) - 180.0) > THRESHOLD_PARAMETERS.angleThreshold) {
+            staticTheta = angle;
+            ++staticThetaUpdateCounter;
         }
     }
-
-    //    public void initAngle() {
-    //        thetaConstant = prevAngle;
-    //    }
 
     public Action saveAngle(LinearOpMode op) {
         return new Action() {
@@ -272,25 +270,9 @@ public class Turret {
 
     // --- Auto-Aim Functions ---
 
+    /** Saves the turret angle for the full duration (s), then finishes. */
     public Action saveAngleAndCountTimed(LinearOpMode op, double seconds) {
-        return new Action() {
-            private double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (time < 0) {
-                    timer.reset();
-                }
-                //packet.put("count", staticThetaUpdateCounter);
-                if (timer.seconds() < seconds) {
-                    saveAngle(op).run(packet);
-                    return true;
-                }
-                //packet.put("autoShootMoving Done", true);
-                return false;
-            }
-        };
+        return Timed.deadline(saveAngleAndCount(op), seconds);
     }
 
     public void reset() {
@@ -308,16 +290,22 @@ public class Turret {
      * Auto-aim at a field goal using robot pose
      */
     public Action autoAim(Vector2d goalPos, double autoAimBias) {
-        SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
-        Pose2d robotPose = new Pose2d(
-                robotState.get(0, 0),
-                robotState.get(1, 0),
-                robotState.get(2, 0)
-        );
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                // Read the pose inside run(): reading it while building the Action would aim at
+                // wherever the robot was when the action tree was assembled.
+                SimpleMatrix robotState = Drivetrain.getInstance().shootWhileMovingPose;
+                Pose2d robotPose = new Pose2d(
+                        robotState.get(0, 0),
+                        robotState.get(1, 0),
+                        robotState.get(2, 0)
+                );
 
-        double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
-
-        return setTurretAngle(angleToGoal + autoAimBias);
+                double angleToGoal = computeRobotRelativeAngle(robotPose, goalPos);
+                return setTurretAngle(angleToGoal + autoAimBias).run(packet);
+            }
+        };
     }
 
     /**

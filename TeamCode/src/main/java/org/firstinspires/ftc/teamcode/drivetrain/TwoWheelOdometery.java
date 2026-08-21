@@ -24,9 +24,7 @@ package org.firstinspires.ftc.teamcode.drivetrain;
 
 import org.firstinspires.ftc.teamcode.hardware.HardwareNames;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -42,6 +40,20 @@ public class TwoWheelOdometery {
 
     public static double xOffset = 155; // (mm) forward pod from centre of rotation
     public static double yOffset = 43.13; // (mm) lateral pod from centre of rotation
+
+    /**
+     * Whether the Pinpoint reports velocity in the field frame, the same frame as its position.
+     * <p>
+     * The driver documents getVelX/getVelY only as "X (forward)" and "Y (strafe)", which names the
+     * pods rather than the frame, so this cannot be settled from the SDK. Run the "Tune 2 Wheel
+     * Localizer" OpMode to settle it: turn the robot to 90 degrees and push it straight forward.
+     * With this set correctly, long. vel is positive and lat. vel is near zero. If they come out
+     * swapped, flip this on the dashboard.
+     * <p>
+     * It matters because driftedPose feeds every autonomous path, and a wrong frame corrupts the
+     * drift at every heading except zero.
+     */
+    public static boolean velocityIsFieldFrame = true;
     public GoBildaPinpointDriver odo;
     HardwareMap hardwareMap;
 
@@ -61,29 +73,13 @@ public class TwoWheelOdometery {
      * @return 6x1 state: x (in), y (in), heading (rad), then body-frame vx (in/s), vy (in/s),
      * omega (rad/s)
      * <p>
-     * The Pinpoint reports position and velocity in the same frame. Its position is field-frame
-     * (see setPosition, "run a robot in field coordinates"), so the velocities are too, and are
-     * rotated into the body frame here. The "(forward)" and "(strafe)" wording in the driver names
-     * the axes; it is not a frame.
+     * Velocities are resolved into the body frame according to velocityIsFieldFrame; see that
+     * field for why the frame is a setting rather than a fact, and how to confirm it.
      */
     public SimpleMatrix calculate() {
-        TelemetryPacket packet = new TelemetryPacket();
         odo.update();
 
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
-
-        SimpleMatrix globalRelativeTVelocities = new SimpleMatrix(
-                new double[][]{
-                        new double[]{odo.getVelX(DistanceUnit.INCH)},
-                        new double[]{odo.getVelY(DistanceUnit.INCH)},
-                        new double[]{odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)}
-                }
-        );
-
-        SimpleMatrix robotRelativeVelocities = Utils.rotateGlobalToBody(
-                globalRelativeTVelocities,
-                odo.getHeading(AngleUnit.RADIANS)
-        );
+        SimpleMatrix robotRelativeVelocities = toBodyFrame(reportedVelocities());
 
         return new SimpleMatrix(
                 new double[][]{
@@ -95,6 +91,28 @@ public class TwoWheelOdometery {
                         new double[]{robotRelativeVelocities.get(2, 0)},
                         }
         );
+    }
+
+    /**
+     * @return 3x1 of the velocities exactly as the Pinpoint reports them: x (in/s), y (in/s),
+     * heading (rad/s), in whichever frame the device uses
+     */
+    public SimpleMatrix reportedVelocities() {
+        return new SimpleMatrix(
+                new double[][]{
+                        new double[]{odo.getVelX(DistanceUnit.INCH)},
+                        new double[]{odo.getVelY(DistanceUnit.INCH)},
+                        new double[]{odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)}
+                }
+        );
+    }
+
+    /** Resolves reported velocities into the body frame, per velocityIsFieldFrame. */
+    public SimpleMatrix toBodyFrame(SimpleMatrix reported) {
+        if (!velocityIsFieldFrame) {
+            return reported;
+        }
+        return Utils.rotateGlobalToBody(reported, odo.getHeading(AngleUnit.RADIANS));
     }
 
     public void resetPosAndRecalibrateIMU() {

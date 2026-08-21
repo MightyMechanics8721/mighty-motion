@@ -35,14 +35,14 @@ public class Robot {
     Drivetrain drivetrain;
     FtcDashboard dashboard;
 
+    /**
+     * Takes the subsystems the OpMode already built. Do not initialise them here.
+     * <p>
+     * Re-running the initialisers would replace every singleton, so anything the OpMode had
+     * already fetched would point at an orphaned copy wrapping the same motors, and the
+     * Drivetrain constructor would recalibrate the Pinpoint IMU a second time.
+     */
     private Robot(HardwareMap hardwareMap) {
-        Battery.initialize(hardwareMap);
-        Turret.initialize(hardwareMap);
-        Indexer.initialize(hardwareMap);
-        Intake.initialize(hardwareMap);
-        Shooter.initialize(hardwareMap);
-        Transfer.initialize(hardwareMap);
-        Drivetrain.initialize(hardwareMap);
         battery = Battery.getInstance();
         turret = Turret.getInstance();
         intake = Intake.getInstance();
@@ -88,6 +88,7 @@ public class Robot {
         return instance;
     }
 
+    /** Call after every subsystem this uses has been initialised. */
     public static void initialize(HardwareMap hardwareMap) {
         instance = new Robot(hardwareMap);
     }

@@ -64,11 +64,25 @@ public final class Timed {
     }
 
     /**
-     * Does nothing for the given time, then finishes.
+     * Does nothing for the given time, then finishes. Zero or less finishes straight away.
+     * <p>
+     * Note this differs from the deadline wrappers, where zero means "no deadline": a pause of no
+     * time is a pause of no time, not a pause forever.
+     * <p>
+     * Named pause rather than wait because a static wait(double) sits alongside the inherited
+     * Object.wait(long), and an int argument binds to the inherited one.
      *
-     * @param seconds how long to wait (s)
+     * @param seconds how long to pause (s)
      */
-    public static Action wait(double seconds) {
+    public static Action pause(double seconds) {
+        if (seconds <= 0) {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket packet) {
+                    return false;
+                }
+            };
+        }
         return forDuration(new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {

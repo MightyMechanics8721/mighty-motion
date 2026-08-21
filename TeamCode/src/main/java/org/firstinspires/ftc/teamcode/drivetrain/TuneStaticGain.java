@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 
+import org.firstinspires.ftc.teamcode.hardware.Battery;
+
 @Config
 @Autonomous(name = "Tune Static", group = "Autonomous")
 public class TuneStaticGain extends LinearOpMode {
@@ -18,6 +20,8 @@ public class TuneStaticGain extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        // Battery first: DcMotorAdvanced.setPower reads it for voltage compensation.
+        Battery.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         drivetrain = Drivetrain.getInstance();
         packet = new TelemetryPacket();
@@ -26,15 +30,6 @@ public class TuneStaticGain extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
         telemetry = dashboard.getTelemetry();
 
-        // TODO: fix this problem
-        //        drivetrain.motorController.ffLfm.setGains(0, 0, drivetrain.motorController
-        //        .ffLfm.kS);
-        //        drivetrain.motorController.ffLbm.setGains(0, 0, drivetrain.motorController
-        //        .ffLbm.kS);
-        //        drivetrain.motorController.ffRbm.setGains(0, 0, drivetrain.motorController
-        //        .ffRbm.kS);
-        //        drivetrain.motorController.ffRfm.setGains(0, 0, drivetrain.motorController
-        //        .ffRfm.kS);
         ElapsedTime looptime = new ElapsedTime();
         SimpleMatrix speeds = new SimpleMatrix(
                 new double[][]{

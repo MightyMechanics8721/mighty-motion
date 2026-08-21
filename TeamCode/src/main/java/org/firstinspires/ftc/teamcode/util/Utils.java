@@ -46,7 +46,7 @@ public class Utils {
      * @return the matrix of global coordinates
      */
     public static SimpleMatrix rotateGlobalToBody(SimpleMatrix vectorInBodyFrame, double angle) {
-        return angleToRotationMatrix(angle).invert().mult(vectorInBodyFrame);
+        return angleToRotationMatrix(angle).transpose().mult(vectorInBodyFrame);
     }
 
     /**
@@ -57,28 +57,21 @@ public class Utils {
      * @return The equivalent radian value between -π and π
      */
     public static double angleWrap(double radians) {
-
-        while (radians > Math.PI) {
-            radians -= 2 * Math.PI;
+        if (!Double.isFinite(radians)) {
+            return radians;
         }
-        while (radians < -Math.PI) {
-            radians += 2 * Math.PI;
+
+        double wrapped = radians % (2 * Math.PI);
+        if (wrapped > Math.PI) {
+            wrapped -= 2 * Math.PI;
+        } else if (wrapped < -Math.PI) {
+            wrapped += 2 * Math.PI;
         }
 
         // keep in mind that the result is in radians
-        return radians;
+        return wrapped;
     }
 
-    /**
-     * Returns the simple geometric distance between two coordinates.
-     *
-     * @param xPosition1 First X coordinate
-     * @param yPosition1 First Y coordinate
-     * @param xPosition2 Second X coordinate
-     * @param yPosition2 Second Y coordinate
-     *
-     * @return calculated distance between (xPosition1, yPosition1) and (xPosition2, yPosition2)
-     */
     /** Converts rev/min to rad/s. */
     public static double rpmToRadPerSec(double rpm) {
         return rpm * 2 * Math.PI / 60;
@@ -100,6 +93,16 @@ public class Utils {
         return wrapped;
     }
 
+    /**
+     * Returns the simple geometric distance between two coordinates.
+     *
+     * @param xPosition1 First X coordinate
+     * @param yPosition1 First Y coordinate
+     * @param xPosition2 Second X coordinate
+     * @param yPosition2 Second Y coordinate
+     *
+     * @return calculated distance between (xPosition1, yPosition1) and (xPosition2, yPosition2)
+     */
     public static double calculateDistance(
             double xPosition1,
             double yPosition1,

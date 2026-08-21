@@ -38,23 +38,10 @@ public class Shooter {
     public static double SHOOTER_SECONDS_THRESHOLD = 2;
 
     /**
-     * Configuration parameters for battery behavior.
-     */
-    public static BatteryParameters BATTERY_PARAMETERS = new BatteryParameters();
-    /**
      * Configuration parameters for the motor controller (PID and FF constants).
      */
     public static MotorControllerConstants MOTOR_CONTROLLER_CONSTANTS
             = new MotorControllerConstants();
-    /**
-     * Constant values for Shooter Hardware
-     */
-    public static HardwareConstants SHOOTER_CONSTANTS = new HardwareConstants();
-
-    /**
-     * Configuration names for hardware mapping.
-     */
-    public static ConfigurationNames CONFIGURATION_NAMES = new ConfigurationNames();
     public static double openPos = 0.5;
     public static double closePos = 0.65;
     private static Shooter instance;
@@ -64,7 +51,6 @@ public class Shooter {
     public final PID velocityPidController;
     public final FeedForward velocityFeedForwardController;
     private final Encoder encoder;
-    private double autonVelocity = 2500;
 
     /**
      * Constructs a new Shooter mechanism and initializes its motor controller.
@@ -114,10 +100,7 @@ public class Shooter {
         return this.encoder.getVelocity();
     }
 
-    /**
-     * Automatically calculates shooter power based on distance from robot coordinates to goal
-     * coordinate INSTANT action
-     */
+    /** Ranges the goal once and holds the flywheel at the modelled speed. */
     public Action autoShoot(double x, double y) {
         return new Action() {
 
@@ -130,24 +113,22 @@ public class Shooter {
     }
 
     /**
-     * Automatically calculates shooter power based on distance from robot coordinates to goal
-     * coordinate INSTANT action
+     * autoShoot with a trim on the modelled flywheel speed.
+     *
+     * @param velocityMultiplier scales the modelled speed; 1.0 leaves it alone
      */
-    public Action autoShoot(double x, double y, double powerMultiplier) {
+    public Action autoShoot(double x, double y, double velocityMultiplier) {
         return new Action() {
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
-                autoShootFunctionMultipliedPower(x, y, powerMultiplier);
+                autoShootFunctionMultipliedPower(x, y, velocityMultiplier);
                 return false;
             }
         };
     }
 
-    /**
-     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
-     * goal coordinate INSTANT action
-     */
+    /** Re-ranges the goal every iteration until the action is cancelled. */
     public Action autoShootMovingInfinite(double x, double y) {
         return new Action() {
 
@@ -169,32 +150,9 @@ public class Shooter {
         };
     }
 
-    /**
-     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
-     * goal coordinate INSTANT action
-     */
+    /** Tracks the goal for the full duration (s), then finishes. */
     public Action autoShootMovingGame(double x, double y, double cutoff) {
-        return new Action() {
-
-            double time = -1;
-            private ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-
-                if (time < 0) {
-                    timer.reset();
-                }
-
-                //packet.put("autoShootMoving Timer", time);
-                if (timer.seconds() < cutoff) {
-                    autoShootMovingFunction(time, x, y);
-                    //packet.put("autoShootMoving Done", true);
-                    return true;
-                }
-                return false;
-            }
-        };
+        return Timed.deadline(autoShootMovingInfinite(x, y), cutoff);
     }
 
     /**
@@ -224,22 +182,7 @@ public class Shooter {
         };
     }
 
-    public Action autonomousSetVelocity(double velocity) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                autonVelocity = velocity;
-                return false;
-            }
-        };
-
-    }
-
-    /**
-     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
-     * goal coordinate Timed action
-     */
-    /** Tracks the goal from the drifted pose for the full duration (s). */
+    /** Tracks the goal for the full duration (s). */
     public Action autoShootMovingTimed(double seconds, double x, double y) {
         return Timed.forDuration(autoShootMovingInfinite(x, y), seconds);
     }
@@ -283,48 +226,9 @@ public class Shooter {
         };
     }
 
-    /**
-     * Sets Shooter velocity until within threshold (currently 2.0 rad/s)
-     *
-     * @param velocity desired velocity rad/sec
-     */
-    public Action revShooter(double velocity) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (Math.abs(encoder.getVelocity() - velocity)
-                        < SHOOTER_CONSTANTS.velocityTolerance) {
-                    return false;
-                }
-                double power = velocityPidController.calculate(velocity, getVelocity())
-                        + velocityFeedForwardController.calculate(velocity, 0);
-                shooterMotor1.setPower(power);
-                shooterMotor2.setPower(power);
-                return true;
-            }
-        };
-    }
-
     /** Holds the flywheel at velocity (rad/s) for the full duration (s). */
     public Action setShooterVelocityTimed(double velocity, double seconds) {
         return Timed.forDuration(setShooterVelocityInfinite(velocity), seconds);
-    }
-
-    public Action hardStop() {
-        return new Action() {
-            boolean extend = false;
-            ElapsedTime timer = new ElapsedTime();
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                if (timer.seconds() > 0.3) {
-                    hardStop.setPosition(extend ? openPos : closePos);
-                    extend = !extend;
-                    timer.reset();
-                }
-                return true;
-            }
-        };
     }
 
     public Action hardStopClose() {
@@ -350,17 +254,33 @@ public class Shooter {
     }
 
     /**
-     * Automatically calculates shooter power based on distance from robot coordinates to goal
-     * coordinate
+     * Ranges the goal from the motion-compensated pose and holds the flywheel at the speed the
+     * shooter model asks for.
+     *
+     * @param x goal X (in)
+     * @param y goal Y (in)
      */
     public void autoShootFunction(double x, double y) {
+        autoShootFunctionMultipliedPower(x, y, 1.0);
+    }
+
+    /**
+     * autoShootFunction with a trim on the modelled speed.
+     *
+     * @param x goal X (in)
+     * @param y goal Y (in)
+     * @param velocityMultiplier scales the modelled flywheel speed; 1.0 leaves it alone
+     */
+    public void autoShootFunctionMultipliedPower(
+            double x, double y, double velocityMultiplier
+    ) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
                 drivetrain.shootWhileMovingPose.get(0, 0),
                 drivetrain.shootWhileMovingPose.get(1, 0), x,
                 y
         );
-        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
+        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance)) * velocityMultiplier;
         double power = velocityPidController.calculate(velocity, getVelocity())
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
@@ -368,32 +288,20 @@ public class Shooter {
     }
 
     /**
-     * Automatically calculates shooter power based on distance from robot coordinates to goal
-     * coordinate
-     */
-    public void autoShootFunctionMultipliedPower(double x, double y, double powerMultiplier) {
-        Drivetrain drivetrain = Drivetrain.getInstance();
-        double distance = calculateDistance(
-                drivetrain.preloadPose.get(0, 0),
-                drivetrain.preloadPose.get(1, 0), x,
-                y
-        );
-        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
-        double power = velocityPidController.calculate(velocity, getVelocity())
-                + velocityFeedForwardController.calculate(velocity, 0);
-        shooterMotor1.setPower(power);
-        shooterMotor2.setPower(power);
-    }
-
-    /**
-     * Automatically calculates shooter power based on distance from robot DRIFTED coordinates to
-     * goal coordinate
+     * Ranges the goal from the motion-compensated pose and holds the flywheel there.
+     * <p>
+     * Same pose as autoShootFunction, so how far the shot leads the robot's motion is set in one
+     * place, THRESHOLD_PARAMETERS.compensationFactor, for autonomous and TeleOp alike.
+     *
+     * @param seconds time since the action started (s)
+     * @param x goal X (in)
+     * @param y goal Y (in)
      */
     public void autoShootMovingFunction(double seconds, double x, double y) {
         Drivetrain drivetrain = Drivetrain.getInstance();
         double distance = calculateDistance(
-                drivetrain.preloadPose.get(0, 0),
-                drivetrain.preloadPose.get(1, 0), x,
+                drivetrain.shootWhileMovingPose.get(0, 0),
+                drivetrain.shootWhileMovingPose.get(1, 0), x,
                 y
         );
         double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
@@ -408,52 +316,6 @@ public class Shooter {
                 + velocityFeedForwardController.calculate(velocity, 0);
         shooterMotor1.setPower(power);
         shooterMotor2.setPower(power);
-    }
-
-    public boolean autoShootThresholdCheck() {
-        Drivetrain drivetrain = Drivetrain.getInstance();
-        double distance = calculateDistance(
-                drivetrain.driftedPose.get(0, 0),
-                drivetrain.driftedPose.get(1, 0), -60,
-                -60
-        );
-        double velocity = Utils.rpmToRadPerSec(calculateVelocity(distance));
-        return Math.abs(encoder.getVelocity() - velocity)
-                >= SHOOTER_CONSTANTS.velocityTolerance;
-    }
-
-    /**
-     * Holds configuration names for the shooter hardware. These correspond to names in the robot
-     * configuration file.
-     */
-    public static class ConfigurationNames {
-
-        /**
-         * Name of the first shooter motor in the configuration.
-         */
-        public String shooterMotor1Name = HardwareNames.SHOOTER_MOTOR_1;
-
-        /**
-         * Name of the second shooter motor in the configuration.
-         */
-        public String shooterMotor2Name = HardwareNames.SHOOTER_MOTOR_2;
-
-        /**
-         * Name of the encoder associated with the shooter.
-         */
-        public String encoderName = HardwareNames.SHOOTER_MOTOR_1;
-    }
-
-    /**
-     * Contains configuration parameters related to the battery. These parameters are used to
-     * account for voltage variations.
-     */
-    public static class BatteryParameters {
-
-        /**
-         * Maximum expected voltage of the battery in volts.
-         */
-        public double maxVoltage = 12.5; // (V)
     }
 
     /**
@@ -471,9 +333,5 @@ public class Shooter {
          * PID constants used for velocity control.
          */
         public PIDConstants pidConstants = new PIDConstants(0.2, 0, 0);
-    }
-
-    public static class HardwareConstants {
-        double velocityTolerance = 2.0; // (rad/s)
     }
 }

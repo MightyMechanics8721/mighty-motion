@@ -95,10 +95,8 @@ public class Transfer {
             setIntakeIndexerPowerFunction(1, 0);
         } else if (balls[1] && balls[2]) {
             setIntakeIndexerPowerFunction(1, 0);
-        } else if (ballCount == 2) {
+        } else { // ballCount == 2, bottom and top with a gap in the middle
             setIntakeIndexerPowerFunction(1, 0.7);
-        } else {
-            setIntakeIndexerPowerFunction(0.3, 0.3);
         }
     }
 
@@ -106,7 +104,7 @@ public class Transfer {
      * Detect balls & update ballCount
      */
     public void updateBallCount() {
-        // Read each sensor: true = object detected (HIGH), false = no object (LOW)
+        // Read each beam break: true = ball present (HIGH), false = clear (LOW)
         balls[0] = laserInput1.getState();
         balls[1] = laserInput2.getState();
         balls[2] = laserInput3.getState();

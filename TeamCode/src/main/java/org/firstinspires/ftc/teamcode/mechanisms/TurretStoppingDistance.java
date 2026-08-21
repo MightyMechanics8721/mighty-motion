@@ -6,6 +6,9 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.hardware.Battery;
+
 @Config
 @Autonomous(name = "TurretStoppingDistance")
 public class TurretStoppingDistance extends LinearOpMode {
@@ -13,15 +16,19 @@ public class TurretStoppingDistance extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        TelemetryPacket packet = new TelemetryPacket();
+        // The turret encoder shares the left front drive motor's port, and that motor's direction
+        // decides the sign the encoder reports. Bring the Drivetrain up so the angle here matches
+        // what the match OpModes see.
+        Battery.initialize(hardwareMap);
+        Drivetrain.initialize(hardwareMap);
         Turret.initialize(hardwareMap);
         Turret turret = Turret.getInstance();
         FtcDashboard dashboard = FtcDashboard.getInstance();
-        packet.put("velocity", turret.getVelocity());
         turret.setInitialAngle(0);
         waitForStart();
         int count = 0;
         while (opModeIsActive()) {
+            TelemetryPacket packet = new TelemetryPacket();
             boolean run = gamepad1.right_bumper;
             boolean reset = gamepad1.left_bumper;
 

@@ -25,10 +25,10 @@ import java.util.List;
 import org.ejml.simple.SimpleMatrix;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.control.FFConstants;
 import org.firstinspires.ftc.teamcode.control.PIDConstants;
+import org.firstinspires.ftc.teamcode.control.StoppingDistance;
 import org.firstinspires.ftc.teamcode.hardware.DcMotorAdvanced;
 import org.firstinspires.ftc.teamcode.util.Utils;
 
@@ -49,7 +49,8 @@ public class Drivetrain {
     public static MechanicalParameters MECHANICAL_PARAMETERS = new MechanicalParameters();
     public static ThresholdParameters THRESHOLD_PARAMETERS = new ThresholdParameters();
     public static DebuggingParameters DEBUGGING_PARAMETERS = new DebuggingParameters();
-    public static double scale = 2;
+    public static StoppingDistanceParameters STOPPING_DISTANCE_PARAMETERS =
+            new StoppingDistanceParameters();
     private static Drivetrain instance;
     public final TwoWheelOdometery twoWheelOdo;
     public final DcMotorAdvanced motorLeftFront;
@@ -64,9 +65,7 @@ public class Drivetrain {
     private final MecanumKinematicModel mecanumKinematicModel;
     public SimpleMatrix shootWhileMovingPose;
     public SimpleMatrix driftedPose;
-    public SimpleMatrix preloadPose;
     public SimpleMatrix state;
-    public double current = 0;
     private TelemetryPacket packet;
 
     /**
@@ -79,7 +78,6 @@ public class Drivetrain {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-            current = hub.getCurrent(CurrentUnit.MILLIAMPS);
         }
 
         this.motorController = new DrivetrainMotorController(FF_CONSTANTS);
@@ -145,7 +143,6 @@ public class Drivetrain {
 
         this.state = new SimpleMatrix(6, 1);
         this.driftedPose = new SimpleMatrix(3, 1);
-        this.preloadPose = new SimpleMatrix(3, 1);
         this.shootWhileMovingPose = new SimpleMatrix(3, 1);
 
         this.twoWheelOdo.resetPosAndRecalibrateIMU();
@@ -185,15 +182,9 @@ public class Drivetrain {
 
         this.driftedPose =
                 this.state.extractMatrix(0, 3, 0, 1).plus(this.computeStoppingDistance());
-        this.preloadPose =
-                this.state.extractMatrix(0, 3, 0, 1);
-        this.state.get(0, 0); // x-position (in)
-        this.state.get(1, 0); // y-position (in)
-        this.state.get(2, 0); // heading (rad)
-        this.state.get(3, 0); // long. velocity (in/s)
-        this.state.get(4, 0); // lat. velocity (in/s)
-        this.state.get(5, 0); // turning rate (rad/s)
 
+        // state rows: 0 x (in), 1 y (in), 2 heading (rad),
+        //             3 long. vel (in/s), 4 lat. vel (in/s), 5 turn rate (rad/s)
         SimpleMatrix bodyFrameVelocities = state.extractMatrix(3, 6, 0, 1);
         SimpleMatrix fieldFrameVelocites = Utils.rotateBodyToGlobal(
                 bodyFrameVelocities,
@@ -241,63 +232,57 @@ public class Drivetrain {
         this.packet.put("yaw vel (deg/s)", Math.toDegrees(this.state.get(5, 0)));
     }
 
-    private double stoppingDistanceX(double xVelocity) {
-        return 0.132 * xVelocity + 0.00132 * xVelocity * xVelocity;
-    }
-
-    private double stoppingDistanceY(double yVelocity) {
-        return 0.0716 * yVelocity + 0.00213 * yVelocity * yVelocity;
-    }
-
-    private double stoppingAngle(double angularVelocity) {
-        return 0.0658 * angularVelocity + 0.00522 * angularVelocity * angularVelocity;
-    }
-
+    /**
+     * How far the robot coasts from its current body-frame velocity, in the field frame.
+     *
+     * @return 3x1 of x (in), y (in), heading (rad) drift
+     */
     private SimpleMatrix computeStoppingDistance() {
+        StoppingDistanceParameters coeffs = STOPPING_DISTANCE_PARAMETERS;
         SimpleMatrix stopDistance = new SimpleMatrix(
                 new double[][]{
                         new double[]{
-                                Math.signum(this.state.get(3, 0)) * this.stoppingDistanceX(
-                                        Math.abs(this.state.get(3, 0)))
+                                StoppingDistance.forVelocity(
+                                        this.state.get(3, 0),
+                                        coeffs.xLinear,
+                                        coeffs.xQuadratic
+                                )
                         },
                         new double[]{
-                                Math.signum(this.state.get(4, 0)) * this.stoppingDistanceY(
-                                        Math.abs(this.state.get(4, 0)))
+                                StoppingDistance.forVelocity(
+                                        this.state.get(4, 0),
+                                        coeffs.yLinear,
+                                        coeffs.yQuadratic
+                                )
                         },
                         new double[]{
-                                Math.signum(this.state.get(5, 0)) * this.stoppingAngle(
-                                        Math.abs(this.state.get(5, 0))
+                                StoppingDistance.forVelocity(
+                                        this.state.get(5, 0),
+                                        coeffs.headingLinear,
+                                        coeffs.headingQuadratic
                                 )
                         }
                 }
         );
 
-        SimpleMatrix stopDistanceGlobal = Utils.rotateBodyToGlobal(
-                stopDistance, this.state.get(
-                        2,
-                        0
-                )
-        );
-
-        //        this.packet.put("rel. x drift (in)", stopDistance.get(0, 0));
-        //        this.packet.put("rel. y drift (in)", stopDistance.get(1, 0));
-        //        this.packet.put("rel. heading drift (deg)", Math.toDegrees(stopDistance.get(2,
-        //        0)));
-
-        return stopDistanceGlobal;
+        return Utils.rotateBodyToGlobal(stopDistance, this.state.get(2, 0));
     }
 
     /**
-     * Sets the power to the wheels & records Previous Power. Only updates power if the change
-     * exceeds acceptablePowerDifference to save battery.
-     *
-     * @param powers matrix of wheel power values (order:lfm, lbm, rbm, rfm)
-     */
-    /**
      * Powers the four motors (lfm, lbm, rbm, rfm). Scales the vector down if any wheel exceeds
-     * full power, preserving the ratios between them.
+     * full power, preserving the ratios between them. A non-finite command stops the drivetrain
+     * rather than reaching the motors.
+     *
+     * @param powers matrix of wheel power values (order: lfm, lbm, rbm, rfm)
      */
     public void setPower(SimpleMatrix powers) {
+        for (int i = 0; i < 4; i++) {
+            if (!Double.isFinite(powers.get(i, 0))) {
+                powers = stopMatrix;
+                break;
+            }
+        }
+
         double largest = powers.elementMaxAbs();
         if (largest > 1.0) {
             powers = powers.scale(1.0 / largest);
@@ -329,7 +314,7 @@ public class Drivetrain {
             SimpleMatrix wheelSpeeds,
             SimpleMatrix wheelAccelerations
     ) {
-        // TODO: multiply by gear reduction
+        // FF_CONSTANTS are fitted against wheel rad/s, so no gear reduction is applied here.
         setPower(motorController.calculate(wheelSpeeds, wheelAccelerations));
     }
 
@@ -423,9 +408,15 @@ public class Drivetrain {
     ) {
         Drivetrain drivetrain = this;
         return new Action() {
+            private boolean started = false;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                if (!started) {
+                    drivetrain.poseController.reset();
+                    started = true;
+                }
+
                 drivetrain.setTelemetry(packet);
                 drivetrain.localize();
                 drivetrain.updateTelemetry();
@@ -462,7 +453,10 @@ public class Drivetrain {
 
         Drawing.drawPath(path.getWaypoints(), canvas, "red");
 
-        if (this.inPositionThreshold(path.getFinalPoint(), FOLLOWER_CONSTANTS.headingLookahead)) {
+        if (this.inPositionThreshold(
+                path.getFinalPoint(),
+                FOLLOWER_CONSTANTS.poseControlHandoffDistance
+        )) {
             //            packet.addLine("follower: pose control");
 
             SimpleMatrix desiredPose = makePoseVector(
@@ -474,10 +468,6 @@ public class Drivetrain {
                     desiredPose, distanceThreshold, angleThreshold,
                     useStoppingDistance
             );
-
-            if (!isRunning) {
-                this.geometricController.resetLookAhead();
-            }
 
             return isRunning;
         }
@@ -510,10 +500,13 @@ public class Drivetrain {
                 desiredPose
         ));
 
-        double maxScale = (maxSpeed / MECHANICAL_PARAMETERS.wheelRadius)
-                / wheelSpeeds.elementMaxAbs();
-
-        wheelSpeeds = wheelSpeeds.scale(maxScale);
+        // Cap the wheel speeds at maxSpeed without scaling a small correction up to it. Scaling
+        // the whole vector keeps the ratios, so the direction of travel is unchanged either way.
+        double fastestWheel = wheelSpeeds.elementMaxAbs();
+        double speedLimit = maxSpeed / MECHANICAL_PARAMETERS.wheelRadius;
+        if (fastestWheel > speedLimit) {
+            wheelSpeeds = wheelSpeeds.scale(speedLimit / fastestWheel);
+        }
 
         SimpleMatrix wheelAccelerations = new SimpleMatrix(4, 1);
 
@@ -543,9 +536,20 @@ public class Drivetrain {
     ) {
         Drivetrain drivetrain = this;
         return new Action() {
+            private boolean started = false;
 
             @Override
             public boolean run(@NonNull TelemetryPacket packet) {
+                // The lookahead index only moves forward, so it has to be rewound for each new
+                // path. Doing it here rather than at the end of the previous path covers the
+                // paths that stop on a deadline or never reach their threshold.
+                if (!started) {
+                    drivetrain.geometricController.resetLookAhead();
+                    drivetrain.followController.reset();
+                    drivetrain.poseController.reset();
+                    started = true;
+                }
+
                 drivetrain.setTelemetry(packet);
                 drivetrain.localize();
                 drivetrain.updateTelemetry();
@@ -599,14 +603,17 @@ public class Drivetrain {
 
     /**
      * Allows for manual control of Robot using controller joystick.
+     * <p>
+     * All three are raw stick axes, which point the opposite way to the robot frame, so each is
+     * negated on the way in. Callers pass (-left_stick_x, left_stick_y, right_stick_x).
      *
-     * @param ly Left stick Y axis (forward/backward)
-     * @param lx Left stick X axis (strafe left/right)
-     * @param rX Right stick X axis (rotation)
+     * @param negatedStrafe negated left stick X axis; positive strafes left
+     * @param forwardAxis left stick Y axis; negative is forward on a gamepad
+     * @param turnAxis right stick X axis; positive turns clockwise
      *
      * @return An Action that applies the joystick values to the drivetrain for manual driving.
      */
-    public Action manualControl(double ly, double lx, double rX) {
+    public Action manualControl(double negatedStrafe, double forwardAxis, double turnAxis) {
         Drivetrain drivetrain = this;
 
         return new Action() {
@@ -616,9 +623,9 @@ public class Drivetrain {
                 drivetrain.localize();
                 drivetrain.updateTelemetry();
 
-                double y = ly;
-                double x = -lx;
-                double rx = -rX;
+                double x = -forwardAxis;   // longitudinal, positive forward
+                double y = negatedStrafe;  // lateral, positive left
+                double rx = -turnAxis;     // yaw, positive counter-clockwise
                 SimpleMatrix compensatedTwist = new SimpleMatrix(
                         new double[][]{
                                 new double[]{MECHANICAL_PARAMETERS.wheelRadius * x},
@@ -654,8 +661,10 @@ public class Drivetrain {
         public PIDConstants xPIDConstants = new PIDConstants(4.5, 0, 0);
         public PIDConstants yPIDConstants = new PIDConstants(4.5, 0, 0);
         public PIDConstants headingPIDConstants = new PIDConstants(1.8, 0, 0);
-        public double positionLookahead = 20.0;
-        public double headingLookahead = 30.0;
+        public double positionLookahead = 20.0; // (in)
+        public double headingLookahead = 30.0; // (in)
+        /** Distance from the last waypoint at which the follower hands off to pose control. (in) */
+        public double poseControlHandoffDistance = 30.0;
     }
 
     public static class FFConstantsController {
@@ -669,8 +678,6 @@ public class Drivetrain {
         public double wheelRadius = 2.16535; // (in)
         public double longDistToAxles = 5.7; // (in) Longitudinal distance from center to axles
         public double latDistToAxles = 5.31496; // (in) Lateral distance from center to axles
-
-        public double gearRatioMotorToWheel = 2.0;
     }
 
     /**
@@ -681,7 +688,16 @@ public class Drivetrain {
          * Set to true to enable telemetry printouts, false to disable
          */
         public boolean printTelemetry = true;
-        public boolean autonActOnControl = true;
+    }
+
+    /** Coast fits measured with TuneAccel. Body frame; heading terms are in radians. */
+    public static class StoppingDistanceParameters {
+        public double xLinear = 0.132;        // (in per in/s)
+        public double xQuadratic = 0.00132;   // (in per (in/s)^2)
+        public double yLinear = 0.0716;       // (in per in/s)
+        public double yQuadratic = 0.00213;   // (in per (in/s)^2)
+        public double headingLinear = 0.0658;      // (rad per rad/s)
+        public double headingQuadratic = 0.00522;  // (rad per (rad/s)^2)
     }
 
     public static class ThresholdParameters {

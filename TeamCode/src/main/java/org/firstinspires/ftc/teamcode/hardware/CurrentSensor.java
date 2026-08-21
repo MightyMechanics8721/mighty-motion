@@ -27,24 +27,20 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
  */
 
 /**
- * goBILDA Laser Distance Sensor Example (Analog Mode)
- *
- * Reads the analog output (0–3.3V) of the Dual-Mode Laser Distance Sensor and converts it linearly
- * to distance (0–1000 mm).
- *
- * 0.0V →   0 mm 3.3V → 1000 mm
- *
- * Wiring/Config: - Connect the sensor’s analog signal to a Hub Analog port. - Name the device
- * "laserAnalog" in Robot Configuration.
- *
- * Display: - Driver Station telemetry shows voltage and distance (mm).
+ * Reads the analog sensor configured as HardwareNames.CURRENT_SENSOR and prints its voltage
+ * alongside a linear conversion of it.
+ * <p>
+ * Adapted from goBILDA's analog laser distance sensor sample. The scale below is whatever was last
+ * dialled in on this robot; confirm MAX_READING against the sensor actually plugged in before
+ * trusting the converted number.
  */
 @TeleOp(name = "current sensor")
 public class CurrentSensor extends LinearOpMode {
 
-    // Sensor scale: 3.3V corresponds to 1000 mm
+    /** Full-scale analog output of the sensor. */
     private static final double MAX_VOLTS = 3.3;
-    private static final double MAX_DISTANCE_MM = 80;
+    /** Reading that MAX_VOLTS corresponds to. */
+    private static final double MAX_READING = 80;
     private AnalogInput laserAnalog;
 
     @Override
@@ -60,12 +56,10 @@ public class CurrentSensor extends LinearOpMode {
             // Read sensor voltage (0.0–3.3V)
             double volts = laserAnalog.getVoltage();
 
-            // Convert voltage to distance in millimeters (linear mapping)
-            double curr = (volts / MAX_VOLTS) * MAX_DISTANCE_MM;
+            double reading = (volts / MAX_VOLTS) * MAX_READING;
 
-            // Telemetry
             telemetry.addData("Voltage (V)", "%.3f", volts);
-            telemetry.addData("Current (mm)", "%.1f", curr);
+            telemetry.addData("Scaled reading", "%.1f", reading);
             telemetry.update();
         }
     }

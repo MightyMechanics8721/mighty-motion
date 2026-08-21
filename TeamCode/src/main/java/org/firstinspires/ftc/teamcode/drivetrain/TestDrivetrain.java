@@ -22,7 +22,6 @@ public class TestDrivetrain extends OpMode {
     ElapsedTime timer = new ElapsedTime();
     Battery battery;
     Drivetrain drivetrain;
-    TelemetryPacket packet;
     private FtcDashboard dash = FtcDashboard.getInstance();
     private Map<String, Action> runningActions = new HashMap<>();
 
@@ -33,13 +32,15 @@ public class TestDrivetrain extends OpMode {
         Drivetrain.initialize(hardwareMap);
         battery = Battery.getInstance();
         drivetrain = Drivetrain.getInstance();
-        packet = new TelemetryPacket();
+        TelemetryPacket packet = new TelemetryPacket();
         drivetrain.setTelemetry(packet);
         dashboard.sendTelemetryPacket(packet);
     }
 
     @Override
     public void loop() {
+        // A packet accumulates every canvas op written to it, so it cannot outlive one iteration.
+        TelemetryPacket packet = new TelemetryPacket();
         drivetrain.manualControl(
                 -gamepad1.left_stick_x,
                 gamepad1.left_stick_y,

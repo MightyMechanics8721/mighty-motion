@@ -2,30 +2,37 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+/** Servo wrapper that skips writes smaller than a tolerance. */
 public class ServoAdvanced {
-    private double lastPos = 0;
-    Servo servo;
+    private final Servo servo;
     private double servoTolerance = 0.001;
+    private Double lastPos = null;
 
     public ServoAdvanced(Servo servo) {
         this.servo = servo;
     }
 
-    public void setPosition(double newPos){
-        if(Math.abs(newPos - lastPos) > servoTolerance){
+    public void setPosition(double newPos) {
+        if (lastPos == null || Math.abs(newPos - lastPos) > servoTolerance) {
             servo.setPosition(newPos);
             lastPos = newPos;
         }
     }
 
-    public double getPosition(){
-        return lastPos;
+    /**
+     * @return the last position commanded, or the servo's own reading before anything was
+     * commanded
+     */
+    public double getPosition() {
+        return lastPos == null ? servo.getPosition() : lastPos;
     }
-    public double getTolerance(){
+
+    public double getTolerance() {
         return servoTolerance;
     }
-    public void setTolerance() {
-        servoTolerance = 0.001;
+
+    public void setTolerance(double servoTolerance) {
+        this.servoTolerance = servoTolerance;
     }
 }
 

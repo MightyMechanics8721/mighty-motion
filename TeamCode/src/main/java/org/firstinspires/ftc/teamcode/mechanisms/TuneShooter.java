@@ -8,6 +8,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import static org.firstinspires.ftc.teamcode.mechanisms.Shooter.MOTOR_CONTROLLER_CONSTANTS;
+
 import org.firstinspires.ftc.teamcode.hardware.Battery;
 
 @Config
@@ -22,54 +24,32 @@ public class TuneShooter extends LinearOpMode {
 
         Battery.initialize(hardwareMap);
         Shooter.initialize(hardwareMap);
-        Battery.getInstance();
-        Shooter.getInstance();
         shooter = Shooter.getInstance();
         dashboard = FtcDashboard.getInstance();
-        TelemetryPacket packet = new TelemetryPacket();
-
-        packet.put("Velocity (RPM)", 0.0);
-        packet.put("Target Velocity (RPM)", targetVelocity);
-        dashboard.sendTelemetryPacket(packet);
-        double currentVelocity = 0;
         waitForStart();
 
         while (opModeIsActive()) {
-            if (gamepad1.left_trigger > 0.05) { // ----- REVERSE -----
-                shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(targetVelocity));
-            } else {
-                shooter.shooterMotor1.setPower(gamepad1.left_trigger * 10);
-                shooter.shooterMotor2.setPower(gamepad1.left_trigger * 10);
-            }
-            shooter.setShooterVelocityLoop(Utils.rpmToRadPerSec(targetVelocity)).run(packet);
+            TelemetryPacket packet = new TelemetryPacket();
+            double target = Utils.rpmToRadPerSec(targetVelocity);
 
-            currentVelocity = shooter.getVelocity();
-            packet.put(
-                    "shooterpowerPID",
-                    shooter.velocityPidController.calculate(
-                            Utils.rpmToRadPerSec(targetVelocity),
-                            currentVelocity
-                    )
-            );
-            packet.put(
-                    "shooterpowerFF",
-                    shooter.velocityFeedForwardController.calculate(
-                            Utils.rpmToRadPerSec(targetVelocity), 5)
-            );
-            packet.put(
-                    "shooterpower",
-                    shooter.velocityPidController.calculate(
-                            Utils.rpmToRadPerSec(targetVelocity),
-                            currentVelocity
-                    ) + shooter.velocityFeedForwardController.calculate(targetVelocity, 5)
-            );
+            // One control update per iteration. PID.calculate advances the controller's timer and
+            // integral, so calling it again for telemetry would change what the shooter is doing.
+            shooter.setShooterVelocityLoop(target).run(packet);
+
+            double currentVelocity = shooter.getVelocity();
+            double ffPower = MOTOR_CONTROLLER_CONSTANTS.ffConstants.kS * Math.signum(target)
+                    + MOTOR_CONTROLLER_CONSTANTS.ffConstants.kV * target;
+            double pidPower = MOTOR_CONTROLLER_CONSTANTS.pidConstants.kP
+                    * (target - currentVelocity);
+
+            packet.put("shooterpowerFF", ffPower);
+            packet.put("shooterpowerPID", pidPower);
+            packet.put("shooterpower", ffPower + pidPower);
             packet.put("Velocity (RPM)", Utils.radPerSecToRpm(currentVelocity));
             packet.put("Target Velocity (RPM)", targetVelocity);
-            packet.put("Target Velocity (Input)", Utils.rpmToRadPerSec(targetVelocity));
+            packet.put("Target Velocity (rad/s)", target);
             dashboard.sendTelemetryPacket(packet);
-
         }
-
     }
 
 }

@@ -6,174 +6,168 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.Battery;
+import org.firstinspires.ftc.teamcode.util.Utils;
 
+/**
+ * Measures top speed and coast distance, on one axis at a time.
+ * <p>
+ * Drive at a fixed power until the speed stops climbing, cut power, and read how far the robot
+ * carried. Each run gives one (speed at cut, coast distance) pair; take a few at different powers
+ * and fit them to the coefficients in {@link Drivetrain.StoppingDistanceParameters}. Only the TURN
+ * axis was ever measurable here before, which is why the forward and strafe coefficients have no
+ * provenance.
+ * <p>
+ * Peak speed on FORWARD is also what settles FF_CONSTANTS.kV. kV says full power should reach
+ * (1 - kS) / kV rad/s at the wheel, so (1 - kS) / kV * wheelRadius in/s on the ground. If the
+ * measured top speed disagrees, kV is fitted in the wrong units and every speed the controllers
+ * talk about is scaled by that error.
+ * <p>
+ * Controls: A drives at power, B cuts power and measures the coast, X clears the run.
+ */
 @Config
-@TeleOp(group = "a", name = "tuneaccel")
+@TeleOp(group = "a", name = "Tune Coast + Top Speed")
 public class TuneAccel extends LinearOpMode {
-    public static double power = 1.0;
-    public double maxVelocity = 0;
-    boolean isReset = true;
-    FtcDashboard dashboard;
-    double stopPos = 0;
-    double presentPos = 0;
-    double lastPos;
-    boolean isStopped = false;
-    double AAAx = 0;
-    double AAAy = 0;
-    double dy = 0;
-    double dx = 0;
-    double deltaHeading = 0;
 
-    double absoluteHeading = 0;
+    public enum Axis {
+        FORWARD,
+        STRAFE,
+        TURN
+    }
+
+    public static Axis axis = Axis.FORWARD;
+    /** Drive power for the run, [-1, 1]. Take readings at several values. */
+    public static double power = 1.0;
 
     @Override
     public void runOpMode() {
         Battery.initialize(hardwareMap);
         Drivetrain.initialize(hardwareMap);
         Drivetrain drivetrain = Drivetrain.getInstance();
-        ElapsedTime timer = new ElapsedTime();
-
-        dashboard = FtcDashboard.getInstance();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
 
-        telemetry.addData("Current velocity (in/s)", drivetrain.state.get(5, 0));
-        telemetry.addData("Max Velocity", maxVelocity);
+        ElapsedTime coastTimer = new ElapsedTime();
+        boolean coasting = false;
+        double peakSpeed = 0;
+        double speedAtCut = 0;
+        double coastStartX = 0;
+        double coastStartY = 0;
+        double coastStartHeading = 0;
+        double coastDistance = 0;
+        double coastTime = 0;
 
         waitForStart();
 
-        double relXMovement = 0.0;
-
-        double previousHeading = 0.0;
-        double prevXEncoder = 0.0;
-
-        double relYMovement = 0.0;
-        double prevYEncoder = 0.0;
-
         while (opModeIsActive()) {
             drivetrain.localize();
-            telemetry.addData(
-                    "BRUH",
-                    drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit.RADIANS)
-            );
-            deltaHeading = drivetrain.state.get(2, 0) - previousHeading;
+            double speed = speedOn(axis, drivetrain);
 
-            if (deltaHeading > 180) {
-                deltaHeading -= 360;
-            } else if (deltaHeading < -180) {
-                deltaHeading += 360;
-            }
-            absoluteHeading += deltaHeading;
-
-            telemetry.addData("deltaheading", deltaHeading * 180 / Math.PI);
-            telemetry.addData("previousheading", previousHeading * 180 / Math.PI);
-
-            previousHeading = drivetrain.state.get(2, 0); // moght break for x.y
-
-            //            dEncoder = drivetrain.twoWheelOdo.odo.getEncoderX() - prevEncoder;
-            dx =
-                    (drivetrain.twoWheelOdo.odo.getEncoderX() - prevXEncoder) / 2000.0 * 2 *
-                            Math.PI
-                            * 0.63 //
-                            // convert
-                            // to in
-                            + drivetrain.twoWheelOdo.odo.getXOffset(DistanceUnit.INCH) * (
-                            deltaHeading);
-
-            relXMovement += dx;
-
-            //            previousHeading = drivetrain.state.get(2, 0);
-            prevXEncoder = drivetrain.twoWheelOdo.odo.getEncoderX();
-
-            dy =
-                    (drivetrain.twoWheelOdo.odo.getEncoderY() - prevYEncoder) / 2000.0 * 2 *
-                            Math.PI
-                            * 0.63 //
-                            // convert
-                            // to in
-                            + drivetrain.twoWheelOdo.odo.getYOffset(DistanceUnit.INCH) * (
-                            deltaHeading);
-
-            relYMovement += dy;
-
-            telemetry.addData("offet", drivetrain.twoWheelOdo.odo.getYOffset(DistanceUnit.INCH));
-            telemetry.addData("encoder Y (ticks)", drivetrain.twoWheelOdo.odo.getEncoderY());
-            telemetry.addData(
-                    "encoder Y (in)",
-                    drivetrain.twoWheelOdo.odo.getEncoderY() / 2000.0 * 2 * Math.PI
-                            * 0.63
-            );
-
-            //
-            //            previousHeading = absoluteHeading; // moght break for x.y
-            prevYEncoder = drivetrain.twoWheelOdo.odo.getEncoderY();
-
-            // Allow toggling reset mode
-            if (gamepad1.circle) {
-                isReset = !isReset;
-                sleep(600); // prevent rapid toggling
-            }
-
-            if (isReset) {
-                stopPos = 0;
-                presentPos = 0;
-                lastPos = 0;
-                isStopped = false;
-                maxVelocity = 0;
-
-                if (gamepad1.cross) {
-                    AAAx = gamepad1.left_stick_y;
-                    drivetrain.motorLeftFront.setPower(AAAx);
-                    drivetrain.motorLeftBack.setPower(AAAx);
-                    drivetrain.motorRightFront.setPower(AAAx);
-                    drivetrain.motorRightBack.setPower(AAAx);
-                } else {
-                    AAAx = gamepad1.left_stick_x;
-                    drivetrain.motorLeftFront.setPower(-AAAx);
-                    drivetrain.motorLeftBack.setPower(AAAx);
-                    drivetrain.motorRightFront.setPower(-AAAx);
-                    drivetrain.motorRightBack.setPower(AAAx);
+            if (gamepad1.x) {
+                coasting = false;
+                peakSpeed = 0;
+                speedAtCut = 0;
+                coastDistance = 0;
+                coastTime = 0;
+                setAxisPower(drivetrain, axis, 0);
+            } else if (gamepad1.a) {
+                coasting = false;
+                peakSpeed = Math.max(peakSpeed, Math.abs(speed));
+                setAxisPower(drivetrain, axis, power);
+            } else if (gamepad1.b) {
+                if (!coasting) {
+                    coasting = true;
+                    speedAtCut = speed;
+                    coastStartX = drivetrain.state.get(0, 0);
+                    coastStartY = drivetrain.state.get(1, 0);
+                    coastStartHeading = drivetrain.state.get(2, 0);
+                    coastTimer.reset();
                 }
+                setAxisPower(drivetrain, axis, 0);
+                coastDistance = axis == Axis.TURN
+                        ? Utils.angleWrap(drivetrain.state.get(2, 0) - coastStartHeading)
+                        : Utils.calculateDistance(
+                                coastStartX, coastStartY,
+                                drivetrain.state.get(0, 0), drivetrain.state.get(1, 0));
+                coastTime = coastTimer.seconds();
             } else {
-
-                // Drive controls
-                if (gamepad1.triangle && !isStopped) {
-                    drivetrain.motorLeftFront.setPower(-power);
-                    drivetrain.motorRightFront.setPower(power);
-                    drivetrain.motorRightBack.setPower(power);
-                    drivetrain.motorLeftBack.setPower(-power);
-
-                } else if (gamepad1.square && !isStopped) {
-                    stopPos = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit
-                            .RADIANS);
-                    drivetrain.motorLeftFront.setPower(0);
-                    drivetrain.motorRightFront.setPower(0);
-                    drivetrain.motorRightBack.setPower(0);
-                    drivetrain.motorLeftBack.setPower(0);
-                    isStopped = true;
-                    timer.reset();
-
-                } else if (isStopped) {
-                    presentPos
-                            = drivetrain.twoWheelOdo.odo.getHeading(UnnormalizedAngleUnit
-                            .RADIANS);
-
-                    telemetry.addData("Stopping distance", presentPos - stopPos);
-                    telemetry.addData("Stopping time (s)", timer.seconds());
-                }
+                setAxisPower(drivetrain, axis, 0);
             }
 
-            if (maxVelocity < drivetrain.state.get(5, 0)) {
-                maxVelocity = drivetrain.state.get(5, 0);
+            telemetry.addData("axis", axis);
+            telemetry.addData("power", power);
+            telemetry.addData("A drive / B cut+measure / X clear", coasting ? "COASTING" : "");
+            telemetry.addData(unit(axis, "speed now"), speed);
+            telemetry.addData(unit(axis, "peak speed"), peakSpeed);
+            telemetry.addLine("---- last coast ----");
+            telemetry.addData(unit(axis, "speed at cut"), speedAtCut);
+            telemetry.addData(axis == Axis.TURN ? "coast (rad)" : "coast (in)", coastDistance);
+            telemetry.addData("coast time (s)", coastTime);
+            if (axis == Axis.FORWARD) {
+                telemetry.addLine("---- what kV predicts ----");
+                double kS = Drivetrain.FF_CONSTANTS.lf.kS;
+                double radius = Drivetrain.MECHANICAL_PARAMETERS.wheelRadius;
+                telemetry.addData("top speed kV implies (in/s)",
+                        (1.0 - kS) / Drivetrain.FF_CONSTANTS.lf.kV * radius);
+                telemetry.addData("kV matching the peak just measured",
+                        peakSpeed > 0 ? (1.0 - kS) / (peakSpeed / radius) : 0);
             }
-
-            telemetry.addData("Current velocity (in/s)", drivetrain.state.get(5, 0));
-            telemetry.addData("Absolute Heading", absoluteHeading);
-            telemetry.addData("Max Velocity", maxVelocity);
-            telemetry.addData("isReset", isReset);
             telemetry.update();
         }
+    }
+
+    /** Body frame speed on the axis under test. */
+    private static double speedOn(Axis axis, Drivetrain drivetrain) {
+        switch (axis) {
+            case STRAFE:
+                return drivetrain.state.get(4, 0);
+            case TURN:
+                return drivetrain.state.get(5, 0);
+            case FORWARD:
+            default:
+                return drivetrain.state.get(3, 0);
+        }
+    }
+
+    private static String unit(Axis axis, String label) {
+        return label + (axis == Axis.TURN ? " (rad/s)" : " (in/s)");
+    }
+
+    /**
+     * Powers the wheels to move along one axis only.
+     * <p>
+     * Signs follow {@link MecanumKinematicModel}: forward drives all four the same way, strafe
+     * opposes the diagonals, turn opposes the sides.
+     */
+    private static void setAxisPower(Drivetrain drivetrain, Axis axis, double power) {
+        double leftFront;
+        double leftBack;
+        double rightBack;
+        double rightFront;
+        switch (axis) {
+            case STRAFE:
+                leftFront = -power;
+                leftBack = power;
+                rightBack = -power;
+                rightFront = power;
+                break;
+            case TURN:
+                leftFront = -power;
+                leftBack = -power;
+                rightBack = power;
+                rightFront = power;
+                break;
+            case FORWARD:
+            default:
+                leftFront = power;
+                leftBack = power;
+                rightBack = power;
+                rightFront = power;
+                break;
+        }
+        drivetrain.motorLeftFront.setPower(leftFront);
+        drivetrain.motorLeftBack.setPower(leftBack);
+        drivetrain.motorRightBack.setPower(rightBack);
+        drivetrain.motorRightFront.setPower(rightFront);
     }
 }

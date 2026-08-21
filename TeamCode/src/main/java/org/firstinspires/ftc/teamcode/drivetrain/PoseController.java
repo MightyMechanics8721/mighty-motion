@@ -40,6 +40,19 @@ public class PoseController {
     }
 
     /**
+     * Clears the integral and derivative state of all three axes.
+     * <p>
+     * Call this when starting a new move. The controllers are long-lived, so without it the first
+     * update of a move sees a dt spanning the gap since the previous move and a derivative taken
+     * against that move's target.
+     */
+    public void reset() {
+        xPID.reset();
+        yPID.reset();
+        tPID.reset();
+    }
+
+    /**
      * Calculates a velocity vector to move from a current pose to a desired pose. Applies PID
      * control in the robot's frame and returns motor power commands.
      *

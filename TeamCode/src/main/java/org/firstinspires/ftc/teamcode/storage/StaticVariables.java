@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.storage;
 
 import org.ejml.simple.SimpleMatrix;
 
+import org.firstinspires.ftc.teamcode.field.Alliance;
+
 /**
  * Values carried from Autonomous into TeleOp.
  * <p>
@@ -11,16 +13,23 @@ import org.ejml.simple.SimpleMatrix;
  */
 public final class StaticVariables {
 
-    /** Robot pose at the end of Autonomous: 3x1 x (in), y (in), heading (rad). Null until saved. */
+    /**
+     * Robot state at the end of Autonomous, as handed over by Drivetrain.state: 6x1 of x (in),
+     * y (in), heading (rad), then body-frame vx, vy, omega. Only the first three rows are read
+     * back. Null until saved.
+     */
     private static SimpleMatrix robotState;
 
     /** Turret angle at the end of Autonomous (deg). */
     private static double turretAngle;
 
+    /** Alliance the last Autonomous ran as. Null until an Autonomous stores one. */
+    private static Alliance alliance;
+
     private StaticVariables() {
     }
 
-    /** Stores the pose the robot finished Autonomous at. */
+    /** Stores the state the robot finished Autonomous at. Copies, so the caller may reuse it. */
     public static void saveRobotState(SimpleMatrix state) {
         robotState = state.copy();
     }
@@ -28,6 +37,21 @@ public final class StaticVariables {
     /** Stores the turret angle (deg) the robot finished Autonomous at. */
     public static void saveTurretAngle(double angleDeg) {
         turretAngle = angleDeg;
+    }
+
+    /** Records the alliance the Autonomous ran as, so TeleOp can cross-check its own. */
+    public static void saveAlliance(Alliance value) {
+        alliance = value;
+    }
+
+    /** True once an Autonomous has stored an alliance this power cycle. */
+    public static boolean hasAlliance() {
+        return alliance != null;
+    }
+
+    /** Alliance the last Autonomous ran as, or null if none has. */
+    public static Alliance alliance() {
+        return alliance;
     }
 
     /** True once an Autonomous has stored a pose this power cycle. */
@@ -49,5 +73,6 @@ public final class StaticVariables {
     public static void clear() {
         robotState = null;
         turretAngle = 0;
+        alliance = null;
     }
 }

@@ -119,9 +119,20 @@ public class TimedTest {
 
     @Test
     public void waitFinishesAfterItsTime() throws InterruptedException {
-        Action a = Timed.wait(0.1);
+        Action a = Timed.pause(0.1);
         assertTrue(a.run(packet));
         Thread.sleep(150);
         assertFalse(a.run(packet));
+    }
+
+    @Test
+    public void waitOfZeroFinishesImmediately() {
+        Action action = Timed.pause(0);
+        assertFalse("a wait of no time must not run forever", action.run(new TelemetryPacket()));
+    }
+
+    @Test
+    public void waitOfNegativeFinishesImmediately() {
+        assertFalse(Timed.pause(-1).run(new TelemetryPacket()));
     }
 }
